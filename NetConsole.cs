@@ -267,7 +267,7 @@ public class NetConsole
         if (args.Length == 0)
         {
             SendToClient(client, "Usage: get <field>\n");
-            SendToClient(client, "Available fields: playerposition\n");
+            SendToClient(client, "Available fields: playerposition, currentactivemaplabel\n");
             return;
         }
 
@@ -287,9 +287,21 @@ public class NetConsole
                 }
                 break;
 
+            case "currentactivemaplabel":
+                var mapLabel = Utils.GetCurrentActiveMapLabel();
+                if (mapLabel != null)
+                {
+                    SendToClient(client, $"CurrentActiveMapLabel: {mapLabel}\n");
+                }
+                else
+                {
+                    SendToClient(client, "Failed to get current active map label\n");
+                }
+                break;
+
             default:
                 SendToClient(client, $"Unknown field: {field}\n");
-                SendToClient(client, "Available fields: playerposition\n");
+                SendToClient(client, "Available fields: PlayerPosition, CurrentActiveMapLabel\n");
                 break;
         }
     }
@@ -300,7 +312,7 @@ public class NetConsole
         if (args.Length == 0)
         {
             SendToClient(client, "Usage: set <field> <value...>\n");
-            SendToClient(client, "Available fields: playerposition <x> <y>\n");
+            SendToClient(client, "Available fields: PlayerPosition <x> <y>\n");
             return;
         }
 
@@ -311,13 +323,13 @@ public class NetConsole
             case "playerposition":
                 if (args.Length < 3)
                 {
-                    SendToClient(client, "Usage: set playerposition <x> <y>\n");
+                    SendToClient(client, "Usage: set PlayerPosition <x> <y>\n");
                     break;
                 }
 
                 if (!float.TryParse(args[1], out float x) || !float.TryParse(args[2], out float y))
                 {
-                    SendToClient(client, "Invalid coordinates. Usage: set playerposition <x> <y>\n");
+                    SendToClient(client, "Invalid coordinates. Usage: set PlayerPosition <x> <y>\n");
                     break;
                 }
 
