@@ -45,7 +45,7 @@ public class NetConsole
 
         try
         {
-            listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 40815);
+            listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 40814);
             listener.Start();
             isRunning = true;
 
@@ -267,7 +267,7 @@ public class NetConsole
         if (args.Length == 0)
         {
             SendToClient(client, "Usage: get <field>\n");
-            SendToClient(client, "Available fields: playerposition, currentactivemaplabel\n");
+            SendToClient(client, "Available fields: playerposition, currentactivemaplabel, kyoukoposition, kyoukomoving\n");
             return;
         }
 
@@ -299,9 +299,33 @@ public class NetConsole
                 }
                 break;
 
+            case "kyoukoposition":
+                var kyoukoPos = KyoukoManager.Instance.GetPosition();
+                if (kyoukoPos.HasValue)
+                {
+                    SendToClient(client, $"KyoukoPosition: ({kyoukoPos.Value.x}, {kyoukoPos.Value.y})\n");
+                }
+                else
+                {
+                    SendToClient(client, "Failed to get Kyouko position\n");
+                }
+                break;
+
+            case "kyoukomoving":
+                var kyoukoMoving = KyoukoManager.Instance.GetMoving();
+                if (kyoukoMoving.HasValue)
+                {
+                    SendToClient(client, $"KyoukoMoving: {kyoukoMoving.Value}\n");
+                }
+                else
+                {
+                    SendToClient(client, "Failed to get Kyouko moving status\n");
+                }
+                break;
+
             default:
                 SendToClient(client, $"Unknown field: {field}\n");
-                SendToClient(client, "Available fields: PlayerPosition, CurrentActiveMapLabel\n");
+                SendToClient(client, "Available fields: playerposition, currentactivemaplabel, kyoukoposition, kyoukomoving\n");
                 break;
         }
     }
@@ -312,7 +336,7 @@ public class NetConsole
         if (args.Length == 0)
         {
             SendToClient(client, "Usage: set <field> <value...>\n");
-            SendToClient(client, "Available fields: PlayerPosition <x> <y>\n");
+            SendToClient(client, "Available fields: playerposition <x> <y>, kyoukoposition <x> <y>, kyoukomoving <true|false>\n");
             return;
         }
 
@@ -323,13 +347,13 @@ public class NetConsole
             case "playerposition":
                 if (args.Length < 3)
                 {
-                    SendToClient(client, "Usage: set PlayerPosition <x> <y>\n");
+                    SendToClient(client, "Usage: set playerposition <x> <y>\n");
                     break;
                 }
 
                 if (!float.TryParse(args[1], out float x) || !float.TryParse(args[2], out float y))
                 {
-                    SendToClient(client, "Invalid coordinates. Usage: set PlayerPosition <x> <y>\n");
+                    SendToClient(client, "Invalid coordinates. Usage: set playerposition <x> <y>\n");
                     break;
                 }
 
@@ -337,17 +361,64 @@ public class NetConsole
                 if (success)
                 {
                     SendToClient(client, $"PlayerPosition set to ({x}, {y})\n");
-                    break;
                 }
                 else 
                 {
                     SendToClient(client, "Failed to set player position\n");
+                }
+                break;
+
+            case "kyoukoposition":
+                if (args.Length < 3)
+                {
+                    SendToClient(client, "Usage: set kyoukoposition <x> <y>\n");
                     break;
                 }
 
+                if (!float.TryParse(args[1], out float kyoukoX) || !float.TryParse(args[2], out float kyoukoY))
+                {
+                    SendToClient(client, "Invalid coordinates. Usage: set kyoukoposition <x> <y>\n");
+                    break;
+                }
+
+                var kyoukoPosSuccess = KyoukoManager.Instance.SetPosition(kyoukoX, kyoukoY);
+                if (kyoukoPosSuccess)
+                {
+                    SendToClient(client, $"KyoukoPosition set to ({kyoukoX}, {kyoukoY})\n");
+                }
+                else
+                {
+                    SendToClient(client, "Failed to set Kyouko position\n");
+                }
+                break;
+
+            case "kyoukomoving":
+                if (args.Length < 2)
+                {
+                    SendToClient(client, "Usage: set kyoukomoving <true|false>\n");
+                    break;
+                }
+
+                if (!bool.TryParse(args[1], out bool isMoving))
+                {
+                    SendToClient(client, "Invalid value. Usage: set kyoukomoving <true|false>\n");
+                    break;
+                }
+
+                var kyoukoMovingSuccess = KyoukoManager.Instance.SetMoving(isMoving);
+                if (kyoukoMovingSuccess)
+                {
+                    SendToClient(client, $"KyoukoMoving set to {isMoving}\n");
+                }
+                else
+                {
+                    SendToClient(client, "Failed to set Kyouko moving status\n");
+                }
+                break;
+
             default:
                 SendToClient(client, $"Unknown field: {field}\n");
-                SendToClient(client, "Available fields: playerposition <x> <y>\n");
+                SendToClient(client, "Available fields: playerposition <x> <y>, kyoukoposition <x> <y>, kyoukomoving <true|false>\n");
                 break;
         }
     }
