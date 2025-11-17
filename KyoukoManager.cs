@@ -142,4 +142,17 @@ public class KyoukoManager
         var component = GetCharacterComponent();
         return component?.gameObject;
     }
+
+    public void UpdateInputDirection(Vector2 inputDirection)
+    {
+        var characterUnit = GetCharacterUnit();
+        if (characterUnit == null)
+        {
+            Log.LogWarning("无法应用移动输入：CharacterControllerUnit 为空");
+            return;
+        }
+
+        characterUnit.UpdateInputVelocity(inputDirection);
+        Log.LogMessage($"已应用移动输入方向 ({inputDirection.x}, {inputDirection.y})");
+    }
 }

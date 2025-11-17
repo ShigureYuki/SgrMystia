@@ -298,6 +298,17 @@ public class MultiplayerManager
                 Log.LogInfo("收到 pong 响应");
                 break;
 
+            case "move":
+                // 格式: move <x> <y>
+                if (parts.Length >= 3)
+                {
+                    if (float.TryParse(parts[1], out float x) && float.TryParse(parts[2], out float y))
+                    {
+                        KyoukoManager.Instance.UpdateInputDirection(new UnityEngine.Vector2(x, y));
+                    }
+                }
+                break;
+
             default:
                 Log.LogWarning($"未知的对等命令: {command}");
                 break;
@@ -336,6 +347,16 @@ public class MultiplayerManager
         else
         {
             Log.LogWarning("无法发送 ping：未连接");
+        }
+    }
+
+    public void SendMoveData(UnityEngine.Vector2 inputDirection)
+    {
+        if (_isConnected)
+        {
+            // 格式: move <x> <y>
+            string message = $"move {inputDirection.x} {inputDirection.y}\n";
+            SendToPeer(message);
         }
     }
 
