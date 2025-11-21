@@ -25,6 +25,7 @@ public class Plugin : BasePlugin
 
     public override void Load()
     {
+        System.Console.OutputEncoding = System.Text.Encoding.UTF8;
         Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
 
         try {
@@ -42,23 +43,19 @@ public class Plugin : BasePlugin
             var postHandle = AccessTools.Method(typeof(BootstrapPatch), "Handle");
             harmony.Patch(originalHandle, postfix: new HarmonyMethod(postHandle));
 
-            harmony.PatchAll(typeof(CharacterInputPatch));
-            Log.LogInfo("Applied CharacterInputPatch");
-
-            harmony.PatchAll(typeof(DayScenePlayerInputPatch));
-            Log.LogInfo("Applied DayScenePlayerInputPatch");
-
-            harmony.PatchAll(typeof(RunTimeSchedulerPatch));
-            Log.LogInfo("Applied RunTimeSchedulerPatch");
-
-            harmony.PatchAll(typeof(DaySceneMapPatch));
-            Log.LogInfo("Applied DaySceneMapPatch");
-
-            harmony.PatchAll(typeof(CharacterControllerUnitPatch));
-            Log.LogInfo("Applied CharacterControllerUnitPatch");
-
-            harmony.PatchAll(typeof(CharacterControllerUnitInitializePatch));
-            Log.LogInfo("Applied CharacterControllerUnitInitializePatch");
+            var patchList = new Type[]
+            {
+                typeof(CharacterInputPatch),
+                typeof(DayScenePlayerInputPatch),
+                typeof(RunTimeSchedulerPatch),
+                typeof(DaySceneMapPatch),
+                typeof(CharacterControllerUnitInitializePatch)
+            };
+            foreach (var patch in patchList)
+            {
+                harmony.PatchAll(patch);
+                Log.LogInfo($"Applied {patch.Name}");
+            }
         }
         catch {
             Log.LogError("FAILED to Apply Hooks!");

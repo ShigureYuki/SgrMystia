@@ -6,6 +6,7 @@ using DayScene.Input;
 using GameData.RunTime.Common;
 using DayScene;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MetaMystia;
 
@@ -165,9 +166,19 @@ public class CharacterControllerUnitInitializePatch
 
     [HarmonyPatch("Initialize")]
     [HarmonyPrefix]
-    public static void Initialize_Prefix(ref bool shouldTurnOnCollider)
+    public static void Initialize_Prefix(CharacterControllerUnit __instance, ref bool shouldTurnOnCollider)
     {
-        Log.LogWarning("[CharacterControllerUnitInitializePatch] Forcing shouldTurnOnCollider to true");
-        shouldTurnOnCollider = true;
+        var kyoukoNames = new List<string>
+        {
+            "幽谷响子", // CHS
+            "幽谷響子", // CHT, JPN
+            "Kyouko Kasodani",  // ENG
+            "카소다니 쿄코", // KOR
+        };
+        if (kyoukoNames.Any(name => __instance.name.Equals(name)))
+        {
+            shouldTurnOnCollider = true;
+            Log.LogWarning($"[CharacterControllerUnitInitializePatch] found {__instance.name}, forcing shouldTurnOnCollider to true");
+        } 
     }
 }
