@@ -58,5 +58,7 @@ NightScene 篇
 
 ## 鸣谢
 
-- 原作：**上海アリス幻樂団 ZUN**
-- 二创：东方夜雀食堂 Touhou Mystia Izakaya 二色幽紫蝶
+- 第一原作：ZUN@上海アリス幻樂団
+- 第二原作：东方夜雀食堂 - Touhou Mystia's Izakaya
+
+特别感谢 DEYU 和 kk 的支持和帮助
