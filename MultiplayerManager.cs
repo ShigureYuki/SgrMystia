@@ -210,7 +210,7 @@ public class MultiplayerManager
             _peerHandlerThread.Start();
 
             SendHello();
-            SendMapLabel();
+            SendSync();
 
             return true;
         }
@@ -241,7 +241,7 @@ public class MultiplayerManager
         _peerHandlerThread.Start();
 
         SendHello();
-        SendMapLabel();
+        SendSync();
     }
 
     private void HandlePeerConnection(TcpClient client)
@@ -324,59 +324,22 @@ public class MultiplayerManager
                     Log.LogInfo($"Received hello from peer: {peerId}");
                 }
                 break;
-
-            case "move":
-                // format: move <vx> <vy> <px> <py>
-                if (parts.Length >= 5)
+            case "sync":
+                if (parts.Length < 7)
                 {
-                    if (float.TryParse(parts[1], out float vx) && float.TryParse(parts[2], out float vy) &&
-                        float.TryParse(parts[3], out float px) && float.TryParse(parts[4], out float py))
-                    {
-                        PluginManager.Instance.RunOnMainThread(() => 
-                            KyoukoManager.Instance.UpdateInputDirection(new Vector2(vx, vy), new Vector2(px, py)));
-                    }
+                    Log.LogWarning("Invalid sync message format");
+                    break;
                 }
-                break;
-            
-            case "sprint":
-                // format: sprint <false|true> <px> <py>
-                if (parts.Length >= 4)
+                string mapLabel = parts[1];
+                bool isSprinting = parts[2].ToLower() == "true";
+                float vx = float.Parse(parts[3]);
+                float vy = float.Parse(parts[4]);
+                float px = float.Parse(parts[5]);
+                float py = float.Parse(parts[6]);
+                PluginManager.Instance.RunOnMainThread(() =>
                 {
-                    if (bool.TryParse(parts[1], out bool isSprinting) &&
-                        float.TryParse(parts[2], out float px) && float.TryParse(parts[3], out float py))
-                    {
-                        PluginManager.Instance.RunOnMainThread(() => 
-                            KyoukoManager.Instance.UpdateSprintState(isSprinting, new Vector2(px, py)));
-                    }
-                }
-                break;
-
-            case "enter":
-                // format: enter <mapLabel> <px> <py>
-                if (parts.Length >= 4)
-                {
-                    string mapLabel = parts[1];
-                    float px = float.Parse(parts[2]);
-                    float py = float.Parse(parts[3]);
-                    Log.LogInfo($"Kyouko entered map: {mapLabel} at position ({px}, {py})");
-                    PluginManager.Instance.RunOnMainThread(() =>
-                    {
-                        try
-                        {
-                            KyoukoManager.Instance.EnterMap(mapLabel, new Vector2(px, py));
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.LogError($"Error entering map {mapLabel}: {ex.Message}");
-                            SendToPeer($"Error entering map {mapLabel}: {ex.Message}\n");
-                        }
-                    });
-                    // KyoukoManager.Instance.UpdateMapLabel(mapLabel);
-                    // GameData.RunTime.DaySceneUtility.RunTimeDayScene.MoveCharacter("Kyouko", mapLabel, new Vector2(px, py), 0, out var oldNPCData);
-                    // SendMoveData(MystiaManager.Instance.GetInputDirection());
-                    // Kyouko 不可见时不会维护其位置，需要同步一次位置数据
-                    // Mystia 在发送 enter 包时同样需要包含位置数据
-                }
+                    KyoukoManager.Instance.SyncFromPeer(mapLabel, isSprinting, new Vector2(vx, vy), new Vector2(px, py));
+                });
                 break;
             case "ready":
                 KyoukoManager.isReady = true;
@@ -526,7 +489,7 @@ public class MultiplayerManager
         }
     }
 
-    public void SendMapLabel()
+    public void SendSync()
     {
         if (!_isConnected)
         {
@@ -534,10 +497,13 @@ public class MultiplayerManager
         }
 
         var mapLabel = MystiaManager.MapLabel;
+        var isSprinting = MystiaManager.IsSprinting;
+        var inputDirection = MystiaManager.InputDirection;
         var position = MystiaManager.Instance.GetPosition();
-        // format: enter <mapLabel> <px> <py>
-        Log.LogInfo($"Sending map label to peer: {mapLabel}");
-        SendToPeer($"enter {mapLabel} {position.x} {position.y}\n");
+
+        string payload = $"sync {mapLabel} {isSprinting} {inputDirection.x} {inputDirection.y} {position.x} {position.y}\n";
+        Log.LogWarning("sending payload: " + payload);
+        SendToPeer(payload);
     }
 
     public void SendReady()

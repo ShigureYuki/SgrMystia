@@ -31,7 +31,8 @@ public class CharacterInputPatch
             var playerInputGenerator = MystiaManager.Instance.GetInputGenerator();
             if (playerInputGenerator != null && __instance == playerInputGenerator)
             {
-                MultiplayerManager.Instance.SendMoveData(inputDirection);
+                MystiaManager.InputDirection = inputDirection;
+                MultiplayerManager.Instance.SendSync();
             }
         }
         catch (System.Exception e)
@@ -51,7 +52,8 @@ public class DayScenePlayerInputPatch
     public static bool OnSprintPerformed_Prefix()
     {
         if (PluginManager.Console != null && PluginManager.Console.IsOpen) return false;
-        MultiplayerManager.Instance.SendSprintData(true);
+        MystiaManager.IsSprinting = true;
+        MultiplayerManager.Instance.SendSync();
         return true;
     }
 
@@ -59,7 +61,8 @@ public class DayScenePlayerInputPatch
     [HarmonyPrefix]
     public static void OnSprintCanceled_Prefix()
     {
-        MultiplayerManager.Instance.SendSprintData(false);
+        MystiaManager.IsSprinting = false;
+        MultiplayerManager.Instance.SendSync();
     }
 
     [HarmonyPatch(nameof(DayScenePlayerInputGenerator.TryInteract))]
@@ -78,11 +81,10 @@ public class RunTimeSchedulerPatch
 
     [HarmonyPatch(nameof(RunTimeScheduler.OnEnterDaySceneMap))]
     [HarmonyPostfix]
-    public static void OnEnterDaySceneMap_Postfix()
+    public static void OnEnterDaySceneMap_Postfix(string mapLabel)
     {
-        MystiaManager.Instance.UpdateMapLabel();
-        MultiplayerManager.Instance.SendMapLabel();
-        KyoukoManager.Instance.UpdateVisibility();
+        MystiaManager.MapLabel = mapLabel;
+        MultiplayerManager.Instance.SendSync();
     }
 }
 

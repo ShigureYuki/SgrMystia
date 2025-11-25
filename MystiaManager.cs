@@ -12,8 +12,10 @@ public class MystiaManager
     
     private DayScene.Input.DayScenePlayerInputGenerator _cachedInputGenerator;
     private static ManualLogSource Log => Plugin.Instance.Log;
-    public static string MapLabel { get; private set; }
-    public static int FixedUpdateCount { get; private set; } = 0;
+    public static string MapLabel { get; set; } = "";
+    public static bool IsSprinting { get; set; } = false;
+    public static Vector2 InputDirection { get; set; } = Vector2.zero;
+    public static int FixedUpdateCount { get; set; } = 0;
 
     public static bool isReady = false;
 
