@@ -12,7 +12,7 @@ public class KyoukoManager
     private static KyoukoManager _instance;
     private static readonly object _lock = new object();
     
-    private const string KYOUKO_ID = "Kyouko";
+    public const string KYOUKO_ID = "Kyouko";
     private static ManualLogSource Log => Plugin.Instance.Log;
 
     public static string MapLabel { get; private set; }
@@ -49,11 +49,16 @@ public class KyoukoManager
     public void OnFixedUpdate()
     {
 
-        if (!MultiplayerManager.Instance.IsConnected())
+        if (!MpManager.Instance.IsConnected)
         {
             return;
         }
 
+        var characterUnit = GetCharacterUnit();
+        if (characterUnit == null)
+        {
+            return;
+        }
         // 在每个 FixedUpdate 执行位置修正
         
         // if (positionOffset.magnitude > 0.001f)
@@ -66,7 +71,7 @@ public class KyoukoManager
         // 修正速度要保证在「一定时间内」完成位置修正
         // 这里使用较为取巧的方法，使用比较好实现的指数衰减模型（线性还要保存历史数据）
         currectVelocity = positionOffset / 0.5f / 5f;
-        positionOffset -= currectVelocity * Time.fixedDeltaTime * 5f * GetCharacterUnit().sprintMultiplier;
+        positionOffset -= currectVelocity * Time.fixedDeltaTime * 5f * characterUnit.sprintMultiplier;
 
         // 这样假设位置偏差为 3px, dt = 0.02s
         // currectVelocity = 3 / 0.5 / 5 = 1.2 px/s
@@ -88,18 +93,12 @@ public class KyoukoManager
             return;
         }
         SetMoving(true);
-        var characterUnit = GetCharacterUnit();
-        if (characterUnit == null)
-        {
-            Log.LogWarning($"{LOG_TAG} Failed to get CharacterControllerUnit for Kyouko in OnFixedUpdate");
-            return;
-        }
         characterUnit.UpdateInputVelocity(velocity);
     }
 
     public CharacterConditionComponent GetCharacterComponent()
     {
-        return DayScene.DaySceneMap.TryGetCharacter("Kyouko");
+        return DayScene.DaySceneMap.TryGetCharacter(KYOUKO_ID);
     }
 
     public CharacterControllerUnit GetCharacterUnit()
@@ -137,6 +136,23 @@ public class KyoukoManager
 
         return rb;
     }
+
+    public Vector2 GetPosition()
+    {
+        var rb = GetRigidbody2D();
+        return rb?.position ?? Vector2.zero;
+    }
+
+    public void MoveTo(string label, float x, float y)
+    {
+        if (MapLabel.Equals(label))
+        {
+            var arr = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<Vector2>(1);
+            arr[0] = new Vector2(x, y);
+            Common.SceneDirector.Instance.MoveCharacter(KYOUKO_ID, arr, 1.48f, new System.Action(() => {Log.LogMessage("MoveTo Called");}));
+        }
+    }
+
 
     public void SetMoving(bool isMoving)
     {

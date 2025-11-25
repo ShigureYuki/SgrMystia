@@ -31,7 +31,7 @@ public class CharacterInputPatch
             if (playerInputGenerator != null && __instance == playerInputGenerator)
             {
                 MystiaManager.InputDirection = inputDirection;
-                MultiplayerManager.Instance.SendSync();
+                MpManager.Instance.SendSync();
             }
         }
         catch (System.Exception e)
@@ -52,7 +52,7 @@ public class DayScenePlayerInputPatch
     {
         if (PluginManager.Console != null && PluginManager.Console.IsOpen) return false;
         MystiaManager.IsSprinting = true;
-        MultiplayerManager.Instance.SendSync();
+        MpManager.Instance.SendSync();
         return true;
     }
 
@@ -61,7 +61,7 @@ public class DayScenePlayerInputPatch
     public static void OnSprintCanceled_Prefix()
     {
         MystiaManager.IsSprinting = false;
-        MultiplayerManager.Instance.SendSync();
+        MpManager.Instance.SendSync();
     }
 
     [HarmonyPatch(nameof(DayScenePlayerInputGenerator.TryInteract))]
@@ -83,7 +83,7 @@ public class RunTimeSchedulerPatch
     public static void OnEnterDaySceneMap_Postfix(string mapLabel)
     {
         MystiaManager.MapLabel = mapLabel;
-        MultiplayerManager.Instance.SendSync();
+        MpManager.Instance.SendSync();
     }
 }
 
@@ -112,7 +112,7 @@ public class DaySceneMapPatch
 
             var persistentNPCKeys = new HashSet<string> { "Kyouko" };
 
-            if (persistentNPCKeys.Contains(npcKey) && MultiplayerManager.Instance.IsConnected())
+            if (persistentNPCKeys.Contains(npcKey) && MpManager.Instance.IsConnected)
             {
                 isNPCOnMap = true;
                 Log.LogMessage($"{LOG_TAG} Force visible: {npcKey}");
@@ -158,6 +158,24 @@ public class CharacterControllerUnitPatch
         {
             Log.LogError($"{LOG_TAG} Error in GetTargetMovePosition_Postfix: {e.Message}");
         }
+    }
+}
+
+[HarmonyPatch(typeof(SplashScene.SceneManager))]
+public class SceneManagerPatch
+{
+    [HarmonyPatch("EnableDebugCosole", MethodType.Getter)]
+    [HarmonyPostfix]
+    public static void EnableDebugCosole_Postfix(ref bool __result)
+    {
+        __result = true;
+    }
+
+    [HarmonyPatch("CurrentConsoleMode", MethodType.Getter)]
+    [HarmonyPostfix]
+    public static void CurrentConsoleMode_Postfix(ref GamePlatform.Systems.ConsoleMode __result)
+    {
+        __result = GamePlatform.Systems.ConsoleMode.Full;
     }
 }
 
@@ -211,7 +229,7 @@ public class DaySceneSceneManagerPatch
                 00->10, 01->11 为游戏原生触发
                     00->10: 需要跳过 OnDayOver 而显示「准备未完成」对话框
                     01->11: 需要先跳过 OnDayOver 后在显示「准备完成」对话框的回调中执行 OnDayOver
-                00->01, 10->11 为 MultiplayerManager 触发
+                00->01, 10->11 为 MpManager 触发
                     00->01: 正常更新状态，不触发 OnDayOver_Prefix 也不执行 OnDayOver
                     10->11: 需要先显示「准备完成」对话框再在其回调中执行 OnDayOver
         */
@@ -224,7 +242,7 @@ public class DaySceneSceneManagerPatch
         if (!MystiaManager.isReady && !KyoukoManager.isReady)
         {
             Log.LogInfo($"{LOG_TAG} Both Mystia and Kyouko are not ready -> Mystia is ready => show **not ready** dialog");
-            MultiplayerManager.Instance.SendReady();
+            MpManager.Instance.SendReady();
             Utils.ShowReadyDialog(false, () => MystiaManager.isReady = true);
             return false;
         }
@@ -233,7 +251,7 @@ public class DaySceneSceneManagerPatch
         if (!MystiaManager.isReady && KyoukoManager.isReady) 
         {
             Log.LogInfo($"{LOG_TAG} Mystia is not ready but Kyouko is ready -> both are ready => show **ready** dialog");
-            MultiplayerManager.Instance.SendReady();
+            MpManager.Instance.SendReady();
             Utils.ShowReadyDialog(true, () => 
             {
                 MystiaManager.isReady = true;
