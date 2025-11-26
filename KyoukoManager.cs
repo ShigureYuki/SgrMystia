@@ -245,13 +245,14 @@ public class KyoukoManager
         Log.LogDebug($"{LOG_TAG} SyncFromPeer, old MapLabel: {MapLabel}, new MapLabel: {mapLabel}, isSprinting: {isSprinting}, inputDirection: ({inputDirection.x}, {inputDirection.y}), position: ({position.x}, {position.y})");
         if (mapLabel != MapLabel)
         {
-            Log.LogDebug($"{LOG_TAG} Kyouko map changed from {MapLabel} to {mapLabel}, teleporting to new position");
+            Log.LogMessage($"{LOG_TAG} Kyouko map changed from {MapLabel} to {mapLabel}, teleporting to new position");
             MapLabel = mapLabel;
             GameData.RunTime.DaySceneUtility.RunTimeDayScene.MoveCharacter("Kyouko", mapLabel, position, 0, out var oldNPCData);
             UpdateInputDirection(inputDirection);
             UpdateSprintState(isSprinting);
+            MpManager.Instance.SendSync();
         }
-        else if(mapLabel == MystiaManager.MapLabel)
+        else 
         {
             Log.LogDebug($"{LOG_TAG} Kyouko is still in the same map {MapLabel}, updating position");
             UpdateInputDirection(inputDirection);

@@ -152,7 +152,7 @@ public class TcpServer
                         {
                             if (action is PingAction ping)
                             {
-                                Log.LogInfo($"[S] Received {action.Type}: { ping.Timestamp}");
+                                Log.LogInfo($"[S] Received {action.Type}: {ping.ClientTs}");
                             } 
                             else if (action is SyncAction sync)
                             {
@@ -225,6 +225,8 @@ public class TcpClientWrapper
     private Thread heartbeatThread;
     private bool running = false;
     private const int MaxRetryTimes = 1;
+    public int PingPacketId = 0;
+    private const int HeartbeatLoopInterval = 3000;
 
     public TcpClientWrapper(string host, int port)
     {
@@ -281,7 +283,7 @@ public class TcpClientWrapper
                     {
                         if (action is PongAction pong)
                         {
-                            Log.LogInfo($"[C] Received {action.Type}: {pong.Timestamp}");
+                            Log.LogInfo($"[C] Received {action.Type}: {pong.ServerTs}");
                         }
                         else if (action is SyncAction sync)
                         {
@@ -302,19 +304,23 @@ public class TcpClientWrapper
             MpManager.Instance.OnDisconnected();
             running = false;
             Thread.Sleep(2000);
-            Connect();
+            try
+            {
+                Connect();
+            }
+            catch (Exception ex)
+            {
+                Log.LogError($"[C] {ex.Message}: {ex.StackTrace}");
+            }
         }
     }
 
     private void HeartbeatLoop()
     {
-        while (true)
+        while (running)
         {
-            if (running)
-            {
-                MpManager.Instance.SendPing();
-            }
-            Thread.Sleep(2000);
+            MpManager.Instance.ClientSendPing();
+            Thread.Sleep(HeartbeatLoopInterval);
         }
     }
 
@@ -352,6 +358,7 @@ public enum ActionType : ushort
 {
     PING,
     PONG,
+    PANG,
     HELLO,
     SYNC,
     READY,
@@ -361,6 +368,7 @@ public enum ActionType : ushort
 [MemoryPackable]
 [MemoryPackUnion((ushort)ActionType.PING, typeof(PingAction))]
 [MemoryPackUnion((ushort)ActionType.PONG, typeof(PongAction))]
+[MemoryPackUnion((ushort)ActionType.PANG, typeof(PangAction))]
 [MemoryPackUnion((ushort)ActionType.HELLO, typeof(HelloAction))]
 [MemoryPackUnion((ushort)ActionType.SYNC, typeof(SyncAction))]
 [MemoryPackUnion((ushort)ActionType.READY, typeof(ReadyAction))]
@@ -386,21 +394,17 @@ public abstract partial class NetAction
 public partial class PingAction : NetAction
 {
     public override ActionType Type => ActionType.PING;
-    public long Timestamp { get; set; }
+    public long ClientTs { get; set; }
+    public int Id { get; set; }
     public override void OnReceived()
     {
-        MpManager.Instance.UpdateLatency(Timestamp);
-        MpManager.Instance.ResponsePong();
+        MpManager.Instance.ServerResponsePong(Id);
     }
-    public static NetPacket CreatePingPacket(long timestamp)
+    public static NetPacket CreatePingPacket(long timestamp, int id)
     {
         NetPacket packet = new NetPacket { };
-        packet.Actions.Add(new PingAction { Timestamp = timestamp });
+        packet.Actions.Add(new PingAction { ClientTs = timestamp, Id = id});
         return packet;
-    }
-    public static NetPacket CreatePingPacket()
-    {
-        return CreatePingPacket(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
     }
 }
 
@@ -408,15 +412,38 @@ public partial class PingAction : NetAction
 public partial class PongAction : NetAction
 {
     public override ActionType Type => ActionType.PONG;
-    public long Timestamp { get; set; }
+    public long ServerTs { get; set; }
+    public int Id { get; set; }
+
     public override void OnReceived()
     {
-        MpManager.Instance.UpdateLatency(Timestamp);
+        // Client update latency
+        MpManager.Instance.UpdateLatency(Id);
+        MpManager.Instance.ClientResponsePang(Id);
     }
-    public static NetPacket CreatePongPacket()
+    public static NetPacket CreatePongPacket(long ts, int id)
     {
         NetPacket packet = new NetPacket { };
-        packet.Actions.Add(new PongAction { Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+        packet.Actions.Add(new PongAction { ServerTs = ts, Id = id });
+        return packet;
+    }
+}
+
+[MemoryPackable]
+public partial class PangAction : NetAction
+{
+    public override ActionType Type => ActionType.PANG;
+    public long ClientTs { get; set; }
+    public int Id { get; set; }
+    public override void OnReceived()
+    {
+        // Server update latency
+        MpManager.Instance.UpdateLatency(Id);
+    }
+    public static NetPacket CreatePangPacket(long ts, int id)
+    {
+        NetPacket packet = new NetPacket { };
+        packet.Actions.Add(new PangAction { ClientTs = ts, Id = id});
         return packet;
     }
 }

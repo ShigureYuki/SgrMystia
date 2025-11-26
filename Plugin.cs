@@ -49,7 +49,8 @@ public class Plugin : BasePlugin
                 typeof(DayScenePlayerInputPatch),
                 typeof(RunTimeSchedulerPatch),
                 typeof(CharacterControllerUnitInitializePatch),
-                typeof(DaySceneSceneManagerPatch)
+                typeof(DaySceneSceneManagerPatch),
+                typeof(TestPatch)
             };
             foreach (var patch in patchList)
             {

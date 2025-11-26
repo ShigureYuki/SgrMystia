@@ -1,15 +1,8 @@
 using System;
-
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using BepInEx.Logging;
-using Il2CppMono;
-using UnityEngine;
-using UnityEngine.Rendering;
-
 
 namespace MetaMystia;
 
@@ -29,6 +22,8 @@ public class MpManager
     public string PeerAddress {get; set;}
     public string PeerId {get; set;} = "<Unknown>";
     public long Latency {get; private set;} = 0;
+    private System.Collections.Concurrent.ConcurrentDictionary<int, long> pingSendTimes = new();
+    public static long GetTimestampNow => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
     public static MpManager Instance
     {
@@ -112,7 +107,7 @@ public class MpManager
     {
         if (IsConnected)
         {
-            Log.LogWarning("Already connected to a peer. Please disconnect first.");
+            Log.LogWarning("[C] Already connected to a peer. Please disconnect first.");
             return false;
         }
 
@@ -122,16 +117,16 @@ public class MpManager
         }
         try
         {
-            Log.LogInfo($"Connecting to {peerIp}:{port}...");
+            Log.LogInfo($"[C] Connecting to {peerIp}:{port}...");
             client = new(peerIp, port);
             OnConnected(client.client);
-            Log.LogMessage($"Successfully connected to peer {peerIp}:{port}");
+            Log.LogMessage($"[C] Successfully connected to peer {peerIp}:{port}");
 
             return true;
         }
         catch (Exception e)
         {
-            Log.LogError($"Error connecting to peer: {e.Message}");
+            Log.LogError($"[C] Error connecting to peer: {e.Message}");
             return false;
         }
     }
@@ -145,7 +140,7 @@ public class MpManager
         SendHello();
         if (!IsHost)
         {
-            SendPing();
+            ClientSendPing();
         }
         SendSync();
     }
@@ -164,6 +159,11 @@ public class MpManager
 
     private void SendToPeer(NetPacket packet)
     {
+        SendToPeer(packet, IsHost);
+    }
+
+    private void SendToPeer(NetPacket packet, bool asHost)
+    {
         var actionType = packet.GetFirstAction().Type;
         if (!IsConnected)
         {
@@ -171,10 +171,9 @@ public class MpManager
             return;
         }
 
-        if (IsHost)
+        if (asHost)
         {
             Log.LogInfo($"[S] Sending {actionType}");
-
             TcpClientWrapper.Send(server.currentClient, packet);
         } 
         else
@@ -200,24 +199,40 @@ public class MpManager
         }
     }
 
-    // Note: Only Client automatically sends ping to server.
-    // When Server receives a ping, it will respond a pong to peer Client, 
-    // and calculate latency using the timestamp that ping brought.
-    public void SendPing()
+    /// <summary>
+    /// C -> Ping -> S
+    /// C <- Pong <- S   Client latency is calculated
+    /// C -> Pang -> S   Server latency is calculated
+    /// </summary>
+    public void ClientSendPing()
     {
-        SendToPeer(PingAction.CreatePingPacket());
+        if (client == null)
+        {
+            Log.LogInfo("client is null, will not send ping");
+            return;
+        }
+        var t = GetTimestampNow;
+        pingSendTimes[client.PingPacketId] = t;
+        SendToPeer(PingAction.CreatePingPacket(t, client.PingPacketId++), false);
     }
 
-    public void ResponsePong()
+    public void ServerResponsePong(int id)
     {
-        SendToPeer(PongAction.CreatePongPacket());
+        var t = GetTimestampNow;    
+        pingSendTimes[id] = t;
+        SendToPeer(PongAction.CreatePongPacket(t, id), true);
     }
 
-    // Client: using Pong from the Server to calculate latency
-    // Server: using Ping from the Client to calculate latency
-    public void UpdateLatency(long Timestamp)
+    public void ClientResponsePang(int id)
     {
-        Latency = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - Timestamp;
+        var t = GetTimestampNow;
+        SendToPeer(PangAction.CreatePangPacket(t, id), false);
+    }
+
+    public void UpdateLatency(int id)
+    {
+        if (!pingSendTimes.TryRemove(id, out long t)) return;
+        Latency = (GetTimestampNow - t) / 2;
     }
 
     public void SendHello()
@@ -278,6 +293,7 @@ public class MpManager
         {
             status.AppendLine($"Kyouko ID: {PeerId}");
             status.AppendLine($"Kyouko Address: {PeerAddress ?? "<Unknown>"}");
+            status.AppendLine($"Latency: {Latency} ms");
         }
 
         return status.ToString();
@@ -291,7 +307,7 @@ public class MpManager
         }
         if (IsConnected)
         {
-            return $"Multiplayer: Connected to {PeerId} ({PeerAddress}), ping: {Latency} ms";
+            return $"Multiplayer: [{(IsHost ? "S" : "C")}] Connected to {PeerId} ({PeerAddress}), ping: {Latency} ms";
         }
         else
         {

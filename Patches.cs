@@ -165,7 +165,7 @@ public class CharacterControllerUnitInitializePatch
         if (kyoukoNames.Any(name => __instance.name.Equals(name)))
         {
             shouldTurnOnCollider = true;
-            Log.LogWarning($"{LOG_TAG} found {__instance.name}, forcing shouldTurnOnCollider to true");
+            Log.LogMessage($"{LOG_TAG} found {__instance.name}, forcing shouldTurnOnCollider to true");
         } 
     }
 }
@@ -231,5 +231,18 @@ public class DaySceneSceneManagerPatch
 
         // 11: 回调中直接执行 OnDayOver
         return true;
+    }
+}
+
+[HarmonyPatch]
+public class TestPatch
+{
+    private static ManualLogSource Log => Plugin.Instance.Log;
+
+    [HarmonyPatch(typeof(GameData.RunTime.DaySceneUtility.RunTimeDayScene), nameof(GameData.RunTime.DaySceneUtility.RunTimeDayScene.MoveCharacter))]
+    [HarmonyPostfix]
+    public static void TestMVC()
+    {
+        Log.LogMessage("MoveCharacter called!");
     }
 }

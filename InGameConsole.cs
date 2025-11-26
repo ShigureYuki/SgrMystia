@@ -45,7 +45,7 @@ namespace MetaMystia
             if (inputGenerator != null)
             {
                 inputGenerator.enabled = !IsOpen;
-                PluginLog.LogMessage($"Console: InputGenerator enabled = {inputGenerator.enabled}");
+                PluginLog.LogDebug($"Console: InputGenerator enabled = {inputGenerator.enabled}");
             }
             else
             {
@@ -66,7 +66,7 @@ namespace MetaMystia
                     UniversalGameManager.CloseInputBlockerMenu();
                 }
                 
-                PluginLog.LogMessage($"Console: UniversalGameManager input availability set to {!IsOpen}");
+                PluginLog.LogDebug($"Console: UniversalGameManager input availability set to {!IsOpen}");
             }
             catch (System.Exception e)
             {
@@ -80,7 +80,7 @@ namespace MetaMystia
             if (eventSystem != null)
             {
                 eventSystem.sendNavigationEvents = !IsOpen;
-                PluginLog.LogMessage($"Console: EventSystem sendNavigationEvents = {eventSystem.sendNavigationEvents}");
+                PluginLog.LogDebug($"Console: EventSystem sendNavigationEvents = {eventSystem.sendNavigationEvents}");
             }
         }
 
@@ -419,9 +419,13 @@ namespace MetaMystia
                     {
                         Log("Error: Not connected to peer");
                     }
+                    else if (MpManager.Instance.IsHost)
+                    {
+                        Log("Error: You are host, cannot ping client");
+                    }
                     else
                     {
-                        MpManager.Instance.SendPing();
+                        MpManager.Instance.ClientSendPing();
                         Log("Ping sent");
                     }
                     break;
@@ -492,10 +496,10 @@ namespace MetaMystia
                         Log("Disconnected");
                     }
                     break; 
-                case "message":
+                case "msg":
                     if (args.Length < 2)
                     {
-                        Log("Usage: mp message <text>");
+                        Log("Usage: mp msg <text>");
                         break;
                     }
                     string text = args[1];
@@ -511,7 +515,7 @@ namespace MetaMystia
                     break; 
                 default:
                     Log($"Unknown subcommand: {subcommand}");
-                    Log("Available subcommands: start, stop, restart, status, ping, id, connect, disconnect");
+                    Log("Available subcommands: start, stop, restart, status, ping, id, connect, disconnect, msg");
                     break;
             }
         }
