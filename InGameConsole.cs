@@ -414,21 +414,6 @@ namespace MetaMystia
                 case "status":
                     Log(MpManager.Instance.GetStatus());
                     break;
-                case "ping":
-                    if (!MpManager.Instance.IsConnected)
-                    {
-                        Log("Error: Not connected to peer");
-                    }
-                    else if (MpManager.Instance.IsHost)
-                    {
-                        Log("Error: You are host, cannot ping client");
-                    }
-                    else
-                    {
-                        MpManager.Instance.ClientSendPing();
-                        Log("Ping sent");
-                    }
-                    break;
                 case "id":
                     if (args.Length < 2)
                     {

@@ -24,6 +24,7 @@ public class MpManager
     public long Latency {get; private set;} = 0;
     private System.Collections.Concurrent.ConcurrentDictionary<int, long> pingSendTimes = new();
     public static long GetTimestampNow => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    private int _pingId = 0;
 
     public static MpManager Instance
     {
@@ -138,10 +139,6 @@ public class MpManager
         Instance.IsConnected = true;
         Instance.IsHost = IsHost;
         SendHello();
-        if (!IsHost)
-        {
-            ClientSendPing();
-        }
         SendSync();
     }
 
@@ -174,7 +171,7 @@ public class MpManager
         if (asHost)
         {
             Log.LogInfo($"[S] Sending {actionType}");
-            TcpClientWrapper.Send(server.currentClient, packet);
+            server.Send(packet);
         } 
         else
         {
@@ -200,33 +197,22 @@ public class MpManager
     }
 
     /// <summary>
-    /// C -> Ping -> S
-    /// C <- Pong <- S   Client latency is calculated
-    /// C -> Pang -> S   Server latency is calculated
+    /// Peer A -> Ping -> Peer B
+    /// Peer A <- Pong <- Peer B
+    /// Peer A calculates latency
     /// </summary>
-    public void ClientSendPing()
+    public void SendPing()
     {
-        if (client == null)
-        {
-            Log.LogInfo("client is null, will not send ping");
-            return;
-        }
+        if (!IsConnected) return;
         var t = GetTimestampNow;
-        pingSendTimes[client.PingPacketId] = t;
-        SendToPeer(PingAction.CreatePingPacket(t, client.PingPacketId++), false);
-    }
-
-    public void ServerResponsePong(int id)
-    {
-        var t = GetTimestampNow;    
+        int id = _pingId++;
         pingSendTimes[id] = t;
-        SendToPeer(PongAction.CreatePongPacket(t, id), true);
+        SendToPeer(PingAction.CreatePingPacket(id));
     }
 
-    public void ClientResponsePang(int id)
+    public void SendPong(int id)
     {
-        var t = GetTimestampNow;
-        SendToPeer(PangAction.CreatePangPacket(t, id), false);
+        SendToPeer(PongAction.CreatePongPacket(id));
     }
 
     public void UpdateLatency(int id)

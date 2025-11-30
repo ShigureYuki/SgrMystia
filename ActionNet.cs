@@ -1,4 +1,5 @@
 using MemoryPack;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -95,6 +96,8 @@ public class TcpServer
     public TcpClient currentClient {get; private set;} = null;
     private object lockObj = new object();
     private bool running = false;
+    private Thread heartbeatThread;
+    private const int HeartbeatLoopInterval = 3000;
 
     public TcpServer(int port)
     {
@@ -131,6 +134,9 @@ public class TcpServer
 
         Log.LogMessage("[S] Client connected.");
 
+        heartbeatThread = new Thread(HeartbeatLoop) { IsBackground = true };
+        heartbeatThread.Start();
+
         var buffer = new PacketBuffer();
         var stream = client.GetStream();
 
@@ -150,18 +156,6 @@ public class TcpServer
                     {
                         foreach (var action in p.Actions)
                         {
-                            if (action is PingAction ping)
-                            {
-                                Log.LogInfo($"[S] Received {action.Type}: {ping.ClientTs}");
-                            } 
-                            else if (action is SyncAction sync)
-                            {
-                                Log.LogInfo($"[S] Received {action.Type}: {sync.ToString()}");
-                            }
-                            else
-                            {
-                                Log.LogInfo($"[S] Received {action.Type}");
-                            }
                             MpManager.OnAction(action);
                         }
                     }
@@ -183,6 +177,15 @@ public class TcpServer
         if (running) listener.BeginAcceptTcpClient(AcceptCallback, null);
     }
 
+    private void HeartbeatLoop()
+    {
+        while (running && currentClient != null)
+        {
+            MpManager.Instance.SendPing();
+            Thread.Sleep(HeartbeatLoopInterval);
+        }
+    }
+
     // ===================== 主动断开当前客户端 =====================
     public void DisconnectClient()
     {
@@ -198,6 +201,23 @@ public class TcpServer
             else
             {
                 Log.LogMessage("[S] No client to disconnect.");
+            }
+        }
+    }
+
+    public void Send(NetPacket packet)
+    {
+        lock (lockObj)
+        {
+            if (currentClient == null || !running) return;
+            try
+            {
+                TcpClientWrapper.Send(currentClient, packet);
+            }
+            catch (Exception ex)
+            {
+                Log.LogWarning($"[S] Send failed: {ex.Message}");
+                DisconnectClient();
             }
         }
     }
@@ -225,8 +245,8 @@ public class TcpClientWrapper
     private Thread heartbeatThread;
     private bool running = false;
     private const int MaxRetryTimes = 1;
-    public int PingPacketId = 0;
     private const int HeartbeatLoopInterval = 3000;
+    private object sendLock = new object();
 
     public TcpClientWrapper(string host, int port)
     {
@@ -281,19 +301,7 @@ public class TcpClientWrapper
                 {
                     foreach (var action in p.Actions)
                     {
-                        if (action is PongAction pong)
-                        {
-                            Log.LogInfo($"[C] Received {action.Type}: {pong.ServerTs}");
-                        }
-                        else if (action is SyncAction sync)
-                        {
-                            Log.LogInfo($"[C] Received {action.Type}: {sync.ToString()}");
-                        }
-                        else
-                        {
-                            Log.LogInfo($"[C] Received {action.Type}");
-                        }
-                        MpManager.OnAction(action);
+                        action.OnReceived();
                     }
                 }
             }
@@ -319,7 +327,7 @@ public class TcpClientWrapper
     {
         while (running)
         {
-            MpManager.Instance.ClientSendPing();
+            MpManager.Instance.SendPing();
             Thread.Sleep(HeartbeatLoopInterval);
         }
     }
@@ -327,14 +335,17 @@ public class TcpClientWrapper
     public void Send(NetPacket packet)
     {
         if (!running) return;
-        try
+        lock (sendLock)
         {
-            byte[] data = packet.ToBytesWithLength();
-            stream.Write(data, 0, data.Length);
-        }
-        catch
-        {
-            running = false;
+            try
+            {
+                byte[] data = packet.ToBytesWithLength();
+                stream.Write(data, 0, data.Length);
+            }
+            catch
+            {
+                running = false;
+            }
         }
     }
 
@@ -358,7 +369,6 @@ public enum ActionType : ushort
 {
     PING,
     PONG,
-    PANG,
     HELLO,
     SYNC,
     READY,
@@ -368,7 +378,6 @@ public enum ActionType : ushort
 [MemoryPackable]
 [MemoryPackUnion((ushort)ActionType.PING, typeof(PingAction))]
 [MemoryPackUnion((ushort)ActionType.PONG, typeof(PongAction))]
-[MemoryPackUnion((ushort)ActionType.PANG, typeof(PangAction))]
 [MemoryPackUnion((ushort)ActionType.HELLO, typeof(HelloAction))]
 [MemoryPackUnion((ushort)ActionType.SYNC, typeof(SyncAction))]
 [MemoryPackUnion((ushort)ActionType.READY, typeof(ReadyAction))]
@@ -394,16 +403,16 @@ public abstract partial class NetAction
 public partial class PingAction : NetAction
 {
     public override ActionType Type => ActionType.PING;
-    public long ClientTs { get; set; }
     public int Id { get; set; }
     public override void OnReceived()
     {
-        MpManager.Instance.ServerResponsePong(Id);
+        Plugin.Instance.Log.LogInfo($"Received PING: {Id}");
+        MpManager.Instance.SendPong(Id);
     }
-    public static NetPacket CreatePingPacket(long timestamp, int id)
+    public static NetPacket CreatePingPacket(int id)
     {
         NetPacket packet = new NetPacket { };
-        packet.Actions.Add(new PingAction { ClientTs = timestamp, Id = id});
+        packet.Actions.Add(new PingAction { Id = id});
         return packet;
     }
 }
@@ -412,41 +421,21 @@ public partial class PingAction : NetAction
 public partial class PongAction : NetAction
 {
     public override ActionType Type => ActionType.PONG;
-    public long ServerTs { get; set; }
     public int Id { get; set; }
 
     public override void OnReceived()
     {
-        // Client update latency
+        Plugin.Instance.Log.LogInfo($"Received PONG: {Id}");
         MpManager.Instance.UpdateLatency(Id);
-        MpManager.Instance.ClientResponsePang(Id);
     }
-    public static NetPacket CreatePongPacket(long ts, int id)
+    public static NetPacket CreatePongPacket(int id)
     {
         NetPacket packet = new NetPacket { };
-        packet.Actions.Add(new PongAction { ServerTs = ts, Id = id });
+        packet.Actions.Add(new PongAction { Id = id });
         return packet;
     }
 }
 
-[MemoryPackable]
-public partial class PangAction : NetAction
-{
-    public override ActionType Type => ActionType.PANG;
-    public long ClientTs { get; set; }
-    public int Id { get; set; }
-    public override void OnReceived()
-    {
-        // Server update latency
-        MpManager.Instance.UpdateLatency(Id);
-    }
-    public static NetPacket CreatePangPacket(long ts, int id)
-    {
-        NetPacket packet = new NetPacket { };
-        packet.Actions.Add(new PangAction { ClientTs = ts, Id = id});
-        return packet;
-    }
-}
 
 [MemoryPackable]
 public partial class HelloAction : NetAction
@@ -455,6 +444,7 @@ public partial class HelloAction : NetAction
     public string PeerId { get; set; } = "";
     public override void OnReceived()
     {
+        Plugin.Instance.Log.LogInfo($"Received HELLO: {PeerId}");
         MpManager.Instance.PeerId = PeerId;
     }
 }
@@ -472,6 +462,7 @@ public partial class SyncAction : NetAction
     public string MapLabel {get; set; }
     public override void OnReceived()
     {
+        Plugin.Instance.Log.LogInfo($"Received SYNC: {this.ToString()}");
         PluginManager.Instance.RunOnMainThread(() =>
             KyoukoManager.Instance.SyncFromPeer(MapLabel, IsSprinting,
                 new UnityEngine.Vector2(Vx, Vy), new UnityEngine.Vector2(Px, Py)));
@@ -486,6 +477,7 @@ public partial class ReadyAction : NetAction
     public bool IsReady {get; set; }
     public override void OnReceived()
     {
+        Plugin.Instance.Log.LogInfo($"Received READY: {IsReady}");
         KyoukoManager.isReady = true;
         if (MystiaManager.isReady) // 10->11: 需要先显示「准备完成」对话框再在其回调中执行 OnDayOver
         {
@@ -510,6 +502,7 @@ public partial class MessageAction : NetAction
     public string Message {get; private set; }
     public override void OnReceived()
     {
+        Plugin.Instance.Log.LogInfo($"Received MESSAGE: {Message}");
         PluginManager.Console.AddPeerMessage(Message);
     }
     private static MessageAction CreateMsgAction(string msg)
