@@ -19,8 +19,8 @@ public class MultiplayerManager
     private static ManualLogSource Log => Plugin.Instance.Log;
 
     private const int TCP_PORT = 40815;
-    private string _playerId;
-    public string PlayerId {get; set { _playerId = value; Log.LogInfo($"Player ID set to: {value}");}} = System.Environment.MachineName;
+    private string _playerId = System.Environment.MachineName;
+    public string PlayerId { get => _playerId; set { _playerId = value; Log.LogInfo($"Player ID set to: {value}"); } }
     private string peerId = "<Unknown>";
     private TcpListener _tcpListener;
     private Thread _tcpListenerThread;

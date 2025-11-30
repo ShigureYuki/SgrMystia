@@ -12,8 +12,8 @@ public class MpManager
     private static readonly object _lock = new();
     private static ManualLogSource Log => Plugin.Instance.Log;
     private const int TCP_PORT = 40815;
-    private string _playerId;
-    public string PlayerId {get; set { _playerId = value; Log.LogInfo($"Player ID set to: {value}");}} = System.Environment.MachineName;
+    private string _playerId = System.Environment.MachineName;
+    public string PlayerId {get => _playerId; set { _playerId = value; Log.LogInfo($"Player ID set to: {value}");}}
     private TcpServer server = new(TCP_PORT);
     private TcpClientWrapper client = null;
     public bool IsHost {get; private set; } = false;
