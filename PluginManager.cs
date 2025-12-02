@@ -1,10 +1,10 @@
 using BepInEx.Logging;
 using UnityEngine;
-using UnityEngine.UI;
 using System;
 using Il2CppInterop.Runtime;
-using System.Linq;
 using System.Collections.Concurrent;
+using Common.UI;
+using Common.DialogUtility;
 
 namespace MetaMystia;
 public class PluginManager : MonoBehaviour
@@ -17,6 +17,9 @@ public class PluginManager : MonoBehaviour
     private string label = "MetaMystia loaded";
     private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
     private static readonly string LOG_TAG = "[PluginManager.cs]";
+    public static Common.UI.IzakayaSelectorPanel_New temp_instance = null;
+    public static bool temp_bool = false;
+    private static int count = 0;
 
     public PluginManager(IntPtr ptr) : base(ptr)
     {
@@ -67,7 +70,7 @@ public class PluginManager : MonoBehaviour
                 action();
                 Log.LogDebug($"{LOG_TAG} Successfully executed action on main thread");
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
                 Log.LogError($"{LOG_TAG} Error executing on main thread: {e}");
             }
@@ -75,9 +78,26 @@ public class PluginManager : MonoBehaviour
 
         if (Console != null) Console.Update();
 
+        if (Input.GetKeyDown(KeyCode.RightShift))
+        {
+            Log.LogInfo($"\n");
+        }
         if (Input.GetKeyDown(KeyCode.Backslash)) {
             isTextVisible = !isTextVisible;
             Log.LogMessage($"{LOG_TAG} Toggled text visibility: " + isTextVisible);
+        }
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            // for test
+            var MapLabel = "DLC2_EarthSpiritsPalace";
+            if (IzakayaSelectorPanelPatch.cachedSpots.TryGetValue(MapLabel, out var spot))
+            {
+                IzakayaSelectorPanelPatch.instanceRef.OnGuideMapSpotSelected(spot);
+            }
+            var levelEnum = (Common.UI.IzakayaLevel)1;
+            var currentLevel = IzakayaSelectorPanelPatch.instanceRef.m_CurrentSelectedIzakayaLevel;
+            IzakayaSelectorPanelPatch.instanceRef.TryChangeIzakayaLevel(ref currentLevel, levelEnum);
+            IzakayaSelectorPanelPatch.instanceRef.m_CurrentSelectedIzakayaLevel = currentLevel;
         }
     }
 

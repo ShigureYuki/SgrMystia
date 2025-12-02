@@ -4,6 +4,7 @@ using UnityEngine;
 using Common.CharacterUtility;
 using DayScene.Interactables.Collections.ConditionComponents;
 using Il2CppSystem;
+using AsmResolver;
 
 namespace MetaMystia;
 
@@ -22,6 +23,10 @@ public class KyoukoManager
     private static Vector2 currectVelocity;
 
     public static bool isReady = false;
+
+    public static string IzakayaMapLabel = "";
+    public static int IzakayaLevel = 0;
+
     private static readonly string LOG_TAG = "[KyoukoManager.cs]";
 
     public static KyoukoManager Instance
@@ -229,6 +234,10 @@ public class KyoukoManager
         if (characterUnit == null)
         {
             Log.LogWarning($"{LOG_TAG} Failed to get CharacterControllerUnit for Kyouko");
+            return;
+        }
+        if (characterUnit.MoveSpeedMultiplier == speed)
+        {
             return;
         }
         characterUnit.MoveSpeedMultiplier = speed;

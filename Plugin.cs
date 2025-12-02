@@ -51,6 +51,7 @@ public class Plugin : BasePlugin
                 typeof(CharacterControllerUnitInitializePatch),
                 typeof(DaySceneSceneManagerPatch),
                 typeof(IzakayaSelectorPanelPatch),
+                // typeof(UniversalGameManagerPatch),
             };
             foreach (var patch in patchList)
             {

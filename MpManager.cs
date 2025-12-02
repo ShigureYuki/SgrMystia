@@ -300,4 +300,25 @@ public class MpManager
             return "Multiplayer: On (Not connected)";
         }
     }
+
+    public void SendSelectedIzakaya(string mapLabel, int level)
+    {
+        NetPacket packet = new() { };
+        packet.Actions.Add(new SelectAction
+        {
+            MapLabel = mapLabel,
+            Level = level
+        });
+        SendToPeer(packet);
+    }
+    public void SendConfirmedIzakaya(string mapLabel, int level)
+    {
+        NetPacket packet = new() { };
+        packet.Actions.Add(new ConfirmAction
+        {
+            MapLabel = mapLabel,
+            Level = level
+        });
+        SendToPeer(packet);
+    }
 }
