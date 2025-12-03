@@ -185,6 +185,7 @@ public class DaySceneSceneManagerPatch
     public static void Awake_Postfix()
     {
         PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.DayScene;
+        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to DayScene");
     }
 
     [HarmonyPatch(nameof(DayScene.SceneManager.OnDayOver))]
@@ -400,20 +401,21 @@ public class UniversalGameManagerPatch
 }
 
 
-// // PrepNightScene.SceneManager
-// [HarmonyPatch(typeof(PrepNightScene.SceneManager))]
-// public class PrepNightSceneManagerPatch
-// {
-//     private static ManualLogSource Log => Plugin.Instance.Log;
-//     private static readonly string LOG_TAG = "[PrepNightSceneManagerPatch]";
+// PrepNightScene.SceneManager
+[HarmonyPatch(typeof(PrepNightScene.SceneManager))]
+public class PrepNightSceneManagerPatch
+{
+    private static ManualLogSource Log => Plugin.Instance.Log;
+    private static readonly string LOG_TAG = "[PrepNightSceneManagerPatch]";
 
-//     [HarmonyPatch(nameof(PrepNightScene.SceneManager.Awake))]
-//     [HarmonyPostfix]
-//     public static void Awake_Postfix()
-//     {
-//         PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.PrepScene;
-//     }
-// }
+    [HarmonyPatch(nameof(PrepNightScene.SceneManager.Start))]
+    [HarmonyPostfix]
+    public static void Start_Postfix()
+    {
+        PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.PrepScene;
+        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to PrepScene");
+    }
+}
 
 
 
@@ -442,4 +444,49 @@ public class DaySceneMapProfilePatch
     //         Log.LogWarning($"MapNode: {node.mapName}");
     //     }
     // }
+}
+
+[HarmonyPatch(typeof(NightScene.SceneManager))]
+public class NightSceneSceneManagerPatch
+{
+    private static ManualLogSource Log => Plugin.Instance.Log;
+    private static readonly string LOG_TAG = "[NightSceneSceneManagerPatch]";
+
+    [HarmonyPatch(nameof(NightScene.SceneManager.Start))]
+    [HarmonyPostfix]
+    public static void Start_Postfix()
+    {
+        PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.NightScene;
+        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to NightScene");
+    }
+}
+
+[HarmonyPatch(typeof(MainScene.SceneManager))]
+public class MainSceneSceneManagerPatch
+{
+    private static ManualLogSource Log => Plugin.Instance.Log;
+    private static readonly string LOG_TAG = "[MainSceneSceneManagerPatch]";
+
+    [HarmonyPatch(nameof(MainScene.SceneManager.Awake))]
+    [HarmonyPostfix]
+    public static void Awake_Postfix()
+    {
+        PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.MainScene;
+        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to MainScene");
+    }
+}
+
+[HarmonyPatch(typeof(StaffScene.SceneManager))]
+public class StaffSceneSceneManagerPatch
+{
+    private static ManualLogSource Log => Plugin.Instance.Log;
+    private static readonly string LOG_TAG = "[StaffSceneSceneManagerPatch]";
+
+    [HarmonyPatch(nameof(StaffScene.SceneManager.Start))]
+    [HarmonyPostfix]
+    public static void Start_Postfix()
+    {
+        PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.StaffScene;
+        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to StaffScene");
+    }
 }

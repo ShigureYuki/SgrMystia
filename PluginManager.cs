@@ -27,7 +27,7 @@ public class PluginManager : MonoBehaviour
         NightScene,
         StaffScene
     }
-    public GameStage CurrentGameStage { get; set; } = GameStage.MainScene; // TODO: 需要完善
+    public GameStage CurrentGameStage { get; set; } = GameStage.MainScene;
 
     public PluginManager(IntPtr ptr) : base(ptr)
     {
