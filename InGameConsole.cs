@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Common.CharacterUtility;
 using Common.UI;
 using Il2CppInterop.Runtime;
-using DEYU.Utils;
 
 namespace MetaMystia
 {
@@ -228,10 +227,15 @@ namespace MetaMystia
             {
                 if (!string.IsNullOrEmpty(input))
                 {
-                    ExecuteCommand(input);
+                    ExecuteCommand(input, out bool closeConsole);
                     inputs.Add(input);
                     inputsCursor = 0;
                     input = "";
+                    if (closeConsole)
+                    {
+                        IsOpen = false;
+                        return;
+                    }
                 }
                 else
                 {
@@ -254,60 +258,68 @@ namespace MetaMystia
             scrollPosition.y = float.MaxValue;
         }
 
-        private void ExecuteCommand(string cmd)
+        private void ExecuteCommand(string cmd, out bool closeConsole)
         {
+            closeConsole = false;
             PluginLog.LogMessage($"Console Command: {cmd}");
             Log("> " + cmd);
 
-            string[] parts = cmd.Split(new[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = cmd.Split([' '], System.StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 0) return;
 
             string command = parts[0].ToLower();
             string[] args = new string[parts.Length - 1];
             System.Array.Copy(parts, 1, args, 0, args.Length);
 
-            switch (command)
+            bool isMessage = command[0] != '/';
+            if (isMessage)
             {
-                case "help":
-                    HelpCommand();
-                    break;
-                case "clear":
-                    logs.Clear();
-                    inputs.Clear();
-                    break;
-                case "echo":
-                    EchoCommand(args);
-                    break;
-                case "log":
-                    LogCommand(args);
-                    break;
-                case "get":
-                    GetCommand(args);
-                    break;
-                case "set":
-                    SetCommand(args);
-                    break;
-                case "mp":
-                    MultiplayerCommand(args);
-                    break;
-                case "call":
-                    CallCommand(args);
-                    break;
-                case "m":
-                    if (args.Length >= 1)
-                    {
-                        MessageCommand(args[0]);
-                    }
-                    break;
-                default:
-                    Log("Unknown command: " + command);
-                    break;
+                MessageCommand(cmd);
+                closeConsole = true;
             }
+            else
+            {
+                command = command[1..];
+                switch (command)
+                {
+                    case "help":
+                        HelpCommand();
+                        break;
+                    case "clear":
+                        logs.Clear();
+                        inputs.Clear();
+                        break;
+                    case "echo":
+                        EchoCommand(args);
+                        break;
+                    case "log":
+                        LogCommand(args);
+                        break;
+                    case "get":
+                        GetCommand(args);
+                        break;
+                    case "set":
+                        SetCommand(args);
+                        break;
+                    case "mp":
+                        MultiplayerCommand(args);
+                        break;
+                    case "call":
+                        CallCommand(args);
+                        break;
+                    default:
+                        Log("Unknown command: " + command);
+                        HelpCommand();
+                        break;
+                }
+
+            }
+
         }
 
         private void HelpCommand()
         {
-            Log("Available commands: help, clear, echo, log, get, set, mp");
+            Log("Available commands: /help, /clear, /echo, /log, /get, /set, /mp");
         }
 
         private void EchoCommand(string[] args)
@@ -397,7 +409,7 @@ namespace MetaMystia
         {
             if (args.Length == 0)
             {
-                Log("Usage: mp <subcommand> [args]");
+                Log("Usage: /mp <subcommand> [args]");
                 Log("Subcommands: start, stop, restart, status, ping, id, connect, disconnect");
                 return;
             }
@@ -488,17 +500,9 @@ namespace MetaMystia
                         Log("Disconnected");
                     }
                     break; 
-                case "msg":
-                    if (args.Length < 2)
-                    {
-                        Log("Usage: mp msg <text> (for short: m <text>)");
-                        break;
-                    }
-                    MessageCommand(args[1]);
-                    break; 
                 default:
                     Log($"Unknown subcommand: {subcommand}");
-                    Log("Available subcommands: start, stop, restart, status, ping, id, connect, disconnect, msg");
+                    Log("Available subcommands: start, stop, restart, status, ping, id, connect, disconnect");
                     break;
             }
         }
@@ -521,7 +525,7 @@ namespace MetaMystia
             var availableFields = "getmapsnpcs, movecharacter";
             if (args.Length == 0)
             {
-                Log("Usage: call <method> [args]");
+                Log("Usage: /call <method> [args]");
                 Log($"Available methods: {availableFields}");
                 return;
             }
