@@ -189,7 +189,6 @@ public class DaySceneSceneManagerPatch : PatchBase<DaySceneSceneManagerPatch>
         // 10 -> 11: Not here -> MultiplayerManager handles it
 
         // 11: 回调中直接执行 OnDayOver
-        KyoukoManager.enable = false; // 白天场景(马上)结束，关闭 KyoukoManager 的 OnFixedUpdate
         return true;
     }
 }
