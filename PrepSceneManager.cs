@@ -15,9 +15,9 @@ public class PrepSceneManager
 
     public static PrepTable localPrepTable = new PrepTable();
 
-    public static int MaxRecipes = 6;
-    public static int MaxBeverages = 6;
-    public static int MaxCookers = 6;
+    public static int MaxRecipes = 8;
+    public static int MaxBeverages = 8;
+    public static int MaxCookers = 8;
 
 
     // instance 
@@ -59,6 +59,9 @@ public class PrepSceneManager
 
         changed |= MergeDictionary(localPrepTable.CookersAdditions, remotePrepTable.CookersAdditions);
         changed |= MergeDictionary(localPrepTable.CookersDeletions, remotePrepTable.CookersDeletions);
+
+
+        UpdateMaxLimits();
 
         // Check limits and trim if necessary
         changed |= CheckAndTrimLimit(localPrepTable.RecipeAdditions, localPrepTable.RecipeDeletions, MaxRecipes);
@@ -121,5 +124,32 @@ public class PrepSceneManager
             }
         }
         return changed;
+    }
+
+    private static void UpdateMaxLimits()
+    {
+        switch (KyoukoManager.IzakayaLevel)
+        {
+            case 1:
+                MaxRecipes = 3;
+                MaxBeverages = 8;
+                MaxCookers = 8;
+                return;
+            case 2:
+                MaxRecipes = 6;
+                MaxBeverages = 8;
+                MaxCookers = 6;
+                return;
+            case 3:
+                MaxRecipes = 8;
+                MaxBeverages = 8;
+                MaxCookers = 8;
+                return;
+            default:
+                MaxRecipes = 8;
+                MaxBeverages = 8;
+                MaxCookers = 8;
+                return;
+        }
     }
 }
