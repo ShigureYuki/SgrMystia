@@ -225,9 +225,7 @@ public class MpManager
 
     public void SendHello()
     {
-        NetPacket packet = new() {  };
-        packet.Actions.Add(new HelloAction { PeerId = PlayerId });
-        SendToPeer(packet);
+        SendToPeer(NetPacket.Create(new HelloAction { PeerId = PlayerId }));
     }
 
     public void SendSync()
@@ -242,8 +240,7 @@ public class MpManager
         var isSprinting = MystiaManager.IsSprinting;
         var inputDirection = MystiaManager.InputDirection;
 
-        NetPacket packet = new() { };
-        packet.Actions.Add(new SyncAction
+        NetPacket packet = NetPacket.Create(new SyncAction
         {
             IsSprinting = isSprinting,
             Vx = inputDirection.x,
@@ -257,8 +254,7 @@ public class MpManager
 
     public void SendReady()
     {
-        NetPacket packet = new() { };
-        packet.Actions.Add(new ReadyAction
+        NetPacket packet = NetPacket.Create(new ReadyAction
         {
             IsReady = true
         });
@@ -306,8 +302,7 @@ public class MpManager
 
     public void SendSelectedIzakaya(string mapLabel, int level)
     {
-        NetPacket packet = new() { };
-        packet.Actions.Add(new SelectAction
+        NetPacket packet = NetPacket.Create(new SelectAction
         {
             MapLabel = mapLabel,
             Level = level
@@ -316,8 +311,7 @@ public class MpManager
     }
     public void SendConfirmedIzakaya(string mapLabel, int level)
     {
-        NetPacket packet = new() { };
-        packet.Actions.Add(new ConfirmAction
+        NetPacket packet = NetPacket.Create(new ConfirmAction
         {
             MapLabel = mapLabel,
             Level = level
@@ -325,12 +319,11 @@ public class MpManager
         SendToPeer(packet);
     }
 
-    public void SendPrep(PrepTable prepTable)
+    public void SendPrep(PrepAction.Table prepTable)
     {
-        NetPacket packet = new() { };
-        packet.Actions.Add(new PrepAction
+        NetPacket packet = NetPacket.Create(new PrepAction
         {
-            prepTable = prepTable
+            PrepTable = prepTable
         });
         SendToPeer(packet);
     }

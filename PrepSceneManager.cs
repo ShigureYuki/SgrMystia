@@ -1,53 +1,22 @@
 using System.Collections.Generic;
 using BepInEx.Logging;
-using UnityEngine;
 
 namespace MetaMystia;
 
-public class PrepSceneManager
+public static class PrepSceneManager
 {
-    private static PrepSceneManager _instance;
-    private static readonly object _lock = new object();
     private static ManualLogSource Log => Plugin.Instance.Log;
     private static readonly string LOG_TAG = "[PrepSceneManager.cs]";
 
-    private static long LastChangeTimeMs = 0;
+    // private static long LastChangeTimeMs = 0;
 
-    public static PrepTable localPrepTable = new PrepTable();
+    public static PrepAction.Table localPrepTable = new ();
 
     public static int MaxRecipes = 8;
     public static int MaxBeverages = 8;
     public static int MaxCookers = 8;
 
-
-    // instance 
-    public static PrepSceneManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                lock (_lock)
-                {
-                    if (_instance == null)
-                    {
-                        _instance = new PrepSceneManager();
-                    }
-                }
-            }
-            return _instance;
-        }
-    }
-
-    public enum PrepType
-    {
-        None = 0,
-        Recipe,
-        Beverage,
-        Cooker,
-    }
-
-    public static void MergeFromPeer(PrepTable remotePrepTable)
+    public static void MergeFromPeer(PrepAction.Table remotePrepTable)
     {
         bool changed = false;
 
@@ -265,28 +234,14 @@ public class PrepSceneManager
 
     public static void UpdateMaxLimits()
     {
-        switch (KyoukoManager.IzakayaLevel) 
+        MaxRecipes = 8;
+        MaxBeverages = 8;
+        MaxCookers = KyoukoManager.IzakayaLevel switch
         {
-            case 1:
-                MaxRecipes = 8;
-                MaxBeverages = 8;
-                MaxCookers = 3;
-                break;
-            case 2:
-                MaxRecipes = 8;
-                MaxBeverages = 8;
-                MaxCookers = 6;
-                break;
-            case 3:
-                MaxRecipes = 8;
-                MaxBeverages = 8;
-                MaxCookers = 8;
-                break;
-            default:
-                MaxRecipes = 8;
-                MaxBeverages = 8;
-                MaxCookers = 8;
-                break;
-        }
+            1 => 3,
+            2 => 6,
+            3 => 8,
+            _ => 8,
+        };
     }
 }
