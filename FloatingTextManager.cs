@@ -9,15 +9,10 @@ public static class FloatingTextHelper
     private static GameObject activeTextPeer;
     private static GameObject activeTextSelf;
 
-    private static void ShowFloatingText(DayScene.Interactables.Collections.ConditionComponents.CharacterConditionComponent comp, string text, float duration = 5f)
+    private static GameObject MakeFloatingText(Transform parent, string text)
     {
-        if (activeTextPeer != null)
-        {
-            UnityEngine.Object.Destroy(activeTextPeer);
-        }
         var go = new GameObject("FloatingText");
-
-        go.transform.SetParent(comp.transform, false);
+        go.transform.SetParent(parent, false);
         go.transform.localPosition = new Vector3(0, 1.6f, 0);
 
         var tmp = go.AddComponent<TextMeshPro>();
@@ -28,10 +23,18 @@ public static class FloatingTextHelper
 
         tmp.fontMaterial.EnableKeyword("OUTLINE_ON");      // 描边
         tmp.outlineColor = Color.black;                   
-        tmp.outlineWidth = 0.075f;                          // 描边粗细，范围 0~1
+        tmp.outlineWidth = 0.075f;                         // 描边粗细，范围 0~1
 
-        activeTextPeer = go;
-        comp.StartCoroutine(FadeAndDestroy(tmp, duration));
+        return go;  
+    }
+    private static void ShowFloatingText(DayScene.Interactables.Collections.ConditionComponents.CharacterConditionComponent comp, string text, float duration = 5f)
+    {
+        if (activeTextPeer != null)
+        {
+            UnityEngine.Object.Destroy(activeTextPeer);
+        }
+        activeTextPeer = MakeFloatingText(comp.transform, text);                        
+        comp.StartCoroutine(FadeAndDestroy(activeTextPeer.GetComponent<TextMeshPro>(), duration));
     }
 
     private static void ShowFloatingTextSelf(string text, float duration = 5f)
@@ -40,24 +43,10 @@ public static class FloatingTextHelper
         {
             UnityEngine.Object.Destroy(activeTextSelf);
         }
-        var go = new GameObject("FloatingText");
+        
         var character = MystiaManager.Instance.GetInputGenerator().Character;
-
-        go.transform.SetParent(character.transform, false);
-        go.transform.localPosition = new Vector3(0, 1.6f, 0);
-
-        var tmp = go.AddComponent<TextMeshPro>();
-        tmp.text = text;
-        tmp.fontSize = 5f;
-        tmp.alignment = TextAlignmentOptions.Center;
-        tmp.color = Color.white;
-
-        tmp.fontMaterial.EnableKeyword("OUTLINE_ON");      // 描边
-        tmp.outlineColor = Color.black;                   
-        tmp.outlineWidth = 0.075f;                          // 描边粗细，范围 0~1
-
-        activeTextSelf = go;
-        character.StartCoroutine(FadeAndDestroy(tmp, duration));
+        activeTextSelf = MakeFloatingText(character.transform, text);         
+        character.StartCoroutine(FadeAndDestroy(activeTextSelf.GetComponent<TextMeshPro>(), duration));
     }
 
     private static System.Collections.IEnumerator FadeAndDestroy(TextMeshPro tmp, float duration)
@@ -91,31 +80,11 @@ public static class FloatingTextHelper
 
     public static void ShowFloatingTextOnMainThread(DayScene.Interactables.Collections.ConditionComponents.CharacterConditionComponent component, string Message)
     {
-        PluginManager.Instance.RunOnMainThread(() =>
-        {
-            try
-            {
-                ShowFloatingText(component, Message);
-            }
-            catch (System.Exception ex)
-            {
-                Plugin.Instance.Log.LogError($"showing floating text fail, {ex.Message}, {ex.StackTrace}");
-            }
-        });
+        PluginManager.Instance.RunOnMainThread(() => ShowFloatingText(component, Message));
     }
 
     public static void ShowFloatingTextSelfOnMainThread(string Message)
     {
-        PluginManager.Instance.RunOnMainThread(() =>
-        {
-            try
-            {
-                ShowFloatingTextSelf(Message);
-            }
-            catch (System.Exception ex)
-            {
-                Plugin.Instance.Log.LogError($"showing floating text fail, {ex.Message}, {ex.StackTrace}");
-            }
-        });
+        PluginManager.Instance.RunOnMainThread(() => ShowFloatingTextSelf(Message));
     }
 }

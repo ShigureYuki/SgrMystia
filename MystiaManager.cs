@@ -15,7 +15,7 @@ public class MystiaManager
     public static bool IsSprinting { get; set; } = false;
     public static Vector2 InputDirection { get; set; } = Vector2.zero;
 
-    public static bool isReady = false;
+    public static bool IsReady = false;
     private static readonly string LOG_TAG = "[MystiaManager.cs]";
 
     public static MystiaManager Instance
@@ -26,10 +26,7 @@ public class MystiaManager
             {
                 lock (_lock)
                 {
-                    if (_instance == null)
-                    {
-                        _instance = new MystiaManager();
-                    }
+                    _instance ??= new MystiaManager();
                 }
             }
             return _instance;
@@ -85,11 +82,6 @@ public class MystiaManager
         return rb;
     }
 
-    public void ClearCache()
-    {
-        _cachedInputGenerator = null;
-    }
-
     public Vector2 GetPosition()
     {
         var rb = GetRigidbody2D();
@@ -99,49 +91,5 @@ public class MystiaManager
             return Vector2.zero;
         }
         return rb.position;
-    }
-
-    public bool GetMoving()
-    {
-        var characterUnit = GetCharacterUnit();
-        if (characterUnit == null)
-        {
-            Log.LogWarning($"{LOG_TAG} GetCharacterUnit returned null in GetMoving");
-            return false;
-        }
-        return characterUnit.IsMoving;
-    }
-
-    public float GetMoveSpeed()
-    {
-        var characterUnit = GetCharacterUnit();
-        if (characterUnit == null)
-        {
-            Log.LogWarning($"{LOG_TAG} GetCharacterUnit returned null in GetMoveSpeed");
-            return 1.0f;
-        }
-        return characterUnit.MoveSpeedMultiplier;
-    }
-
-    public Vector3 GetInputDirection()
-    {
-        var characterUnit = GetCharacterUnit();
-        if (characterUnit == null)
-        {
-            Log.LogWarning($"{LOG_TAG} GetCharacterUnit returned null in GetInputDirection");
-            return Vector3.zero;
-        }
-        return characterUnit.inputDirection;
-    }
-    
-    public void UpdateMapLabel()
-    {
-        var sceneManager = DayScene.SceneManager.Instance;
-        if (sceneManager == null)
-        {
-            Log.LogError($"{LOG_TAG} Cannot find DayScene.SceneManager instance");
-            return;
-        }
-        MapLabel = sceneManager.CurrentActiveMapLabel;;
     }
 }

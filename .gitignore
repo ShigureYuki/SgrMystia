@@ -3,5 +3,7 @@
 /obj
 /Assembly-CSharp/.vs/
 /Assembly-CSharp/obj/
+/Assembly-CSharp/Assembly-CSharp.csproj
 /DebugImpl/
 /MystiaReverse/
+DebugUtil.cs

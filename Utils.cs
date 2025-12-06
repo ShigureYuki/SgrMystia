@@ -1,5 +1,3 @@
-using BepInEx.Logging;
-
 namespace MetaMystia;
 
 public static class Utils
