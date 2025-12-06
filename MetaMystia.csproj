@@ -12,7 +12,7 @@
       https://nuget.bepinex.dev/v3/index.json
     </RestoreAdditionalProjectSources>
     <RootNamespace>MetaMystia</RootNamespace>
-    <GamePath>D:\SteamLibrary\steamapps\common\Touhou Mystia Izakaya</GamePath>
+    <!-- <GamePath>D:\SteamLibrary\steamapps\common\Touhou Mystia Izakaya</GamePath> -->
     <GamePath>E:\Steam\steamapps\common\Touhou Mystia Izakaya</GamePath>
     <OutputPath>$(GamePath)\BepInEx\plugins</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -73,8 +73,16 @@
       <HintPath>$(GamePath)\BepInEx\core\BepInEx.Unity.IL2CPP.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Il2CppSystem">
+      <HintPath>$(GamePath)\BepInEx\interop\Il2CppSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Il2Cppmscorlib">
       <HintPath>$(GamePath)\BepInEx\interop\Il2Cppmscorlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2CppSystem.Net.Http">
+      <HintPath>$(GamePath)\BepInEx\interop\Il2CppSystem.Net.Http.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
@@ -110,6 +118,14 @@
     </Reference>
     <Reference Include="DEYU.Singletons">
       <HintPath>$(GamePath)\BepInEx\interop\DEYU.Singletons.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DEYU.AssetHandleUtility">
+      <HintPath>$(GamePath)\BepInEx\interop\DEYU.AssetHandleUtility.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DEYU.AdpUISystemUniTaskExtension">
+      <HintPath>$(GamePath)\BepInEx\interop\DEYU.AdpUISystemUniTaskExtension.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Omt.GamePlatformAPI">

@@ -19,7 +19,7 @@ public class KyoukoManager
     private static Vector2 positionOffset;
     private static Vector2 currectVelocity;
 
-    public static bool isReady = false;
+    public static bool IsReady = false;
 
     public static string IzakayaMapLabel = "";
     public static int IzakayaLevel = 0;
@@ -34,10 +34,7 @@ public class KyoukoManager
             {
                 lock (_lock)
                 {
-                    if (_instance == null)
-                    {
-                        _instance = new KyoukoManager();
-                    }
+                    _instance ??= new KyoukoManager();
                 }
             }
             return _instance;
@@ -48,7 +45,7 @@ public class KyoukoManager
     {
     }
 
-    public void OnFixedUpdate()
+    public static void OnFixedUpdate()
     {
         if (!MpManager.Instance.IsConnected)
         {
@@ -138,24 +135,7 @@ public class KyoukoManager
         return rb;
     }
 
-    public Vector2 GetPosition()
-    {
-        var rb = GetRigidbody2D();
-        return rb?.position ?? Vector2.zero;
-    }
-
-    public void MoveTo(string label, float x, float y)
-    {
-        if (MapLabel.Equals(label))
-        {
-            var arr = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<Vector2>(1);
-            arr[0] = new Vector2(x, y);
-            Common.SceneDirector.Instance.MoveCharacter(KYOUKO_ID, arr, 1.48f, new System.Action(() => {Log.LogMessage("MoveTo Called");}));
-        }
-    }
-
-
-    public void SetMoving(bool isMoving)
+    public static void SetMoving(bool isMoving)
     {
         var characterUnit = GetCharacterUnit();
         if (characterUnit == null)
@@ -170,7 +150,7 @@ public class KyoukoManager
         return;
     }
 
-    public void UpdateInputDirection(Vector2 inputDirection)
+    public static void UpdateInputDirection(Vector2 inputDirection)
     {
         var rb = GetRigidbody2D();
         if (rb == null)
@@ -194,7 +174,7 @@ public class KyoukoManager
         Log.LogDebug($"{LOG_TAG} Update input direction: ({inputDirection.x}, {inputDirection.y})");
     }
 
-    public void UpdateSprintState(bool isSprinting)
+    public static void UpdateSprintState(bool isSprinting)
     {
         var characterUnit = GetCharacterUnit();
         if (characterUnit == null)
@@ -206,7 +186,7 @@ public class KyoukoManager
         Log.LogDebug($"{LOG_TAG} Update sprint state: {isSprinting}");
     }
 
-    public void UpdateOffsetPosition(Vector2 syncPosition)
+    public static void UpdateOffsetPosition(Vector2 syncPosition)
     {
         var characterUnit = GetCharacterUnit();
         if (characterUnit == null)
@@ -224,7 +204,7 @@ public class KyoukoManager
         }
 
     }
-    public void SetMoveSpeed(float speed)
+    public static void SetMoveSpeed(float speed)
     {
         var characterUnit = GetCharacterUnit();
         if (characterUnit == null)
@@ -239,7 +219,7 @@ public class KyoukoManager
         characterUnit.MoveSpeedMultiplier = speed;
         Log.LogDebug($"{LOG_TAG} Kyouko move speed set to {speed}");
     }
-    public void SyncFromPeer(string mapLabel, bool isSprinting, Vector2 inputDirection, Vector2 position)
+    public static void SyncFromPeer(string mapLabel, bool isSprinting, Vector2 inputDirection, Vector2 position)
     {
         /*
             MetaMiku 注

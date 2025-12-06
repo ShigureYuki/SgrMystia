@@ -4,28 +4,19 @@ using System;
 using Il2CppInterop.Runtime;
 using System.Collections.Concurrent;
 using PrepNightScene.UI;
+using Common.UI;
 
 namespace MetaMystia;
 public class PluginManager : MonoBehaviour
 {
     public static PluginManager Instance { get; private set; }
     public static ManualLogSource Log => Plugin.Instance.Log;
-    public static InGameConsole Console { get; private set; }
-
-    private bool isTextVisible = true;
-    private string label = "MetaMystia loaded";
-    private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
     private static readonly string LOG_TAG = "[PluginManager.cs]";
-
-    public enum GameStage
-    {
-        MainScene,
-        DayScene,
-        PrepScene,
-        NightScene,
-        StaffScene
-    }
-    public GameStage CurrentGameStage { get; set; } = GameStage.MainScene;
+    private readonly string label = $"{MyPluginInfo.PLUGIN_GUID} loaded";
+    public static InGameConsole Console { get; private set; }
+    private bool isTextVisible = true;
+    private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
+    public Scene CurrentGameScene { get; set; } = Scene.MainScene;
 
     public PluginManager(IntPtr ptr) : base(ptr)
     {
@@ -56,7 +47,7 @@ public class PluginManager : MonoBehaviour
 
     private void OnGUI()
     {
-        if (Console != null) Console.OnGUI();
+        Console?.OnGUI();
 
         if (isTextVisible)
         {
@@ -76,13 +67,13 @@ public class PluginManager : MonoBehaviour
                 action();
                 Log.LogDebug($"{LOG_TAG} Successfully executed action on main thread");
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                Log.LogError($"{LOG_TAG} Error executing on main thread: {e}");
+                Log.LogError($"{LOG_TAG} Error executing on main thread: {e.Message}\n{e.StackTrace}");
             }
         }
 
-        if (Console != null) Console.Update();
+        Console?.Update();
 
         if (Input.GetKeyDown(KeyCode.RightShift))
         {
@@ -132,10 +123,10 @@ public class PluginManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        switch (CurrentGameStage)
+        switch (CurrentGameScene)
         {
-            case GameStage.DayScene:
-                KyoukoManager.Instance.OnFixedUpdate();
+            case Scene.DayScene:
+                KyoukoManager.OnFixedUpdate();
                 break;
             default:
                 break;

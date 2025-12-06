@@ -6,7 +6,7 @@ using DayScene.Input;
 using GameData.RunTime.Common;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+using Common.UI;
 
 namespace MetaMystia;
 
@@ -24,13 +24,13 @@ public class CharacterInputPatch : PatchBase<CharacterInputPatch>
     [HarmonyPrefix]
     public static void UpdateInputDirection_Prefix(CharacterControllerInputGeneratorComponent __instance, ref Vector2 inputDirection)
     {
-        if (!MpManager.Instance.IsConnected || PluginManager.Instance.CurrentGameStage == PluginManager.GameStage.PrepScene)
+        if (!MpManager.Instance.IsConnected || PluginManager.Instance.CurrentGameScene == Scene.IzakayaPrepScene)
         {
             return;
         }
 
         // TODO: sync for night scene
-        if (PluginManager.Instance.CurrentGameStage == PluginManager.GameStage.NightScene)
+        if (PluginManager.Instance.CurrentGameScene == Scene.WorkScene)
         {
             return;
         }
@@ -82,7 +82,7 @@ public class DayScenePlayerInputPatch : PatchBase<DayScenePlayerInputPatch>
     public static bool TryInteract_Prefix()
     {
         if (PluginManager.Console != null && PluginManager.Console.IsOpen) return false;
-        if (MystiaManager.isReady) return false;
+        if (MystiaManager.IsReady) return false;
         return true;
     }
 }
@@ -129,7 +129,7 @@ public class DaySceneSceneManagerPatch : PatchBase<DaySceneSceneManagerPatch>
     [HarmonyPostfix]
     public static void Awake_Postfix()
     {
-        PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.DayScene;
+        PluginManager.Instance.CurrentGameScene = Scene.DayScene;
         Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to DayScene");
     }
 
@@ -164,22 +164,22 @@ public class DaySceneSceneManagerPatch : PatchBase<DaySceneSceneManagerPatch>
         Log.LogDebug($"{LOG_TAG} Day over detected");
 
         // 00 -> 10
-        if (!MystiaManager.isReady && !KyoukoManager.isReady)
+        if (!MystiaManager.IsReady && !KyoukoManager.IsReady)
         {
             Log.LogInfo($"{LOG_TAG} Both Mystia and Kyouko are not ready -> Mystia is ready => show **not ready** dialog");
             MpManager.Instance.SendReady();
-            DialogManager.ShowReadyDialog(false, () => MystiaManager.isReady = true);
+            DialogManager.ShowReadyDialog(false, () => MystiaManager.IsReady = true);
             return false;
         }
 
         // 01 -> 11
-        if (!MystiaManager.isReady && KyoukoManager.isReady) 
+        if (!MystiaManager.IsReady && KyoukoManager.IsReady) 
         {
             Log.LogInfo($"{LOG_TAG} Mystia is not ready but Kyouko is ready -> both are ready => show **ready** dialog");
             MpManager.Instance.SendReady();
             DialogManager.ShowReadyDialog(true, () => 
             {
-                MystiaManager.isReady = true;
+                MystiaManager.IsReady = true;
                 DayScene.SceneManager.Instance.OnDayOver();
             });
             return false;
@@ -372,15 +372,15 @@ public class SceneManagerPatch : PatchBase<SceneManagerPatch>
     [HarmonyPostfix]
     public static void NightScene_Start_Postfix()
     {
-        PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.NightScene;
-        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to NightScene");
+        PluginManager.Instance.CurrentGameScene = Scene.WorkScene;
+        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to WorkScene");
     }
 
     [HarmonyPatch(typeof(MainScene.SceneManager), nameof(MainScene.SceneManager.Awake))]
     [HarmonyPostfix]
     public static void MainScene_Awake_Postfix()
     {
-        PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.MainScene;
+        PluginManager.Instance.CurrentGameScene = Scene.MainScene;
         Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to MainScene");
     }
 
@@ -388,7 +388,7 @@ public class SceneManagerPatch : PatchBase<SceneManagerPatch>
     [HarmonyPostfix]
     public static void StaffScene_Start_Postfix()
     {
-        PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.StaffScene;
+        PluginManager.Instance.CurrentGameScene = Scene.StaffScene;
         Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to StaffScene");
     }
 
@@ -396,8 +396,8 @@ public class SceneManagerPatch : PatchBase<SceneManagerPatch>
     [HarmonyPostfix]
     public static void PrepNightScene_Start_Postfix()
     {
-        PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.PrepScene;
-        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to PrepScene");
+        PluginManager.Instance.CurrentGameScene = Scene.IzakayaPrepScene;
+        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to IzakayaPrepScene");
         Utils.DumpRecipeProfile();
         Utils.DumpSellableProfile();
     }
