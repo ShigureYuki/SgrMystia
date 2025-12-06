@@ -398,6 +398,8 @@ public class SceneManagerPatch : PatchBase<SceneManagerPatch>
     {
         PluginManager.Instance.CurrentGameStage = PluginManager.GameStage.PrepScene;
         Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to PrepScene");
+        Utils.DumpRecipeProfile();
+        Utils.DumpSellableProfile();
     }
 }
 
@@ -429,9 +431,22 @@ public class IzakayaConfigurePatch : PatchBase<IzakayaConfigurePatch>
 
     [HarmonyPatch(nameof(GameData.RunTime.NightSceneUtility.IzakayaConfigure.RegisterToCookers))]
     [HarmonyPrefix]
-    public static void RegisterToCookers_Prefix(int id)
+    public static void RegisterToCookers_Prefix(int id, int index, bool checkPlayerHaveCooker)
     {
-        Log.LogInfo($"{LOG_TAG} RegisterToCookers: {id}");
+        var slots = PrepSceneManager.GetLocalCookerSlots();
+        if (index < 0 || index >= slots.Length)
+        {
+            Log.LogWarning($"{LOG_TAG} RegisterToCookers out of range: id={id}, index={index}, checkPlayerHaveCooker={checkPlayerHaveCooker}");
+            return;
+        }
+
+        long timestamp = MpManager.GetSynchronizedTimestampNow;
+        slots[index].Id = id;
+        slots[index].Timestamp = timestamp;
+
+        Log.LogInfo($"{LOG_TAG} RegisterToCookers: id={id}, index={index}, ts={timestamp}, checkPlayerHaveCooker={checkPlayerHaveCooker}");
+
+        MpManager.Instance.SendPrep(PrepSceneManager.localPrepTable);
     }
 
     [HarmonyPatch(nameof(GameData.RunTime.NightSceneUtility.IzakayaConfigure.LogoffFromDailyRecipes))]
@@ -456,7 +471,7 @@ public class IzakayaConfigurePatch : PatchBase<IzakayaConfigurePatch>
     [HarmonyPrefix]
     public static void LogOffFromCookers_Prefix(int index)
     {
-        Log.LogInfo($"{LOG_TAG} LogOffFromCookers: {index}");
+        Log.LogWarning($"{LOG_TAG} LogOffFromCookers: {index}");
     }
 }
 
@@ -474,4 +489,26 @@ public class IzakayaConfigPannelPatch : PatchBase<IzakayaConfigPannelPatch>
         Log.LogInfo($"{LOG_TAG} IzakayaConfigPannel OnPanelOpen called");
     }
 
+    [HarmonyPatch(nameof(PrepNightScene.UI.IzakayaConfigPannel.GoToSpecific))]
+    [HarmonyPostfix]
+    public static void IzakayaConfigPannel_GoToSpecific_Postfix()
+    {
+        if (MpManager.Instance.IsConnected == false)
+        {
+            Log.LogInfo($"{LOG_TAG} Not in multiplayer session, skipping patch");
+            return;
+        }
+
+        // MetaMiku 注:
+        //     游戏原生的 GoToSpecific 会变更玩家的活跃选项面板，即 菜谱/酒水/厨具 三选一
+        //     但是还会附带检查更新不合法的 厨具 选项
+        //     如果在多人模式中直接调用该方法，可能会导致 厨具 选项出现不同步的问题
+        //     因此这里做了一个补丁，强制在调用 GoToSpecific 之后再重新更新厨具选项
+        PluginManager.Instance.RunOnMainThread(() => 
+        {
+            PrepSceneManager.UpdateCookers();
+            PrepSceneManager.UpdateUI();
+        });
+        
+    }
 }

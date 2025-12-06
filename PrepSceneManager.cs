@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using BepInEx.Logging;
 using UnityEngine;
@@ -15,8 +16,8 @@ public class PrepSceneManager
 
     public static PrepTable localPrepTable = new PrepTable();
 
-    public static int MaxRecipes = 8;
-    public static int MaxBeverages = 8;
+    public static readonly int MaxRecipes = 8;
+    public static readonly int MaxBeverages = 8;
     public static int MaxCookers = 8;
 
 
@@ -57,15 +58,13 @@ public class PrepSceneManager
         changed |= MergeDictionary(localPrepTable.BeverageAdditions, remotePrepTable.BeverageAdditions);
         changed |= MergeDictionary(localPrepTable.BeverageDeletions, remotePrepTable.BeverageDeletions);
 
-        changed |= MergeDictionary(localPrepTable.CookersAdditions, remotePrepTable.CookersAdditions);
-        changed |= MergeDictionary(localPrepTable.CookersDeletions, remotePrepTable.CookersDeletions);
+        changed |= MergeCookers(remotePrepTable);
 
         UpdateMaxLimits();
 
         // Check limits and trim if necessary
         changed |= CheckAndTrimLimit(localPrepTable.RecipeAdditions, localPrepTable.RecipeDeletions, MaxRecipes);
         changed |= CheckAndTrimLimit(localPrepTable.BeverageAdditions, localPrepTable.BeverageDeletions, MaxBeverages);
-        changed |= CheckAndTrimLimit(localPrepTable.CookersAdditions, localPrepTable.CookersDeletions, MaxCookers);
 
         if (changed)
         {
@@ -74,6 +73,7 @@ public class PrepSceneManager
             {
                 UpdateRecipes();
                 UpdateBeverages();
+                UpdateCookers();
             });
             UpdateUI();
         }
@@ -130,6 +130,97 @@ public class PrepSceneManager
         return changed;
     }
 
+    private static bool MergeCookers(PrepTable remotePrepTable)
+    {
+        if (remotePrepTable == null)
+        {
+            return false;
+        }
+
+        var remoteSlots = NormalizeCookerSlots(remotePrepTable.Cookers);
+        var localSlots = EnsureLocalCookerSlots();
+
+        bool changed = false;
+        for (int i = 0; i < localSlots.Length; i++)
+        {
+            var remoteSlot = remoteSlots[i];
+            var localSlot = localSlots[i];
+
+            if (remoteSlot.Timestamp > localSlot.Timestamp ||
+                (remoteSlot.Timestamp == localSlot.Timestamp && remoteSlot.Id != localSlot.Id))
+            {
+                localSlot.Id = remoteSlot.Id;
+                localSlot.Timestamp = remoteSlot.Timestamp;
+                changed = true;
+            }
+        }
+
+        return changed;
+    }
+
+    internal static CookerSlot[] GetLocalCookerSlots()
+    {
+        return EnsureLocalCookerSlots();
+    }
+
+    private static CookerSlot[] EnsureLocalCookerSlots()
+    {
+        if (localPrepTable.Cookers == null)
+        {
+            localPrepTable.Cookers = CookerSlot.CreateDefaultArray();
+        }
+
+        var slots = localPrepTable.Cookers;
+        if (slots.Length != CookerSlot.SlotsLength)
+        {
+            var normalized = CookerSlot.CreateDefaultArray();
+            int limit = Math.Min(slots.Length, normalized.Length);
+            for (int i = 0; i < limit; i++)
+            {
+                if (slots[i] != null)
+                {
+                    normalized[i].Id = slots[i].Id;
+                    normalized[i].Timestamp = slots[i].Timestamp;
+                }
+            }
+
+            localPrepTable.Cookers = normalized;
+            slots = normalized;
+        }
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] == null)
+            {
+                slots[i] = new CookerSlot();
+            }
+        }
+
+        return slots;
+    }
+
+    private static CookerSlot[] NormalizeCookerSlots(CookerSlot[] source)
+    {
+        var normalized = CookerSlot.CreateDefaultArray();
+        if (source == null)
+        {
+            return normalized;
+        }
+
+        int limit = Math.Min(source.Length, normalized.Length);
+        for (int i = 0; i < limit; i++)
+        {
+            var slot = source[i];
+            if (slot != null)
+            {
+                normalized[i].Id = slot.Id;
+                normalized[i].Timestamp = slot.Timestamp;
+            }
+        }
+
+        return normalized;
+    }
+
     public static void UpdateRecipes()
     {
         var dailyRecipesList = GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.DailyRecipes;
@@ -140,7 +231,8 @@ public class PrepSceneManager
         }
 
         // Get all available recipes
-        var allRecipes = GameData.RunTime.Common.RunTimeStorage.GetAllRecipes();
+        // var allRecipes = GameData.RunTime.Common.RunTimeStorage.GetAllRecipes(); // 这个是拥有的而不是全部
+        var allRecipes = Utils.recipes;
         // Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GameData.Core.Collections.Recipe> 
         // GameData.RunTime.Common.RunTimeStorage.GetAllRecipes()
         if (allRecipes == null) return;
@@ -183,7 +275,7 @@ public class PrepSceneManager
             }
             else
             {
-                Log.LogWarning($"{LOG_TAG} Recipe with ID {kvp.Key} not found in RunTimeStorage.");
+                Log.LogWarning($"{LOG_TAG} Recipe with ID {kvp.Key} not found in Utils.");
             }
         }
         
@@ -201,16 +293,20 @@ public class PrepSceneManager
 
         // Get all available beverages
         // Returns Il2CppReferenceArray<KeyValuePair<Sellable, int>>
-        var allBeverages = GameData.RunTime.Common.RunTimeStorage.GetAllBeverages(); 
+        // var allBeverages = GameData.RunTime.Common.RunTimeStorage.GetAllBeverages(); // 这个是拥有的而不是全部
+        var allBeverages = Utils.sellables;
 
-        if (allBeverages == null) return;
+        if (allBeverages == null || allBeverages.Count == 0)
+        {
+            Log.LogWarning($"{LOG_TAG} Utils.sellables is empty; cannot update beverages.");
+            dailyBeveragesList.Clear();
+            return;
+        }
 
         // Create a lookup for beverages by ID
         var beverageLookup = new Dictionary<int, GameData.Core.Collections.Sellable>();
-        foreach (var kvp in allBeverages)
+        foreach (var sellable in allBeverages)
         {
-            // kvp is Il2CppSystem.Collections.Generic.KeyValuePair<Sellable, int>
-            var sellable = kvp.Key;
             if (sellable != null && !beverageLookup.ContainsKey(sellable.Id))
             {
                 beverageLookup[sellable.Id] = sellable;
@@ -245,12 +341,49 @@ public class PrepSceneManager
             }
             else
             {
-                Log.LogWarning($"{LOG_TAG} Beverage with ID {kvp.Key} not found in RunTimeStorage.");
+                Log.LogWarning($"{LOG_TAG} Beverage (Sellable) with ID {kvp.Key} not found in Utils.sellables.");
             }
         }
         
         Log.LogInfo($"{LOG_TAG} Updated DailyBeverages with {dailyBeveragesList.Count} items.");
     }
+    public static void UpdateCookers()
+    {
+        var cookerConfigure = GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.CookerConfigure;
+        if (cookerConfigure == null)
+        {
+            Log.LogError($"{LOG_TAG} CookerConfigure array is null!");
+            return;
+        }
+
+        var sourceSlots = EnsureLocalCookerSlots();
+
+        // int availableLength = Math.Min(sourceSlots.Length, cookerConfigure.Length);
+        // int usableLength = Math.Min(MaxCookers, availableLength);
+        int usableLength = 8;
+
+        for (int i = 0; i < usableLength; i++)
+        {
+            cookerConfigure[i] = sourceSlots[i].Id;
+        }
+
+        for (int i = usableLength; i < cookerConfigure.Length; i++)
+        {
+            cookerConfigure[i] = -1;
+        }
+
+        int activeCount = 0;
+        for (int i = 0; i < usableLength; i++)
+        {
+            if (cookerConfigure[i] >= 0)
+            {
+                activeCount++;
+            }
+        }
+
+        Log.LogInfo($"{LOG_TAG} Updated cookersList with {activeCount} active slots (limit {usableLength}).");
+    }
+
 
     public static void UpdateUI()
     {
@@ -268,24 +401,16 @@ public class PrepSceneManager
         switch (KyoukoManager.IzakayaLevel) 
         {
             case 1:
-                MaxRecipes = 8;
-                MaxBeverages = 8;
                 MaxCookers = 3;
                 break;
             case 2:
-                MaxRecipes = 8;
-                MaxBeverages = 8;
                 MaxCookers = 6;
                 break;
             case 3:
-                MaxRecipes = 8;
-                MaxBeverages = 8;
                 MaxCookers = 8;
                 break;
             default:
-                MaxRecipes = 8;
-                MaxBeverages = 8;
-                MaxCookers = 8;
+                MaxCookers = 3;
                 break;
         }
     }

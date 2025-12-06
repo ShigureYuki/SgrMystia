@@ -117,6 +117,11 @@ public class PluginManager : MonoBehaviour
         {
             IzakayaConfigPannelPatch.instanceRef.GoToSpecific(IzakayaConfigPannel.CurrentConfigType.Cooker);
         }
+        if (Input.GetKeyDown(KeyCode.F7))
+        {
+            var cookersList = GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.CookerConfigure;
+            Log.LogInfo($"{LOG_TAG} Current Cookers: " + string.Join(", ", cookersList));
+        }
     }
 
     public void RunOnMainThread(Action action)

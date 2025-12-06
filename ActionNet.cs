@@ -590,6 +590,34 @@ public partial class ConfirmAction : NetAction
 }
 
 [MemoryPackable]
+public partial class CookerSlot
+{
+    public const int SlotsLength = 8;
+
+    public int Id { get; set; } = -1;
+    public long Timestamp { get; set; } = 0;
+
+    public CookerSlot Clone()
+    {
+        return new CookerSlot
+        {
+            Id = Id,
+            Timestamp = Timestamp,
+        };
+    }
+
+    public static CookerSlot[] CreateDefaultArray()
+    {
+        var slots = new CookerSlot[SlotsLength];
+        for (int i = 0; i < slots.Length; i++)
+        {
+            slots[i] = new CookerSlot();
+        }
+        return slots;
+    }
+}
+
+[MemoryPackable]
 public partial class PrepTable
 {
     public Dictionary<int, long> RecipeAdditions { get; set; } = new Dictionary<int, long>();
@@ -598,8 +626,7 @@ public partial class PrepTable
     public Dictionary<int, long> BeverageAdditions { get; set; } = new Dictionary<int, long>();
     public Dictionary<int, long> BeverageDeletions { get; set; } = new Dictionary<int, long>();
 
-    public Dictionary<int, long> CookersAdditions { get; set; } = new Dictionary<int, long>();
-    public Dictionary<int, long> CookersDeletions { get; set; } = new Dictionary<int, long>();
+    public CookerSlot[] Cookers { get; set; } = CookerSlot.CreateDefaultArray();
 
 }
 
