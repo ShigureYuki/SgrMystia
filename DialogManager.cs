@@ -27,6 +27,18 @@ public static class DialogManager
         // TODO: 使用 json 或其他格式来定义对话内容，以便避免硬编码
         // TODO: i18n
 
+        if (dialogList == null)
+        {
+            UniversalGameManager.OpenDialogMenu(
+                null,
+                onFinishCallback: onFinishCallback,
+                overrideReplaceTextCallback: null,
+                previousPanelVisualMode: 0
+            );
+            return;
+        }
+
+
         if (ExampleDialog == null)
         {
             DumpExampleDialog();
