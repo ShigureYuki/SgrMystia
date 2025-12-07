@@ -47,7 +47,7 @@ DayScene 篇
 - [x] ping 显示
 - [x] 连接后立即同步位置
 - [ ] 禁用 Kyouko 交互
-- [ ] 禁用 OnDayOver 时 Mystia 的个人 Dialog
+- [x] 禁用 OnDayOver 时 Mystia 的个人 Dialog
 - [ ] 解决 Kyouko 无法上下坡的问题
 - [x] 禁用等待 Kyouko 状态下交互
 - [ ] 禁用等待 Kyouko 状态下切换地图

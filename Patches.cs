@@ -7,6 +7,7 @@ using GameData.RunTime.Common;
 using System.Collections.Generic;
 using System.Linq;
 using Common.UI;
+using Il2CppSystem;
 
 namespace MetaMystia;
 
@@ -332,17 +333,23 @@ public class UniversalGameManagerPatch : PatchBase<UniversalGameManagerPatch>
 {
     [HarmonyPatch(nameof(Common.UI.UniversalGameManager.OpenDialogMenu))]
     [HarmonyPrefix]
-    public static bool OnGuideMapInitialize_Prefix(ref GameData.Profile.DialogPackage dialogPackage, ref System.Action onFinishCallback)
+    public static bool OpenDialogMenu_Prefix(ref GameData.Profile.DialogPackage dialogPackage, ref System.Action onFinishCallback)
     {
-        // 该 hook 用于在 多人模式 中跳过原有 单人模式 下结束白天时的 OnTransitionToNight 对话
-        Log.LogWarning($"{LOG_TAG} OpenDialogMenu called with dialogPackage: {dialogPackage.name}");
-        if (MpManager.Instance.IsConnected && dialogPackage.name == "OnTransitionToNight")
+        // MetaMiku 注:
+        //     该 hook 用于在 多人模式 中跳过原有 单人模式 下结束白天时的 OnTransitionToNight 对话
+        //     直接执行 onFinishCallback?.Invoke() 会有异步问题，导致挂起
+        //     使用携带原有 onFinishCallback 回调的空对话包替代原有对话包实现
+        Log.LogInfo($"{LOG_TAG} OpenDialogMenu called with dialogPackage: {dialogPackage.name}");
+        if (!MpManager.Instance.IsConnected || dialogPackage.name != "OnTransitionToNight")
         {
-            Log.LogWarning($"{LOG_TAG} Skipping OnTransitionToNight dialog in multiplayer session");
-            onFinishCallback?.Invoke();
-            return false;
+            return true;
         }
-        return true;
+        
+        Log.LogInfo($"{LOG_TAG} In multiplayer session and dialogPackage is OnTransitionToNight -> show empty dialog instead");
+        var emptyDialog = new CustomDialogList();
+        emptyDialog.packageName = "EmptyPatch_OnTransitionToNight";
+        DialogManager.BuildAndShow(emptyDialog, onFinishCallback);
+        return false;
     }
 }
 

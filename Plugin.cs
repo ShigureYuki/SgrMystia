@@ -48,7 +48,7 @@ public class Plugin : BasePlugin
                 typeof(CharacterControllerUnitInitializePatch),
                 typeof(DaySceneSceneManagerPatch),
                 typeof(IzakayaSelectorPanelPatch),
-                // typeof(UniversalGameManagerPatch),
+                typeof(UniversalGameManagerPatch),
                 typeof(SceneManagerPatch),
                 typeof(DaySceneMapProfilePatch),
                 typeof(IzakayaConfigurePatch),
