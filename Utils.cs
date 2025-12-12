@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
 using BepInEx.Logging;
 using GameData.Core.Collections;
-using Il2CppInterop.Runtime;
-using UnityEngine;
 
 namespace MetaMystia;
 
@@ -11,9 +7,6 @@ public static class Utils
 {
     private static ManualLogSource Log => Plugin.Instance.Log;
     private static readonly string LOG_TAG = "[Utils.cs]";
-    public static List<Sellable> beverages = new List<Sellable>();
-    public static List<Sellable> sellables = new List<Sellable>();
-    public static List<Recipe> recipes = new List<Recipe>();
 
     public static string GetMapNameCN(string mapLabel)
     {
@@ -43,92 +36,13 @@ public static class Utils
             _ => mapLabel
         };
     }
-    
-    public static void DumpSellableProfile(bool forceRefresh = false)
+
+    public static void test()
     {
-        if (sellables.Count > 0 && !forceRefresh)
+        var Ingredients = GameData.CoreLanguage.Collections.DataBaseLanguage.Ingredients;
+        foreach (var kvp in Ingredients)
         {
-            Log.LogInfo($"{LOG_TAG} SellableProfile already dumped, skipping.");
-            return;
-        }
-
-        try
-        {
-            var sellableProfileType = Il2CppType.Of<GameData.Profile.SellableProfile>();
-            var foundAssets = Resources.FindObjectsOfTypeAll(sellableProfileType);
-
-            if (foundAssets == null || foundAssets.Length == 0)
-            {
-                Log.LogWarning($"{LOG_TAG} No SellableProfile assets found in memory.");
-                return;
-            }
-
-            Log.LogInfo($"{LOG_TAG} Found {foundAssets.Length} SellableProfile asset(s).");
-
-            for (var assetIndex = 0; assetIndex < foundAssets.Length; assetIndex++)
-            {
-                var sellableProfile = foundAssets[assetIndex].TryCast<GameData.Profile.SellableProfile>();
-                if (sellableProfile == null)
-                {
-                    Log.LogWarning($"{LOG_TAG} Object at index {assetIndex} could not be cast to SellableProfile.");
-                    continue;
-                }
-                Log.LogInfo($"{LOG_TAG} Dumping contents of SellableProfile asset at index {assetIndex}:");
-                foreach (var sellable in sellableProfile.sellables)
-                {
-                    sellables.Add(sellable);
-                }
-            }
-
-        }
-        catch (Exception e)
-        {
-            Log.LogError($"{LOG_TAG} Failed to dump SellableProfile contents: {e.Message}\n{e.StackTrace}");
-        }
-    }
-    public static void DumpRecipeProfile(bool forceRefresh = false)
-    {
-        if (recipes.Count > 0 && !forceRefresh)
-        {
-            Log.LogInfo($"{LOG_TAG} RecipeProfile already dumped, skipping.");
-            return;
-        }
-
-        recipes.Clear();
-
-        try
-        {
-            var recipeProfileType = Il2CppType.Of<GameData.Profile.RecipeProfile>();
-            var foundAssets = Resources.FindObjectsOfTypeAll(recipeProfileType);
-
-            if (foundAssets == null || foundAssets.Length == 0)
-            {
-                Log.LogWarning($"{LOG_TAG} No RecipeProfile assets found in memory.");
-                return;
-            }
-
-            Log.LogInfo($"{LOG_TAG} Found {foundAssets.Length} RecipeProfile asset(s).");
-
-            for (var assetIndex = 0; assetIndex < foundAssets.Length; assetIndex++)
-            {
-                var recipeProfile = foundAssets[assetIndex].TryCast<GameData.Profile.RecipeProfile>();
-                if (recipeProfile == null)
-                {
-                    Log.LogWarning($"{LOG_TAG} Object at index {assetIndex} could not be cast to RecipeProfile.");
-                    continue;
-                }
-                Log.LogInfo($"{LOG_TAG} Dumping contents of RecipeProfile asset at index {assetIndex}:");
-                foreach (var recipe in recipeProfile.recipes)
-                {
-                    recipes.Add(recipe);
-                    Log.LogInfo($"{LOG_TAG} {recipe.id}");
-                }
-            }
-
-        }
-        catch (Exception e)
-        {
-            Log.LogError($"{LOG_TAG} Failed to dump SellableProfile contents: {e.Message}\n{e.StackTrace}");
+            Log.LogInfo($"{LOG_TAG} Ingredient ID: {kvp.Key}, Name: {kvp.Value.ToString()}");
         }
     }
 };

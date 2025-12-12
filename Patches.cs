@@ -416,9 +416,8 @@ public class SceneManagerPatch : PatchBase<SceneManagerPatch>
     public static void PrepNightScene_Start_Postfix()
     {
         PluginManager.Instance.CurrentGameScene = Scene.IzakayaPrepScene;
+        PrepSceneManager.ClearLocalPrepData();
         Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to IzakayaPrepScene");
-        Utils.DumpRecipeProfile();
-        Utils.DumpSellableProfile();
     }
 }
 

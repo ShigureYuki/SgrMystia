@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BepInEx.Logging;
+using GameData.Core.Collections;
 using JetBrains.Annotations;
 
 namespace MetaMystia;
@@ -181,131 +182,79 @@ public static class PrepSceneManager
         return normalized;
     }
 
-    public static void UpdateRecipes()
+    private static void UpdateItems<T>(
+        Il2CppSystem.Collections.Generic.List<T> dailyList,
+        string listName,
+        Dictionary<int, long> additions,
+        Dictionary<int, long> deletions,
+        Il2CppSystem.Collections.Generic.Dictionary<int, T> allItems,
+        string itemTypeName) where T : class
     {
-        var dailyRecipesList = GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.DailyRecipes;
-        if (dailyRecipesList == null)
+        if (dailyList == null)
         {
-            Log.LogError($"{LOG_TAG} DailyRecipes list is null!");
+            Log.LogError($"{LOG_TAG} {listName} list is null!");
             return;
         }
 
-        // Get all available recipes
-        // var allRecipes = GameData.RunTime.Common.RunTimeStorage.GetAllRecipes(); // 这个是拥有的而不是全部
-        var allRecipes = Utils.recipes;
-        // Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GameData.Core.Collections.Recipe> 
-        // GameData.RunTime.Common.RunTimeStorage.GetAllRecipes()
-        if (allRecipes == null) return;
+        if (allItems == null) return;
 
-        // Create a lookup for recipes by ID
-        var recipeLookup = new Dictionary<int, GameData.Core.Collections.Recipe>();
-        foreach (var recipe in allRecipes)
-        {
-            if (recipe != null && !recipeLookup.ContainsKey(recipe.Id))
-            {
-                recipeLookup[recipe.Id] = recipe;
-            }
-        }
-
-        // Filter valid recipes from localPrepTable
-        var validRecipes = new List<KeyValuePair<int, long>>();
-        foreach (var kvp in localPrepTable.RecipeAdditions)
+        // Filter valid items from localPrepTable
+        var validItems = new List<KeyValuePair<int, long>>();
+        foreach (var kvp in additions)
         {
             int id = kvp.Key;
             long addTs = kvp.Value;
-            long delTs = localPrepTable.RecipeDeletions.ContainsKey(id) ? localPrepTable.RecipeDeletions[id] : 0;
+            long delTs = deletions.ContainsKey(id) ? deletions[id] : 0;
 
             if (addTs > delTs)
             {
-                validRecipes.Add(kvp);
+                validItems.Add(kvp);
             }
         }
 
         // Sort by timestamp ascending
-        validRecipes.Sort((a, b) => a.Value.CompareTo(b.Value));
+        validItems.Sort((a, b) => a.Value.CompareTo(b.Value));
 
-        // Update DailyRecipes
-        dailyRecipesList.Clear();
+        // Update daily list
+        dailyList.Clear();
 
-        foreach (var kvp in validRecipes)
+        foreach (var kvp in validItems)
         {
-            if (recipeLookup.TryGetValue(kvp.Key, out var recipe))
+            if (allItems.TryGetValue(kvp.Key, out var item))
             {
-                dailyRecipesList.Add(recipe);
+                dailyList.Add(item);
             }
             else
             {
-                Log.LogWarning($"{LOG_TAG} Recipe with ID {kvp.Key} not found in Utils.");
+                Log.LogWarning($"{LOG_TAG} {itemTypeName} with ID {kvp.Key} not found in GameData.Core.Collections.DataBaseCore.{itemTypeName}s");
             }
         }
         
-        Log.LogInfo($"{LOG_TAG} Updated DailyRecipes with {dailyRecipesList.Count} items.");
+        Log.LogInfo($"{LOG_TAG} Updated {listName} with {dailyList.Count} items.");
+    }
+
+    public static void UpdateRecipes()
+    {
+        UpdateItems<Recipe>(
+            GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.DailyRecipes,
+            "DailyRecipes",
+            localPrepTable.RecipeAdditions,
+            localPrepTable.RecipeDeletions,
+            DataBaseCore.Recipes,
+            "Recipe"
+        );
     }
 
     public static void UpdateBeverages()
     {
-        var dailyBeveragesList = GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.DailyBeverages;
-        if (dailyBeveragesList == null)
-        {
-            Log.LogError($"{LOG_TAG} DailyBeverages list is null!");
-            return;
-        }
-
-        // Get all available beverages
-        // Returns Il2CppReferenceArray<KeyValuePair<Sellable, int>>
-        // var allBeverages = GameData.RunTime.Common.RunTimeStorage.GetAllBeverages(); // 这个是拥有的而不是全部
-        var allBeverages = Utils.sellables;
-
-        if (allBeverages == null || allBeverages.Count == 0)
-        {
-            Log.LogWarning($"{LOG_TAG} Utils.sellables is empty; cannot update beverages.");
-            dailyBeveragesList.Clear();
-            return;
-        }
-
-        // Create a lookup for beverages by ID
-        var beverageLookup = new Dictionary<int, GameData.Core.Collections.Sellable>();
-        foreach (var sellable in allBeverages)
-        {
-            if (sellable != null && !beverageLookup.ContainsKey(sellable.Id))
-            {
-                beverageLookup[sellable.Id] = sellable;
-            }
-        }
-
-        // Filter valid beverages from localPrepTable
-        var validBeverages = new List<KeyValuePair<int, long>>();
-        foreach (var kvp in localPrepTable.BeverageAdditions)
-        {
-            int id = kvp.Key;
-            long addTs = kvp.Value;
-            long delTs = localPrepTable.BeverageDeletions.ContainsKey(id) ? localPrepTable.BeverageDeletions[id] : 0;
-
-            if (addTs > delTs)
-            {
-                validBeverages.Add(kvp);
-            }
-        }
-
-        // Sort by timestamp ascending
-        validBeverages.Sort((a, b) => a.Value.CompareTo(b.Value));
-
-        // Update DailyBeverages
-        dailyBeveragesList.Clear();
-
-        foreach (var kvp in validBeverages)
-        {
-            if (beverageLookup.TryGetValue(kvp.Key, out var sellable))
-            {
-                dailyBeveragesList.Add(sellable);
-            }
-            else
-            {
-                Log.LogWarning($"{LOG_TAG} Beverage (Sellable) with ID {kvp.Key} not found in Utils.sellables.");
-            }
-        }
-        
-        Log.LogInfo($"{LOG_TAG} Updated DailyBeverages with {dailyBeveragesList.Count} items.");
+        UpdateItems<Sellable>(
+            GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.DailyBeverages,
+            "DailyBeverages",
+            localPrepTable.BeverageAdditions,
+            localPrepTable.BeverageDeletions,
+            DataBaseCore.Beverages,
+            "Beverage"
+        );
     }
     public static void UpdateCookers()
     {
@@ -364,5 +313,11 @@ public static class PrepSceneManager
             UpdateGroups();
             UpdateUI();
         });
+    }
+
+    public static void ClearLocalPrepData()
+    {
+        localPrepTable = new PrepAction.Table();
+        Log.LogInfo($"{LOG_TAG} Cleared local prep data and updated UI.");
     }
 }
