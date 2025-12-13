@@ -55,22 +55,37 @@ DayScene 篇
 营业准备篇
 
 - [x] 研究相关 API
-- [ ] 限制仅 Kyouko 伙伴选择（暂时考虑不实现）
+- [ ] ~~限制仅 Kyouko 伙伴选择（暂时考虑不实现）~~
 - [x] 限制必须选择相同场景和模式
 - [x] 同步菜单
 - [x] 同步酒水
 - [x] 同步厨具
 - [x] 优化厨具同步逻辑
 - [x] 同步加载预设（无需额外实现） 
-- [ ] 优化同步代码
-- [ ] 同步"开始营业"
+- [ ] ~~优化同步代码~~
+- [x] 同步"开始营业"
 
 
 NightScene 篇
-- [ ] 完成这个 TODO List
+- [ ] 同步普客生成
+- [ ] 同步稀客生成
+- [ ] 同步符卡奖励/惩罚
+- [ ] 同步厨具状态
+- [ ] 同步运动状态
+- [ ] 移除原有伙伴
+- [ ] 同步 buff
+- [ ] 同步时钟
 
 其他
 - [x] 自定义二人对话
+
+已知 bug 或缺陷
+- [ ] InGameConsole 与原有面板 UI 冲突
+- [ ] 对话 UI 与面板 UI 冲突
+- [ ] InGameConsole 与场景切换冲突
+- [ ] DayScene Kyouko 移动缺少 *高度* 变化
+- [ ] A 在 loading 时 B 选择厨具会使 A 进入 Prep 后显示错误的厨具列表
+- [ ] 地图选择界面中不会缺少店铺等级的提示
 
 ## 鸣谢
 
@@ -78,3 +93,8 @@ NightScene 篇
 - 第二原作：东方夜雀食堂 - Touhou Mystia's Izakaya
 
 特别感谢 DEYU 和 kk 的支持和帮助
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=MetaMikuAI/MetaMystia&type=date&legend=top-left)](https://www.star-history.com/#MetaMikuAI/MetaMystia&type=date&legend=top-left)
