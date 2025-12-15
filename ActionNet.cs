@@ -316,7 +316,7 @@ public partial class NightSyncAction : NetAction
     public override void OnReceived()
     {
         Plugin.Instance.Log.LogInfo($"Received NIGHTSYNC: {this.ToString()}");
-        // PluginManager.Instance.RunOnMainThread(() =>
-            // KyoukoManager.SyncFromPeer(new UnityEngine.Vector2(Vx, Vy), new UnityEngine.Vector2(Px, Py)));
+        PluginManager.Instance.RunOnMainThread(() =>
+            KyoukoManager.NightSyncFromPeer(new UnityEngine.Vector2(Vx, Vy), new UnityEngine.Vector2(Px, Py)));
     }
 }

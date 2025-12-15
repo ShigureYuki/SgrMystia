@@ -3,8 +3,8 @@ using UnityEngine;
 using System;
 using Il2CppInterop.Runtime;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Common.UI;
-using System.Globalization;
 
 namespace MetaMystia;
 public class PluginManager : MonoBehaviour
@@ -16,7 +16,8 @@ public class PluginManager : MonoBehaviour
     public static InGameConsole Console { get; private set; }
     private bool isTextVisible = true;
     private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
-    public Scene CurrentGameScene { get; set; } = Scene.MainScene;
+    private readonly List<(Action action, Func<bool> condition)> _conditionalActions = new List<(Action, Func<bool>)>();
+    public static Scene CurrentGameScene { get; set; } = Scene.MainScene;
 
     public PluginManager(IntPtr ptr) : base(ptr)
     {
@@ -102,34 +103,25 @@ public class PluginManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F3))
         {
             Physics2D.IgnoreCollision(
-                Common.SceneDirector.Instance.characterCollection[NightKyoukoManager.KYOUKO_ID].cl2d,
+                Common.SceneDirector.Instance.characterCollection[KyoukoManager.KYOUKO_ID].cl2d,
                 Common.SceneDirector.Instance.characterCollection["Self"].cl2d,
                 true);
             Log.LogMessage($"{LOG_TAG} Ignoring collision between NightKyouko and Self (manual)");
         }
-        
-        var inputDirection = new Vector2(0, 0);
-        if (Input.GetKey(KeyCode.Keypad4))
+        if (Input.GetKeyDown(KeyCode.F4))
         {
-            inputDirection.x -= 1;
+            var characterUnit = Common.SceneDirector.Instance.characterCollection[KyoukoManager.KYOUKO_ID];
+            var heightProcessor = characterUnit.AddInputProcessor<Common.CharacterUtility.HeightBlendedInputProcessorComponent>();
+            // heightProcessor.Initialize(DayScene.SceneManager.Instance.CurrentActiveMap.height);
+            heightProcessor.Initialize(NightScene.MapManager.Instance.height);
+
+            Log.LogMessage($"{LOG_TAG} Added HeightBlendedInputProcessorComponent to NightKyouko");
         }
-        if (Input.GetKey(KeyCode.Keypad6))
+
+        if (Input.GetKeyDown(KeyCode.KeypadEnter))
         {
-            inputDirection.x += 1;
-        }
-        if (Input.GetKey(KeyCode.Keypad8))
-        {
-            inputDirection.y += 1;
-        }
-        if (Input.GetKey(KeyCode.Keypad2))
-        {
-            inputDirection.y -= 1;
-        }
-        if (inputDirection != Vector2.zero)
-        {
-            var magnitude = inputDirection.magnitude;
-            inputDirection /= magnitude; // Normalize
-            NightKyoukoManager.UpdateInputDirection(inputDirection);
+            var MystiaPosition = MystiaManager.Instance.GetCharacterUnit().rb2d.position;
+            Log.LogWarning($"{LOG_TAG} Mystia Position: {MystiaPosition}");
         }
     }
 
@@ -139,15 +131,54 @@ public class PluginManager : MonoBehaviour
         _mainThreadQueue.Enqueue(action);
     }
 
+    public void RunOnMainThread(Action action, Func<bool> condition)
+    {
+        if (condition == null)
+        {
+            RunOnMainThread(action);
+            return;
+        }
+
+        lock (_conditionalActions)
+        {
+            _conditionalActions.Add((action, condition));
+        }
+    }
+
     private void FixedUpdate()
     {
+        lock (_conditionalActions)
+        {
+            for (int i = _conditionalActions.Count - 1; i >= 0; i--)
+            {
+                var (action, condition) = _conditionalActions[i];
+                bool shouldRun = false;
+                try
+                {
+                    shouldRun = condition();
+                }
+                catch (Exception e)
+                {
+                    Log.LogError($"{LOG_TAG} Error checking condition: {e.Message}");
+                    _conditionalActions.RemoveAt(i);
+                    continue;
+                }
+
+                if (shouldRun)
+                {
+                    RunOnMainThread(action);
+                    _conditionalActions.RemoveAt(i);
+                }
+            }
+        }
+
         switch (CurrentGameScene)
         {
             case Scene.DayScene:
                 KyoukoManager.OnFixedUpdate();
                 break;
             case Scene.WorkScene:
-                NightKyoukoManager.OnFixedUpdate();
+                KyoukoManager.OnFixedUpdate();
                 break;
             default:
                 break;
