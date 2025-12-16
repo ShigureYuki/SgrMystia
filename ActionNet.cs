@@ -127,18 +127,15 @@ public partial class ReadyAction : NetAction
     public override void OnReceived()
     {
         Plugin.Instance.Log.LogInfo($"Received READY: {IsReady}");
-        KyoukoManager.IsReady = true;
-        if (MystiaManager.IsReady) // 10->11: 需要先显示「准备完成」对话框再在其回调中执行 OnDayOver
+        if (PluginManager.CurrentGameScene != Common.UI.Scene.DayScene)
         {
-            PluginManager.Instance.RunOnMainThread(() =>
-            {
-                DialogManager.ShowReadyDialog(true, () =>
-                {
-                    DaySceneManagerPatch._skipPatchOnDayOver = true;
-                    DayScene.SceneManager.Instance.OnDayOver();
-                    DaySceneManagerPatch._skipPatchOnDayOver = false;
-                });
-            });
+            Plugin.Instance.Log.LogWarning("READY action received outside DayScene, ignoring.");
+            return;
+        }
+        KyoukoManager.IsReady = true;
+        if (MystiaManager.IsReady)
+        {
+            PluginManager.Instance.RunOnMainThread(DaySceneManagerPatch.OnDayOver_DirectInvoke);
         }
         // else: 00->01: Nope
         Plugin.Instance.Log.LogInfo("Kyouko is ready");

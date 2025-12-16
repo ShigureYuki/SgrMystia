@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Common.UI;
+using AsmResolver.DotNet.Cloning;
 
 namespace MetaMystia;
 
@@ -17,21 +18,30 @@ public class DaySceneManagerPatch : PatchBase<DaySceneManagerPatch>
         Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to DayScene");
     }
 
-    public static bool _skipPatchOnDayOver = false;
+
+    private static bool _skipPatchOnDayOver = false;
+    public static void OnDayOver_DirectInvoke()
+    {
+        _skipPatchOnDayOver = true;
+        DayScene.SceneManager.Instance.OnDayOver();
+        _skipPatchOnDayOver = false;
+    }
 
     [HarmonyPatch(nameof(DayScene.SceneManager.OnDayOver))]
     [HarmonyPrefix]
     public static bool OnDayOver_Prefix()
     {
+        Log.LogInfo($"{LOG_TAG} OnDayOver called");
         if (_skipPatchOnDayOver)
         {
-            Log.LogDebug($"{LOG_TAG} skipPatch is true, skipping prefix");
+            Log.LogDebug($"{LOG_TAG} _skipPatchOnDayOver is true, skipping prefix");
             return true;
         }
+        
         if (!MpManager.Instance.IsConnected)
         {
             Log.LogDebug($"{LOG_TAG} Not in multiplayer session, skipping prefix");
-            return true; // Not in multiplayer session, proceed as normal
+            return true;
         }
         /*
             [MetaMiku 注]
@@ -52,40 +62,29 @@ public class DaySceneManagerPatch : PatchBase<DaySceneManagerPatch>
                     10->11: 需要先显示「准备完成」对话框再在其回调中执行 OnDayOver
             
             BUG & TODO: 解决当游戏原有结束剧情时的错误处理
+
+            优化(20251216): 
+                OnDayOver -> 置 Mystia.Ready 为 true 
+                          -> 如果 Kyouko.Ready -> 显示「准备完成」对话框 -> 在回调中调用 OnDayOver(No Patch)
+                          -> 否则 -> 显示「准备未完成」对话框 -> 结束
+                接收对端   -> 置 Kyouko.Ready 为 true
+                                         -> 如果 Mystia.Ready 为 true -> 调用 OnDayOver (此后会在 OnDayOver_Prefix 中显示「准备完成」对话框并回调 OnDayOver(No Patch))
+                                         -> 否则 -> pass
+
         */
 
-        Log.LogDebug($"{LOG_TAG} Day over detected");
 
-        // 00 -> 10
-        if (!MystiaManager.IsReady && !KyoukoManager.IsReady)
+        MystiaManager.IsReady = true;
+        MpManager.Instance.SendReady();
+        if (KyoukoManager.IsReady)
         {
-            Log.LogInfo($"{LOG_TAG} Both Mystia and Kyouko are not ready -> Mystia is ready => show **not ready** dialog");
-            MpManager.Instance.SendReady();
-            MystiaManager.IsReady = true;
-            DialogManager.ShowReadyDialog(false);
+            DialogManager.ShowReadyDialog(true, OnDayOver_DirectInvoke);
             return false;
         }
-
-        // 01 -> 11
-        if (!MystiaManager.IsReady && KyoukoManager.IsReady) 
+        else
         {
-            Log.LogInfo($"{LOG_TAG} Mystia is not ready but Kyouko is ready -> both are ready => show **ready** dialog");
-            MpManager.Instance.SendReady();
-            MystiaManager.IsReady = true;
-            DialogManager.ShowReadyDialog(true, () => 
-            {
-                _skipPatchOnDayOver = true;
-                DayScene.SceneManager.Instance.OnDayOver();
-                _skipPatchOnDayOver = false;
-            });
+            DialogManager.ShowReadyDialog(false, null);
             return false;
         }
-
-        // 00 -> 01: Not here -> MultiplayerManager handles it
-
-        // 10 -> 11: Not here -> MultiplayerManager handles it
-
-        // 11: 回调中直接执行 OnDayOver
-        return true;
     }
 }

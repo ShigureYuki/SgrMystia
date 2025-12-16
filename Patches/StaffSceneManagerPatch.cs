@@ -9,7 +9,7 @@ namespace MetaMystia;
 [HarmonyPatch]
 public class StaffSceneManagerPatch : PatchBase<StaffSceneManagerPatch>
 {
-    [HarmonyPatch(nameof(SceneManager.Awake))]
+    [HarmonyPatch(nameof(SceneManager.Start))]
     [HarmonyPostfix]
     public static void StaffScene_Start_Postfix()
     {

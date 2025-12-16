@@ -33,7 +33,7 @@ public static class KyoukoManager
         actualVelocity = Vector2.zero;
         positionOffset = Vector2.zero;
         currectVelocity = Vector2.zero;
-        IsReady = true;
+        IsReady = false;
         FirstSync = true;
         Log.LogMessage($"{LOG_TAG} KyoukoManager initialized");
     }
