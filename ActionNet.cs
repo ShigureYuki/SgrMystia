@@ -1,8 +1,8 @@
 using MemoryPack;
 using System.Collections.Generic;
+using GameData.Core.Collections;
 
 namespace MetaMystia;
-
 
 public enum ActionType : ushort
 {
@@ -15,7 +15,10 @@ public enum ActionType : ushort
     SELECT,
     CONFIRM,
     PREP,
-    NIGHTSYNC
+    NIGHTSYNC,
+    COOK,
+    // Extract
+    EXTRACT
 }
 
 [MemoryPackable]
@@ -29,6 +32,8 @@ public enum ActionType : ushort
 [MemoryPackUnion((ushort)ActionType.CONFIRM, typeof(ConfirmAction))]
 [MemoryPackUnion((ushort)ActionType.PREP, typeof(PrepAction))]
 [MemoryPackUnion((ushort)ActionType.NIGHTSYNC, typeof(NightSyncAction))]
+[MemoryPackUnion((ushort)ActionType.COOK, typeof(CookAction))]
+[MemoryPackUnion((ushort)ActionType.EXTRACT, typeof(ExtractAction))]
 public abstract partial class NetAction
 {
     public abstract ActionType Type { get; }
@@ -315,5 +320,65 @@ public partial class NightSyncAction : NetAction
         Plugin.Instance.Log.LogInfo($"Received NIGHTSYNC: {this.ToString()}");
         PluginManager.Instance.RunOnMainThread(() =>
             KyoukoManager.NightSyncFromPeer(new UnityEngine.Vector2(Vx, Vy), new UnityEngine.Vector2(Px, Py)));
+    }
+}
+
+[MemoryPackable]
+public partial class CookAction : NetAction
+{
+    public override ActionType Type => ActionType.COOK;
+    public int GridIndex { get; set; }
+    public int RecipeId { get; set; }
+    public int[] ModifierIds { get; set; }
+    public override void OnReceived()
+    {
+        Plugin.Instance.Log.LogInfo($"Received COOK: CookerIndex={GridIndex}, RecipeId={RecipeId}, Modifiers=[{string.Join(",", ModifierIds)}]");
+        PluginManager.Instance.RunOnMainThread(() =>
+        {
+            var recipe = RecipeId.RefRecipe();
+            if (recipe == null)
+            {
+                Plugin.Instance.Log.LogWarning($"Failed to get recipe with id={RecipeId} for COOK action");
+                return;
+            }
+            var foodId = recipe.FoodID;
+            var food = foodId.AsNewFood();
+            if (food == null)
+            {
+                Plugin.Instance.Log.LogWarning($"Failed to create food");
+                return;
+            }
+            food.modifier = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<int>(ModifierIds);
+
+            var cookerController = CookManager.GetCookerControllerByIndex(GridIndex);
+            if (cookerController == null)
+            {
+                Plugin.Instance.Log.LogWarning($"Failed to find CookerController with GridIndex={GridIndex}");
+                return;
+            }
+
+            CookControllerPatch.SetCook_DirectInvoke(cookerController, food, recipe, false);
+            cookerController.StartCookCountDown(1.0f, false); // qteScore?
+        });
+    }
+}
+
+[MemoryPackable]
+public partial class ExtractAction : NetAction
+{
+    public override ActionType Type => ActionType.COOK;
+    public int GridIndex { get; set; }
+    public override void OnReceived()
+    {
+        PluginManager.Instance.RunOnMainThread(() =>
+        {
+            var cookerController = CookManager.GetCookerControllerByIndex(GridIndex);
+            if (cookerController == null)
+            {
+                Plugin.Instance.Log.LogWarning($"Failed to find CookerController with GridIndex={GridIndex}");
+                return;
+            }
+            CookControllerPatch.Extract_DirectInvoke(cookerController);
+        });
     }
 }

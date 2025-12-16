@@ -5,9 +5,9 @@ using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using UnityEngine.SceneManagement;
 using System;
+using AsmResolver.DotNet.Signatures;
 
 namespace MetaMystia;
-
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BasePlugin
 {
@@ -44,6 +44,7 @@ public class Plugin : BasePlugin
             {
                 typeof(CharacterControllerUnitPatch),
                 typeof(CharacterInputPatch),
+                typeof(CookControllerPatch),
                 typeof(DaySceneManagerPatch),
                 typeof(DaySceneMapProfilePatch),
                 typeof(DayScenePlayerInputPatch),

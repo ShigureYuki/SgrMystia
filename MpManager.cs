@@ -349,4 +349,35 @@ public class MpManager
         });
         SendToPeer(packet);
     }
+
+    
+    public void SendCook(int gridIndex, int recipeId, int[] modifierIds)
+    {
+        if (!IsConnected)
+        {
+            return;
+        }
+        
+        NetPacket packet = NetPacket.Create(new CookAction
+        {
+            GridIndex = gridIndex,
+            RecipeId = recipeId,
+            ModifierIds = modifierIds
+        });
+        SendToPeer(packet);
+    }
+
+    public void SendExtract(int gridIndex)
+    {
+        if (!IsConnected)
+        {
+            return;
+        }
+        
+        NetPacket packet = NetPacket.Create(new ExtractAction
+        {
+            GridIndex = gridIndex
+        });
+        SendToPeer(packet);
+    }
 }
