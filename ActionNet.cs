@@ -134,9 +134,9 @@ public partial class ReadyAction : NetAction
             {
                 DialogManager.ShowReadyDialog(true, () =>
                 {
-                    DaySceneSceneManagerPatch._skipPatchOnDayOver = true;
+                    DaySceneManagerPatch._skipPatchOnDayOver = true;
                     DayScene.SceneManager.Instance.OnDayOver();
-                    DaySceneSceneManagerPatch._skipPatchOnDayOver = false;
+                    DaySceneManagerPatch._skipPatchOnDayOver = false;
                 });
             });
         }

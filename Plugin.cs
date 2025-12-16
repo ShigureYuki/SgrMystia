@@ -42,18 +42,20 @@ public class Plugin : BasePlugin
 
             var patchList = new Type[]
             {
+                typeof(CharacterControllerUnitPatch),
                 typeof(CharacterInputPatch),
-                typeof(DayScenePlayerInputPatch),
-                typeof(RunTimeSchedulerPatch),
-                typeof(CharacterControllerUnitInitializePatch),
-                typeof(DaySceneSceneManagerPatch),
-                typeof(IzakayaSelectorPanelPatch),
-                typeof(UniversalGameManagerPatch),
-                typeof(SceneManagerPatch),
+                typeof(DaySceneManagerPatch),
                 typeof(DaySceneMapProfilePatch),
-                typeof(IzakayaConfigurePatch),
+                typeof(DayScenePlayerInputPatch),
                 typeof(IzakayaConfigPannelPatch),
-                typeof(PrepNightSceneSceneManagerPatch)
+                typeof(IzakayaConfigurePatch),
+                typeof(IzakayaSelectorPanelPatch),
+                typeof(MainSceneManagerPatch),
+                typeof(NightSceneManagerPatch),
+                typeof(PrepNightSceneManagerPatch),
+                typeof(RunTimeSchedulerPatch),
+                typeof(StaffSceneManagerPatch),
+                typeof(UniversalGameManagerPatch),
             };
             foreach (var patch in patchList)
             {
