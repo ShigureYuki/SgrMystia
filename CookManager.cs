@@ -2,7 +2,10 @@ using BepInEx.Logging;
 using DEYU.Utils;
 using Il2CppSystem.IO;
 using NightScene.CookingUtility;
+using System.Linq;
+
 using MetaMystia;
+
 
 public static class CookManager
 {
@@ -12,16 +15,10 @@ public static class CookManager
 
     public static CookController GetCookerControllerByIndex(int gridIndex)
     {
-        // TODO: optimize
-        Log.LogDebug($"{LOG_TAG} GetCookerControllerByIndex called");
-        var AllCookerControllers = CookSystemManager.Instance.AllCookerControllers; // IEnumerable<CookController>
-        foreach (var cookerController in AllCookerControllers.ToArray())
-        {
-            if (cookerController.GridIndex == gridIndex)
-            {
-                return cookerController;
-            }
-        }
-        return null;
+        var AllCookerControllers = CookSystemManager.Instance.AllCookerControllers;
+        var query = from cooker in AllCookerControllers.ToArray() 
+                    where cooker.GridIndex == gridIndex
+                    select cooker;
+        return query.FirstOrDefault();
     }
 }

@@ -351,7 +351,7 @@ public class MpManager
     }
 
     
-    public void SendCook(int gridIndex, int recipeId, int[] modifierIds)
+    public void SendCook(int gridIndex, int foodId, int recipeId, int[] modifierIds)
     {
         if (!IsConnected)
         {
@@ -361,6 +361,7 @@ public class MpManager
         NetPacket packet = NetPacket.Create(new CookAction
         {
             GridIndex = gridIndex,
+            FoodId = foodId,
             RecipeId = recipeId,
             ModifierIds = modifierIds
         });

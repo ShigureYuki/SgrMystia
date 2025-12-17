@@ -329,21 +329,22 @@ public partial class CookAction : NetAction
 {
     public override ActionType Type => ActionType.COOK;
     public int GridIndex { get; set; }
-    public int RecipeId { get; set; }
+    public int FoodId { get; set; }
+    public int RecipeId {get; set; }
     public int[] ModifierIds { get; set; }
     public override void OnReceived()
     {
-        Plugin.Instance.Log.LogInfo($"Received COOK: CookerIndex={GridIndex}, RecipeId={RecipeId}, Modifiers=[{string.Join(",", ModifierIds)}]");
+        Plugin.Instance.Log.LogInfo($"Received COOK: CookerIndex={GridIndex}, FoodId={FoodId}, Modifiers=[{string.Join(",", ModifierIds)}]");
         PluginManager.Instance.RunOnMainThread(() =>
         {
             var recipe = RecipeId.RefRecipe();
             if (recipe == null)
             {
-                Plugin.Instance.Log.LogWarning($"Failed to get recipe with id={RecipeId} for COOK action");
+                Plugin.Instance.Log.LogWarning($"Failed to create recipe");
                 return;
             }
-            var foodId = recipe.FoodID;
-            var food = foodId.AsNewFood();
+
+            var food = FoodId.AsNewFood();
             if (food == null)
             {
                 Plugin.Instance.Log.LogWarning($"Failed to create food");
@@ -359,7 +360,6 @@ public partial class CookAction : NetAction
             }
 
             CookControllerPatch.SetCook_Original(cookerController, food, recipe, false);
-            // cookerController.StartCookCountDown(1.0f, false); // qteScore?
         });
     }
 }

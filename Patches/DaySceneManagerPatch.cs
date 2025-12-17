@@ -1,14 +1,14 @@
 using HarmonyLib;
-using System;
 using Common.UI;
-using DayScene;
+using AsmResolver.DotNet.Cloning;
+
 namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(DayScene.SceneManager))]
 public class DaySceneManagerPatch : PatchBase<DaySceneManagerPatch>
 {
-    [HarmonyPatch(nameof(SceneManager.Awake))]
+    [HarmonyPatch(nameof(DayScene.SceneManager.Awake))]
     [HarmonyPostfix]
     public static void Awake_Postfix()
     {
@@ -19,18 +19,25 @@ public class DaySceneManagerPatch : PatchBase<DaySceneManagerPatch>
     }
 
 
-    [HarmonyPatch(nameof(SceneManager.OnDayOver))]
-    [HarmonyReversePatch]
+    private static bool _skipPatchOnDayOver = false;
     public static void OnDayOver_Original()
     {
-        throw new NotImplementedException("It's a stub");
+        _skipPatchOnDayOver = true;
+        DayScene.SceneManager.Instance.OnDayOver();
+        _skipPatchOnDayOver = false;
     }
 
-    [HarmonyPatch(nameof(SceneManager.OnDayOver))]
+    [HarmonyPatch(nameof(DayScene.SceneManager.OnDayOver))]
     [HarmonyPrefix]
     public static bool OnDayOver_Prefix()
     {
         Log.LogInfo($"{LOG_TAG} OnDayOver called");
+        if (_skipPatchOnDayOver)
+        {
+            Log.LogDebug($"{LOG_TAG} _skipPatchOnDayOver is true, skipping prefix");
+            return true;
+        }
+        
         if (!MpManager.Instance.IsConnected)
         {
             Log.LogDebug($"{LOG_TAG} Not in multiplayer session, skipping prefix");
