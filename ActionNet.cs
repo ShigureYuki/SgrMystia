@@ -17,8 +17,8 @@ public enum ActionType : ushort
     PREP,
     NIGHTSYNC,
     COOK,
-    // Extract
-    EXTRACT
+    EXTRACT,
+    QTE
 }
 
 [MemoryPackable]
@@ -34,6 +34,7 @@ public enum ActionType : ushort
 [MemoryPackUnion((ushort)ActionType.NIGHTSYNC, typeof(NightSyncAction))]
 [MemoryPackUnion((ushort)ActionType.COOK, typeof(CookAction))]
 [MemoryPackUnion((ushort)ActionType.EXTRACT, typeof(ExtractAction))]
+[MemoryPackUnion((ushort)ActionType.QTE, typeof(QTEAction))]
 public abstract partial class NetAction
 {
     public abstract ActionType Type { get; }
@@ -140,7 +141,7 @@ public partial class ReadyAction : NetAction
         KyoukoManager.IsReady = true;
         if (MystiaManager.IsReady)
         {
-            PluginManager.Instance.RunOnMainThread(DaySceneManagerPatch.OnDayOver_DirectInvoke);
+            PluginManager.Instance.RunOnMainThread(DaySceneManagerPatch.OnDayOver_Original);
         }
         // else: 00->01: Nope
         Plugin.Instance.Log.LogInfo("Kyouko is ready");
@@ -357,8 +358,8 @@ public partial class CookAction : NetAction
                 return;
             }
 
-            CookControllerPatch.SetCook_DirectInvoke(cookerController, food, recipe, false);
-            cookerController.StartCookCountDown(1.0f, false); // qteScore?
+            CookControllerPatch.SetCook_Original(cookerController, food, recipe, false);
+            // cookerController.StartCookCountDown(1.0f, false); // qteScore?
         });
     }
 }
@@ -378,7 +379,29 @@ public partial class ExtractAction : NetAction
                 Plugin.Instance.Log.LogWarning($"Failed to find CookerController with GridIndex={GridIndex}");
                 return;
             }
-            CookControllerPatch.Extract_DirectInvoke(cookerController);
+            CookControllerPatch.Extract_Original(cookerController, null);
+        });
+    }
+}
+
+
+[MemoryPackable]
+public partial class QTEAction : NetAction
+{
+    public override ActionType Type => ActionType.QTE;
+    public int GridIndex { get; set; }
+    public float QTEScore { get; set; }
+    public override void OnReceived()
+    {
+        PluginManager.Instance.RunOnMainThread(() =>
+        {
+            var cookerController = CookManager.GetCookerControllerByIndex(GridIndex);
+            if (cookerController == null)
+            {
+                Plugin.Instance.Log.LogWarning($"Failed to find CookerController with GridIndex={GridIndex}");
+                return;
+            }
+            CookControllerPatch.StartCookCountDown_Original(cookerController, QTEScore, false);
         });
     }
 }

@@ -380,4 +380,19 @@ public class MpManager
         });
         SendToPeer(packet);
     }
+
+    public void SendQTE(int gridIndex, float qteScore)
+    {
+        if (!IsConnected)
+        {
+            return;
+        }
+        
+        NetPacket packet = NetPacket.Create(new QTEAction
+        {
+            GridIndex = gridIndex,
+            QTEScore = qteScore
+        });
+        SendToPeer(packet);
+    }
 }

@@ -1,14 +1,14 @@
 using HarmonyLib;
+using System;
 using Common.UI;
-using AsmResolver.DotNet.Cloning;
-
+using DayScene;
 namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(DayScene.SceneManager))]
 public class DaySceneManagerPatch : PatchBase<DaySceneManagerPatch>
 {
-    [HarmonyPatch(nameof(DayScene.SceneManager.Awake))]
+    [HarmonyPatch(nameof(SceneManager.Awake))]
     [HarmonyPostfix]
     public static void Awake_Postfix()
     {
@@ -19,25 +19,18 @@ public class DaySceneManagerPatch : PatchBase<DaySceneManagerPatch>
     }
 
 
-    private static bool _skipPatchOnDayOver = false;
-    public static void OnDayOver_DirectInvoke()
+    [HarmonyPatch(nameof(SceneManager.OnDayOver))]
+    [HarmonyReversePatch]
+    public static void OnDayOver_Original()
     {
-        _skipPatchOnDayOver = true;
-        DayScene.SceneManager.Instance.OnDayOver();
-        _skipPatchOnDayOver = false;
+        throw new NotImplementedException("It's a stub");
     }
 
-    [HarmonyPatch(nameof(DayScene.SceneManager.OnDayOver))]
+    [HarmonyPatch(nameof(SceneManager.OnDayOver))]
     [HarmonyPrefix]
     public static bool OnDayOver_Prefix()
     {
         Log.LogInfo($"{LOG_TAG} OnDayOver called");
-        if (_skipPatchOnDayOver)
-        {
-            Log.LogDebug($"{LOG_TAG} _skipPatchOnDayOver is true, skipping prefix");
-            return true;
-        }
-        
         if (!MpManager.Instance.IsConnected)
         {
             Log.LogDebug($"{LOG_TAG} Not in multiplayer session, skipping prefix");
@@ -78,7 +71,7 @@ public class DaySceneManagerPatch : PatchBase<DaySceneManagerPatch>
         MpManager.Instance.SendReady();
         if (KyoukoManager.IsReady)
         {
-            DialogManager.ShowReadyDialog(true, OnDayOver_DirectInvoke);
+            DialogManager.ShowReadyDialog(true, OnDayOver_Original);
             return false;
         }
         else
