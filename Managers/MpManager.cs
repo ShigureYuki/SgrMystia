@@ -8,12 +8,19 @@ namespace MetaMystia;
 
 public static class MpManager
 {
+    public enum Role
+    {
+        Host,
+        Client,
+        Both    // For debug
+    }
+
     private static ManualLogSource Log => Plugin.Instance.Log;
     private const int TCP_PORT = 40815;
     public static string PlayerId { get; set { field = value; Log.LogInfo($"Player ID set to: {value}"); } } = Environment.MachineName;
-    private static readonly TcpServer server = new(TCP_PORT);
+    private static TcpServer server = null;
     private static TcpClientWrapper client = null;
-    private static bool IsHost;
+    private static Role role;
     public static bool IsRunning { get; private set; }
     public static bool IsConnected { get; private set; }
     public static string PeerAddress {get; set;}
@@ -25,7 +32,7 @@ public static class MpManager
     public static long GetSynchronizedTimestampNow => GetTimestampNow - TimeOffset;
     private static int _pingId = 0;
 
-    public static void Start()
+    public static void Start(Role r = Role.Host)
     {
         if (IsRunning)
         {
@@ -34,10 +41,24 @@ public static class MpManager
         }
 
         IsRunning = true;
-        Log.LogInfo("Starting MpManager");
         PeerId = "<Unknown>";
+        role = r;
 
-        server.Start();
+        switch (r) 
+        {
+            case Role.Host:
+                server = new(TCP_PORT);
+                server.Start();
+                Log.LogInfo("Starting MpManager as host");
+                break;
+            case Role.Client:
+                Log.LogInfo("Starting MpManager as client");
+                break;
+            case Role.Both:
+                server.Start();
+                Log.LogInfo("Starting MpManager as both host and client");
+                break;
+        }
     }
 
     public static void Stop()
@@ -50,7 +71,7 @@ public static class MpManager
 
         try
         {
-            server.Stop();
+            server?.Stop();
             client?.Close();
             OnDisconnected();
         }
@@ -59,14 +80,13 @@ public static class MpManager
             Log.LogError($"Error stopping: {e.Message}");
         }
 
-        PeerId = "<Unknown>";
         Log.LogInfo("MpManager has stopped");
     }
 
     public static void Restart()
     {
         Stop();
-        Start();
+        Start(role);
     }
 
     public static bool ConnectToPeer(string peerIp, int port = TCP_PORT)
@@ -79,7 +99,7 @@ public static class MpManager
 
         if (!IsRunning)
         {
-            Start();
+            Start(Role.Client);
         }
         try
         {
@@ -98,11 +118,10 @@ public static class MpManager
     }
 
 
-    public static void OnConnected(TcpClient client, bool isHost = false)
+    public static void OnConnected(TcpClient client)
     {
         PeerAddress = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
         IsConnected = true;
-        IsHost = isHost;
         SendHello();
         SendSync();
     }
@@ -110,7 +129,8 @@ public static class MpManager
     public static void OnDisconnected()
     {
         PeerAddress = "<Unknown>";
-        IsHost = false;
+        PeerId = "<Unknown>";
+
         IsConnected = false;
     }
 
@@ -121,26 +141,17 @@ public static class MpManager
 
     private static void SendToPeer(NetPacket packet)
     {
-        SendToPeer(packet, IsHost);
-    }
-
-    private static void SendToPeer(NetPacket packet, bool asHost)
-    {
-        var actionType = packet.GetFirstAction().Type;
-        if (!IsConnected)
+        if (IsConnected)
         {
-            return;
-        }
-
-        if (asHost)
-        {
-            Log.LogInfo($"[S] Sending {actionType}");
-            server.Send(packet);
-        } 
-        else
-        {
-            Log.LogInfo($"[C] Sending {actionType}");
-            client.Send(packet);
+            packet.GetFirstAction().LogActionSend(true, role == Role.Host ? "[S] " : "[C] ");
+            if (role == Role.Host)
+            {
+                server.Send(packet);
+            }
+            else
+            {
+                client.Send(packet);
+            }
         }
     }
 
@@ -148,7 +159,7 @@ public static class MpManager
     {
         if (IsConnected)
         {
-            if (IsHost)
+            if (role == Role.Host)
             {
                 server.DisconnectClient();
             } 
@@ -270,7 +281,7 @@ public static class MpManager
         }
         if (IsConnected)
         {
-            return $"Multiplayer: [{(IsHost ? "S" : "C")}] Connected to {PeerId} ({PeerAddress}), ping: {Latency} ms";
+            return $"Multiplayer: [{(role == Role.Host ? "S" : "C")}] Connected to {PeerId} ({PeerAddress}), ping: {Latency} ms";
         }
         else
         {

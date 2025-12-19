@@ -130,7 +130,7 @@ public class TcpServer(int port)
             currentClient = client;
         }
 
-        MpManager.OnConnected(client, true);
+        MpManager.OnConnected(client);
 
         Log.LogMessage("[S] Client connected.");
 
@@ -307,6 +307,8 @@ public class TcpClientWrapper
         }
         catch
         {
+            if (!MpManager.IsRunning) return;
+
             Log.LogMessage("[C] Disconnected. Reconnecting...");
             MpManager.OnDisconnected();
             running = false;

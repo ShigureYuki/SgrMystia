@@ -11,7 +11,7 @@ public partial class ExtractFoodAction : NetAction
     public SellableFood Food { get; set; }
     public override void OnReceived()
     {
-        Plugin.Instance.Log.LogInfo("Received ExtractFoodAction");
+        LogActionReceived(true);
         PluginManager.Instance.RunOnMainThread(() =>
         {
             GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.RemoveStoredFood(Food.GetFromLocal());

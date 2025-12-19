@@ -51,16 +51,48 @@ public abstract partial class NetAction
             });
     }
 
-    protected virtual void LogActionReceived(bool OnlyAction = false)
+    private static void LogAction(BepInEx.Logging.LogLevel logLevel, bool OnlyAction, string logStr)
     {
-        if (OnlyAction)
+        switch (logLevel)
         {
-            Log.LogInfo($"Received {Type}");
+            case BepInEx.Logging.LogLevel.Debug:
+                Log.LogDebug(logStr);
+                break;
+            case BepInEx.Logging.LogLevel.Warning:
+                Log.LogWarning(logStr);
+                break;
+            case BepInEx.Logging.LogLevel.Error:
+                Log.LogError(logStr);
+                break;
+            case BepInEx.Logging.LogLevel.Message:
+                Log.LogMessage(logStr);
+                break;
+            default:
+                Log.LogInfo(logStr);
+                break;
         }
-        else
-        {
-            Log.LogInfo($"Received {Type}: {ToString()}");
-        }
+    }
+
+    protected void LogActionReceived(BepInEx.Logging.LogLevel logLevel, bool onlyAction, string prefix)
+    {
+        string logStr = $"{prefix}Received {Type}{(onlyAction ? "" : $": {ToString()}")}";
+        LogAction(logLevel, onlyAction, logStr);
+    }
+
+    protected void LogActionSend(BepInEx.Logging.LogLevel logLevel, bool onlyAction, string prefix)
+    {
+        string logStr = $"{prefix}Send {Type}{(onlyAction ? "" : $": {ToString()}")}";
+        LogAction(logLevel, onlyAction, logStr);
+    }
+
+    public virtual void LogActionReceived(bool onlyAction = false, string prefix = "")
+    {
+        LogActionReceived(BepInEx.Logging.LogLevel.Info, onlyAction, prefix);
+    }
+
+    public virtual void LogActionSend(bool onlyAction = false, string prefix = "")
+    {
+        LogActionSend(BepInEx.Logging.LogLevel.Info, onlyAction, prefix);
     }
 
     [MemoryPackIgnore]

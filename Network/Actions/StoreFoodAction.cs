@@ -11,7 +11,7 @@ public partial class StoreFoodAction : NetAction
     // public int MessageSender { get; set; }
     public override void OnReceived()
     {
-        Plugin.Instance.Log.LogInfo("Received StoreFoodAction");
+        LogActionReceived(true);
         PluginManager.Instance.RunOnMainThread(() =>
         {
             IzakayaConfigurePatch.StoreFood_Original(Food.ToSellable());
