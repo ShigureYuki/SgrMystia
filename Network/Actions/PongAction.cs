@@ -10,7 +10,7 @@ public partial class PongAction : NetAction
 
     public override void OnReceived()
     {
-        Plugin.Instance.Log.LogInfo($"Received PONG: {Id}");
+        LogActionReceived();
         MpManager.Instance.UpdateLatency(Id);
     }
     public static NetPacket CreatePongPacket(int id)

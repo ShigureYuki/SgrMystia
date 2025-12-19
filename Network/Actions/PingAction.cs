@@ -10,7 +10,7 @@ public partial class PingAction : NetAction
     public long Timestamp { get; set; }
     public override void OnReceived()
     {
-        Plugin.Instance.Log.LogInfo($"Received PING: {Id}");
+        LogActionReceived();
         MpManager.TimeOffset = (MpManager.GetTimestampNow - Timestamp) / 2;
         MpManager.Instance.SendPong(Id);
     }

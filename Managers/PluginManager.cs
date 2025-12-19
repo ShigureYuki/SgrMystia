@@ -10,7 +10,7 @@ namespace MetaMystia;
 public class PluginManager : MonoBehaviour
 {
     public static PluginManager Instance { get; private set; }
-    public static ManualLogSource Log => Plugin.Instance.Log;
+    private static ManualLogSource Log => Plugin.Instance.Log;
     private static readonly string LOG_TAG = "[PluginManager.cs]";
     private readonly string label = $"{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION} loaded";
     public static InGameConsole Console { get; private set; }

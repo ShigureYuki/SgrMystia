@@ -13,20 +13,20 @@ public partial class CookAction : NetAction
     public int[] ModifierIds { get; set; }
     public override void OnReceived()
     {
-        Plugin.Instance.Log.LogInfo($"Received COOK: CookerIndex={GridIndex}, FoodId={FoodId}, Modifiers=[{string.Join(",", ModifierIds)}]");
+        Log.LogInfo($"Received COOK: CookerIndex={GridIndex}, FoodId={FoodId}, Modifiers=[{string.Join(",", ModifierIds)}]");
         PluginManager.Instance.RunOnMainThread(() =>
         {
             var recipe = RecipeId.RefRecipe();
             if (recipe == null)
             {
-                Plugin.Instance.Log.LogWarning($"Failed to create recipe");
+                Log.LogWarning($"Failed to create recipe");
                 return;
             }
 
             var food = FoodId.AsNewFood();
             if (food == null)
             {
-                Plugin.Instance.Log.LogWarning($"Failed to create food");
+                Log.LogWarning($"Failed to create food");
                 return;
             }
             food.modifier = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<int>(ModifierIds);
@@ -34,7 +34,7 @@ public partial class CookAction : NetAction
             var cookerController = CookManager.GetCookerControllerByIndex(GridIndex);
             if (cookerController == null)
             {
-                Plugin.Instance.Log.LogWarning($"Failed to find CookerController with GridIndex={GridIndex}");
+                Log.LogWarning($"Failed to find CookerController with GridIndex={GridIndex}");
                 return;
             }
 

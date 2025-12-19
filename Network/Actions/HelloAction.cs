@@ -9,7 +9,7 @@ public partial class HelloAction : NetAction
     public string PeerId { get; set; } = "";
     public override void OnReceived()
     {
-        Plugin.Instance.Log.LogInfo($"Received HELLO: {PeerId}");
+        LogActionReceived();
         MpManager.Instance.PeerId = PeerId;
     }
 }

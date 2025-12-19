@@ -166,7 +166,6 @@ public class MpManager
         var actionType = packet.GetFirstAction().Type;
         if (!IsConnected)
         {
-            Log.LogWarning($"Cannot send {actionType}: not connected to a peer");
             return;
         }
 
@@ -337,11 +336,6 @@ public class MpManager
 
     public void SendPrep(PrepAction.Table prepTable, bool ready = false)
     {
-        if (!IsConnected)
-        {
-            return;
-        }
-        
         NetPacket packet = NetPacket.Create(new PrepAction
         {
             PrepTable = prepTable,
@@ -353,11 +347,6 @@ public class MpManager
     
     public void SendCook(int gridIndex, int foodId, int recipeId, int[] modifierIds)
     {
-        if (!IsConnected)
-        {
-            return;
-        }
-        
         NetPacket packet = NetPacket.Create(new CookAction
         {
             GridIndex = gridIndex,
@@ -370,11 +359,6 @@ public class MpManager
 
     public void SendExtract(int gridIndex)
     {
-        if (!IsConnected)
-        {
-            return;
-        }
-        
         NetPacket packet = NetPacket.Create(new ExtractAction
         {
             GridIndex = gridIndex
@@ -384,11 +368,6 @@ public class MpManager
 
     public void SendQTE(int gridIndex, float qteScore)
     {
-        if (!IsConnected)
-        {
-            return;
-        }
-        
         NetPacket packet = NetPacket.Create(new QTEAction
         {
             GridIndex = gridIndex,
