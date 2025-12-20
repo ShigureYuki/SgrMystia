@@ -66,7 +66,7 @@ public class PluginManager : MonoBehaviour
             try
             {
                 action();
-                Log.LogDebug($"{LOG_TAG} Successfully executed action on main thread");
+                // Log.LogDebug($"{LOG_TAG} Successfully executed action on main thread");
             }
             catch (Exception e)
             {
@@ -86,7 +86,6 @@ public class PluginManager : MonoBehaviour
             Log.LogMessage($"{LOG_TAG} Toggled text visibility: " + isTextVisible);
         }
 
-        // F2 
         if (Input.GetKeyDown(KeyCode.KeypadMultiply))
         {
             MpManager.Start();
@@ -99,7 +98,7 @@ public class PluginManager : MonoBehaviour
 
     public void RunOnMainThread(Action action)
     {
-        Log.LogDebug($"{LOG_TAG} Enqueue action to run on main thread");
+        // Log.LogDebug($"{LOG_TAG} Enqueue action to run on main thread");
         _mainThreadQueue.Enqueue(action);
     }
 

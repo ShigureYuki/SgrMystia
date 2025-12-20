@@ -30,6 +30,52 @@ namespace MetaMystia.Debugger
 
     public static class ReflectionEvaluator
     {
+        public static List<object> FoundResources = new List<object>();
+        public static Dictionary<string, object> SharedVariables = new Dictionary<string, object>
+        {
+            { "$debug", new DebugHelper() }
+        };
+
+        public static object FindResources(string className)
+        {
+            FoundResources.Clear();
+            
+            Type type = null;
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                type = asm.GetType(className);
+                if (type != null) break;
+            }
+            
+            if (type == null)
+            {
+                throw new Exception($"Type '{className}' not found.");
+            }
+
+            var il2cppType = Il2CppInterop.Runtime.Il2CppType.From(type);
+            var objects = UnityEngine.Resources.FindObjectsOfTypeAll(il2cppType);
+            
+            var result = new List<object>();
+            foreach (var obj in objects)
+            {
+                FoundResources.Add(obj);
+                result.Add(new { 
+                    name = obj.name, 
+                    address = GetAddress(obj),
+                    className = className
+                });
+            }
+            return result;
+        }
+
+        public static void SelectResource(int index)
+        {
+            if (index >= 0 && index < FoundResources.Count)
+            {
+                SharedVariables["$target"] = FoundResources[index];
+            }
+        }
+
         public static InspectionResult Inspect(string expression)
         {
             var result = new InspectionResult { Path = expression };
@@ -178,7 +224,7 @@ namespace MetaMystia.Debugger
             if (string.IsNullOrWhiteSpace(expression)) return null;
             try
             {
-                var parser = new ExpressionParser(expression);
+                var parser = new CustomExpressionParser(expression);
                 return parser.Evaluate();
             }
             catch (Exception ex)
@@ -188,7 +234,7 @@ namespace MetaMystia.Debugger
         }
     }
 
-    public class ExpressionParser
+    public class CustomExpressionParser
     {
         private readonly string _text;
         private int _pos;
@@ -203,7 +249,7 @@ namespace MetaMystia.Debugger
         }
         private AssignmentTarget _lastTarget;
 
-        public ExpressionParser(string text)
+        public CustomExpressionParser(string text)
         {
             _text = text;
             _pos = 0;
@@ -249,7 +295,7 @@ namespace MetaMystia.Debugger
 
                     _pos++; // Consume '='
                     string rhsExpr = _text.Substring(_pos);
-                    var rhsParser = new ExpressionParser(rhsExpr);
+                    var rhsParser = new CustomExpressionParser(rhsExpr);
                     object rhsValue = rhsParser.Evaluate();
                     
                     PerformAssignment(_lastTarget, rhsValue);
@@ -321,6 +367,11 @@ namespace MetaMystia.Debugger
             if (ident == "true") return true;
             if (ident == "false") return false;
             if (ident == "null") return null;
+
+            if (ReflectionEvaluator.SharedVariables.ContainsKey(ident))
+            {
+                return ReflectionEvaluator.SharedVariables[ident];
+            }
 
             // 3. Type Resolution
             List<string> parts = new List<string> { ident };
@@ -401,7 +452,7 @@ namespace MetaMystia.Debugger
             while (_pos < _text.Length)
             {
                 string argExpr = ReadUntilDelimiter(new char[] { ',', close });
-                var subParser = new ExpressionParser(argExpr);
+                var subParser = new CustomExpressionParser(argExpr);
                 args.Add(subParser.Evaluate());
 
                 SkipWhitespace();
@@ -456,10 +507,10 @@ namespace MetaMystia.Debugger
         {
             SkipWhitespace();
             int start = _pos;
-            if (_pos < _text.Length && (char.IsLetter(_text[_pos]) || _text[_pos] == '_'))
+            if (_pos < _text.Length && (char.IsLetter(_text[_pos]) || _text[_pos] == '_' || _text[_pos] == '$'))
             {
                 _pos++;
-                while (_pos < _text.Length && (char.IsLetterOrDigit(_text[_pos]) || _text[_pos] == '_'))
+                while (_pos < _text.Length && (char.IsLetterOrDigit(_text[_pos]) || _text[_pos] == '_' || _text[_pos] == '$'))
                 {
                     _pos++;
                 }

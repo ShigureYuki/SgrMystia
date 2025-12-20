@@ -169,6 +169,63 @@ namespace MetaMystia.Debugger
                     response.ContentLength64 = buffer.Length;
                     response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
+                else if (request.QueryString["action"] == "search_resources")
+                {
+                    string className = request.QueryString["className"];
+                    string json = "[]";
+                    
+                    if (PluginManager.Instance != null)
+                    {
+                        var tcs = new TaskCompletionSource<string>();
+                        PluginManager.Instance.RunOnMainThread(() => 
+                        {
+                            try
+                            {
+                                var resources = ReflectionEvaluator.FindResources(className);
+                                json = System.Text.Json.JsonSerializer.Serialize(resources);
+                                tcs.SetResult(json);
+                            }
+                            catch (Exception ex)
+                            {
+                                tcs.SetResult(System.Text.Json.JsonSerializer.Serialize(new { error = ex.Message }));
+                            }
+                        });
+                        json = await tcs.Task;
+                    }
+                    
+                    byte[] buffer = Encoding.UTF8.GetBytes(json);
+                    response.ContentType = "application/json";
+                    response.ContentLength64 = buffer.Length;
+                    response.OutputStream.Write(buffer, 0, buffer.Length);
+                }
+                else if (request.QueryString["action"] == "select_resource")
+                {
+                    int index = int.Parse(request.QueryString["index"]);
+                    string result = "";
+                    
+                    if (PluginManager.Instance != null)
+                    {
+                        var tcs = new TaskCompletionSource<string>();
+                        PluginManager.Instance.RunOnMainThread(() => 
+                        {
+                            try
+                            {
+                                ReflectionEvaluator.SelectResource(index);
+                                tcs.SetResult("Selected");
+                            }
+                            catch (Exception ex)
+                            {
+                                tcs.SetResult("Error: " + ex.Message);
+                            }
+                        });
+                        result = await tcs.Task;
+                    }
+                    
+                    byte[] buffer = Encoding.UTF8.GetBytes(result);
+                    response.ContentType = "text/plain";
+                    response.ContentLength64 = buffer.Length;
+                    response.OutputStream.Write(buffer, 0, buffer.Length);
+                }
                 else
                 {
                     string content = WebResources.HtmlContent.Replace("[[TOKEN]]", _token);

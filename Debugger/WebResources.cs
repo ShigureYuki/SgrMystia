@@ -39,10 +39,14 @@ namespace MetaMystia.Debugger
         h1, h2 { color: #569cd6; margin: 0; font-size: 1.2em; }
         .container { display: flex; flex-direction: column; gap: 20px; }
         .panel { background: #252526; border-radius: 5px; border: 1px solid #3e3e42; overflow: hidden; }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #333; padding: 10px; user-select: none; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 10px; user-select: none; }
+        .panel-header .title-group { display: flex; align-items: center; cursor: pointer; flex-grow: 1; }
         .panel-header:hover { background: #3e3e42; }
         .panel-content { padding: 15px; }
         .collapsed .panel-content { display: none; }
+        .panel.fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; border-radius: 0; margin: 0; }
+        .panel.fullscreen .panel-content { height: calc(100vh - 50px); display: block !important; overflow: auto; }
+        .panel.fullscreen #console-output, .panel.fullscreen #thread-list, .panel.fullscreen #watch-list { max-height: none !important; height: auto; }
         
         input[type=""text""] { width: 100%; padding: 8px; font-size: 14px; background: #3c3c3c; color: #cccccc; border: 1px solid #3e3e42; box-sizing: border-box; }
         button { background: #0e639c; color: white; border: none; padding: 8px 15px; cursor: pointer; margin-top: 5px; }
@@ -60,11 +64,11 @@ namespace MetaMystia.Debugger
         .address { color: #808080; font-size: 0.8em; margin-left: 8px; }
         .error-text { color: #f48771; }
         
-        .watch-item { display: flex; justify-content: space-between; align-items: center; padding: 5px; border-bottom: 1px solid #3e3e42; }
-        .watch-expr { font-family: Consolas, monospace; color: #9cdcfe; flex: 1; }
+        .watch-item { display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #3e3e42; }
+        .watch-expr { font-family: Consolas, monospace; color: #9cdcfe; flex: 1; margin-left: 10px; }
         .watch-val { font-family: Consolas, monospace; color: #ce9178; margin-left: 10px; flex: 1; text-align: right; }
-        .watch-controls { margin-left: 10px; display: flex; gap: 5px; }
-        .icon-btn { background: #3e3e42; color: #d4d4d4; border: 1px solid #555; padding: 2px 8px; font-size: 12px; cursor: pointer; min-width: 24px; text-align: center; }
+        .watch-controls { display: flex; gap: 5px; margin-right: 10px; }
+        .icon-btn { background: #3e3e42; color: #d4d4d4; border: 1px solid #555; padding: 2px 8px; font-size: 12px; cursor: pointer; min-width: 24px; text-align: center; margin-top: 0; }
         .icon-btn:hover { background: #505050; }
         .remove-btn { color: #f48771; }
 
@@ -78,20 +82,43 @@ namespace MetaMystia.Debugger
     <div class=""container"">
         <!-- Process Info Panel -->
         <div class=""panel"" id=""panel-process"">
-            <div class=""panel-header"" onclick=""togglePanel('panel-process')"">
-                <h2>Process Info</h2>
-                <span>▼</span>
+            <div class=""panel-header"">
+                <div class=""title-group"" onclick=""togglePanel('panel-process')"">
+                    <h2>Process Info</h2>
+
+                </div>
+                <button class=""icon-btn"" onclick=""toggleFullscreen('panel-process')"" title=""Toggle Fullscreen"">⛶</button>
             </div>
             <div class=""panel-content"">
                 <div id=""process-info"" style=""font-family: Consolas, monospace; color: #4ec9b0;"">Loading...</div>
             </div>
         </div>
 
+        <!-- Resources Search Panel -->
+        <div class=""panel collapsed"" id=""panel-resources"">
+            <div class=""panel-header"">
+                <div class=""title-group"" onclick=""togglePanel('panel-resources')"">
+                    <h2>Resources Search</h2>
+                </div>
+                <button class=""icon-btn"" onclick=""toggleFullscreen('panel-resources')"" title=""Toggle Fullscreen"">⛶</button>
+            </div>
+            <div class=""panel-content"">
+                <div style=""display: flex; gap: 10px;"">
+                    <input type=""text"" id=""resource-class-name"" placeholder=""Full Class Name (e.g. GameData.Profile.DialogPackage)"" onkeydown=""if(event.key==='Enter') searchResources()"">
+                    <button onclick=""searchResources()"">Find Objects</button>
+                </div>
+                <div id=""resource-list"" style=""margin-top: 10px; max-height: 400px; overflow-y: auto;""></div>
+            </div>
+        </div>
+
         <!-- Thread Pool Panel -->
         <div class=""panel collapsed"" id=""panel-threads"">
-            <div class=""panel-header"" onclick=""togglePanel('panel-threads')"">
-                <h2>Thread Pool</h2>
-                <span>▶</span>
+            <div class=""panel-header"">
+                <div class=""title-group"" onclick=""togglePanel('panel-threads')"">
+                    <h2>Thread Pool</h2>
+
+                </div>
+                <button class=""icon-btn"" onclick=""toggleFullscreen('panel-threads')"" title=""Toggle Fullscreen"">⛶</button>
             </div>
             <div class=""panel-content"">
                 <div id=""thread-stats"" style=""margin-bottom: 10px; font-weight: bold; color: #4ec9b0;"">Loading stats...</div>
@@ -99,7 +126,7 @@ namespace MetaMystia.Debugger
                 <div style=""margin-top: 10px; display: flex; justify-content: space-between; align-items: center;"">
                     <div style=""display:flex; align-items:center; gap:5px;"">
                         <label><input type=""checkbox"" id=""thread-auto-refresh"" onchange=""toggleThreadAutoRefresh()"" checked> Auto Refresh</label>
-                        <input type=""number"" id=""thread-refresh-interval"" value=""2000"" style=""width: 60px;"" onchange=""resetThreadTimer()""> ms
+                        <input type=""number"" id=""thread-refresh-interval"" value=""1000"" style=""width: 60px;"" onchange=""resetThreadTimer()""> ms
                     </div>
                     <button onclick=""refreshThreads()"" style=""font-size: 12px;"">Refresh Now</button>
                 </div>
@@ -108,9 +135,12 @@ namespace MetaMystia.Debugger
 
         <!-- Watch List Panel -->
         <div class=""panel"" id=""panel-watch"">
-            <div class=""panel-header"" onclick=""togglePanel('panel-watch')"">
-                <h2>Watch List</h2>
-                <span>▼</span>
+            <div class=""panel-header"">
+                <div class=""title-group"" onclick=""togglePanel('panel-watch')"">
+                    <h2>Watch List</h2>
+
+                </div>
+                <button class=""icon-btn"" onclick=""toggleFullscreen('panel-watch')"" title=""Toggle Fullscreen"">⛶</button>
             </div>
             <div class=""panel-content"">
                 <div style=""display:flex; gap:5px;"">
@@ -120,8 +150,8 @@ namespace MetaMystia.Debugger
                 <div id=""watch-list"" style=""margin-top: 15px;""></div>
                 <div style=""margin-top: 10px; display: flex; justify-content: space-between; align-items: center;"">
                     <div style=""display:flex; align-items:center; gap:5px;"">
-                        <label><input type=""checkbox"" id=""auto-refresh"" onchange=""toggleAutoRefresh()"" checked> Auto Refresh</label>
-                        <input type=""number"" id=""watch-refresh-interval"" value=""2000"" style=""width: 60px;"" onchange=""resetWatchTimer()""> ms
+                        <label><input type=""checkbox"" id=""auto-refresh"" onchange=""toggleAutoRefresh()""> Auto Refresh</label>
+                        <input type=""number"" id=""watch-refresh-interval"" value=""1000"" style=""width: 60px;"" onchange=""resetWatchTimer()""> ms
                     </div>
                     <button onclick=""refreshWatch()"" style=""font-size: 12px;"">Refresh All</button>
                 </div>
@@ -130,9 +160,12 @@ namespace MetaMystia.Debugger
 
         <!-- Console Panel -->
         <div class=""panel"" id=""panel-console"">
-            <div class=""panel-header"" onclick=""togglePanel('panel-console')"">
-                <h2>Console</h2>
-                <span>▼</span>
+            <div class=""panel-header"">
+                <div class=""title-group"" onclick=""togglePanel('panel-console')"">
+                    <h2>Console</h2>
+
+                </div>
+                <button class=""icon-btn"" onclick=""toggleFullscreen('panel-console')"" title=""Toggle Fullscreen"">⛶</button>
             </div>
             <div class=""panel-content"">
                 <input type=""text"" id=""expr"" placeholder=""Enter expression..."" onkeydown=""if(event.key==='Enter') evalConsole()"">
@@ -151,8 +184,15 @@ namespace MetaMystia.Debugger
         function togglePanel(id) {
             const panel = document.getElementById(id);
             panel.classList.toggle('collapsed');
-            const icon = panel.querySelector('.panel-header span');
-            icon.textContent = panel.classList.contains('collapsed') ? '▶' : '▼';
+        }
+
+        function toggleFullscreen(id) {
+            const panel = document.getElementById(id);
+            panel.classList.toggle('fullscreen');
+            // Ensure panel is expanded when fullscreen
+            if (panel.classList.contains('fullscreen')) {
+                panel.classList.remove('collapsed');
+            }
         }
 
         // --- Thread Logic ---
@@ -173,7 +213,7 @@ namespace MetaMystia.Debugger
             if (!cb.checked) return;
 
             const intervalInput = document.getElementById('thread-refresh-interval');
-            let interval = parseInt(intervalInput.value) || 2000;
+            let interval = parseInt(intervalInput.value) || 1000;
             if (interval < 100) interval = 100; // Minimum limit
 
             threadRefreshTimer = setInterval(refreshThreads, interval);
@@ -491,12 +531,12 @@ namespace MetaMystia.Debugger
                 const escapedExpr = w.expr.replace(/'/g, ""\\'"").replace(/""/g, ""&quot;"");
 
                 div.innerHTML = `
-                    <span class=""watch-expr"" title=""${w.expr}"">${w.expr}</span>
-                    <span class=""watch-val"" id=""val-${idx}"" style=""color:${color}"" title=""${title}"">${val}</span>
                     <div class=""watch-controls"">
                         <button class=""icon-btn"" onclick=""sendToConsole('${escapedExpr}')"" title=""Edit in Console"">✎</button>
                         <button class=""icon-btn remove-btn"" onclick=""removeWatch(${idx})"" title=""Remove"">X</button>
                     </div>
+                    <span class=""watch-expr"" title=""${w.expr}"">${w.expr}</span>
+                    <span class=""watch-val"" id=""val-${idx}"" style=""color:${color}"" title=""${title}"">${val}</span>
                 `;
                 container.appendChild(div);
             });
@@ -570,10 +610,62 @@ namespace MetaMystia.Debugger
             if (!cb.checked) return;
 
             const intervalInput = document.getElementById('watch-refresh-interval');
-            let interval = parseInt(intervalInput.value) || 2000;
+            let interval = parseInt(intervalInput.value) || 1000;
             if (interval < 100) interval = 100;
 
             refreshTimer = setInterval(refreshWatch, interval);
+        }
+
+        let currentSearchResults = [];
+
+        async function searchResources() {
+            const className = document.getElementById('resource-class-name').value;
+            const list = document.getElementById('resource-list');
+            list.innerHTML = '<div style=""color: #4ec9b0;"">Searching...</div>';
+            
+            try {
+                const response = await fetch(`/?token=${token}&action=search_resources&className=${encodeURIComponent(className)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    list.innerHTML = `<div class=""error-text"">${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.length === 0) {
+                    list.innerHTML = '<div style=""color: #808080;"">No objects found.</div>';
+                    return;
+                }
+
+                currentSearchResults = data;
+                let html = `<div style=""color: #d4d4d4; margin-bottom: 5px;"">Found ${data.length} objects:</div>`;
+                html += '<table style=""width: 100%; border-collapse: collapse; font-family: Consolas, monospace; font-size: 0.9em;"">';
+                html += '<tr><th style=""text-align: left; color: #569cd6;"">Action</th><th style=""text-align: left; color: #569cd6;"">Index</th><th style=""text-align: left; color: #569cd6;"">Name</th><th style=""text-align: left; color: #569cd6;"">Address</th></tr>';
+                
+                data.forEach((item, index) => {
+                    html += `<tr>
+                        <td><button class=""icon-btn"" onclick=""selectResource(${index})"" title=""Load FromAddress expression"">✎</button></td>
+                        <td style=""color: #b5cea8;"">${index}</td>
+                        <td style=""color: #ce9178;"">${item.name}</td>
+                        <td style=""color: #808080;"">${item.address}</td>
+                    </tr>`;
+                });
+                html += '</table>';
+                list.innerHTML = html;
+            } catch (e) {
+                list.innerHTML = `<div class=""error-text"">Error: ${e.message}</div>`;
+            }
+        }
+
+        function selectResource(index) {
+            if (index < 0 || index >= currentSearchResults.length) return;
+            
+            const item = currentSearchResults[index];
+            const expr = '$debug.FromAddress(""' + item.className + '"", ""' + item.address + '"")';
+            
+            const input = document.getElementById('expr');
+            input.value = expr;
+            input.focus();
         }
 
         // Init

@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using System;
 using System.Diagnostics;
 using MetaMystia.Debugger;
-using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace MetaMystia;
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
@@ -28,9 +28,9 @@ public class Plugin : BasePlugin
         System.Console.OutputEncoding = System.Text.Encoding.UTF8;
         Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
 
-
+        // 延迟加载 WebDebugger
         Debugger = new WebDebugger();
-        Debugger.Start();
+        _ = StartWebDebuggerAsync(10000); // 10 秒延迟启动
 
         try {
             ClassInjector.RegisterTypeInIl2Cpp<PluginManager>();
@@ -106,6 +106,23 @@ public class Plugin : BasePlugin
                     Plugin.Instance.Log.LogMessage($"ERROR Bootstrapping Trainer: {e.Message}");
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// 异步延迟启动 WebDebugger
+    /// </summary>
+    private async Task StartWebDebuggerAsync(int delayMilliseconds)
+    {
+        try
+        {
+            await Task.Delay(delayMilliseconds);
+            Debugger.Start();
+            Log.LogInfo($"Web Debugger started after {delayMilliseconds}ms delay");
+        }
+        catch (Exception ex)
+        {
+            Log.LogError($"Failed to start Web Debugger: {ex.Message}");
         }
     }
 }
