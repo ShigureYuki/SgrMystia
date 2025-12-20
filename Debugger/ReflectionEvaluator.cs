@@ -193,6 +193,16 @@ namespace MetaMystia.Debugger
         private readonly string _text;
         private int _pos;
 
+        private class AssignmentTarget
+        {
+            public object Instance;
+            public MemberInfo Member;
+            public object Collection;
+            public int Index;
+            public AssignmentTarget Parent;
+        }
+        private AssignmentTarget _lastTarget;
+
         public ExpressionParser(string text)
         {
             _text = text;
@@ -219,16 +229,31 @@ namespace MetaMystia.Debugger
                     {
                         var args = ParseArgumentList('(', ')');
                         current = InvokeMethodOnTarget(current, memberName, args);
+                        _lastTarget = null; // Method call result is not assignable
                     }
                     else
                     {
-                        current = AccessMember(current, memberName);
+                        var parent = _lastTarget;
+                        current = AccessMember(current, memberName, parent);
                     }
                 }
                 else if (c == '[')
                 {
                     var args = ParseArgumentList('[', ']');
-                    current = AccessIndexer(current, args);
+                    var parent = _lastTarget;
+                    current = AccessIndexer(current, args, parent);
+                }
+                else if (c == '=')
+                {
+                    if (_pos + 1 < _text.Length && _text[_pos + 1] == '=') break; // Equality not supported
+
+                    _pos++; // Consume '='
+                    string rhsExpr = _text.Substring(_pos);
+                    var rhsParser = new ExpressionParser(rhsExpr);
+                    object rhsValue = rhsParser.Evaluate();
+                    
+                    PerformAssignment(_lastTarget, rhsValue);
+                    return rhsValue;
                 }
                 else
                 {
@@ -237,6 +262,46 @@ namespace MetaMystia.Debugger
             }
 
             return current;
+        }
+
+        private void PerformAssignment(AssignmentTarget target, object value)
+        {
+            if (target == null) throw new Exception("Invalid assignment target");
+            
+            if (target.Member is PropertyInfo prop)
+            {
+                object converted = ConvertArg(value, prop.PropertyType);
+                prop.SetValue(target.Instance, converted);
+            }
+            else if (target.Member is FieldInfo field)
+            {
+                object converted = ConvertArg(value, field.FieldType);
+                field.SetValue(target.Instance, converted);
+            }
+            else if (target.Collection != null)
+            {
+                if (target.Collection is Array arr)
+                {
+                     Type elemType = arr.GetType().GetElementType();
+                     object converted = ConvertArg(value, elemType);
+                     arr.SetValue(converted, target.Index);
+                }
+                else if (target.Collection is IList list)
+                {
+                     Type listType = list.GetType();
+                     Type elemType = typeof(object);
+                     if (listType.IsGenericType) {
+                         elemType = listType.GetGenericArguments()[0];
+                     }
+                     object converted = ConvertArg(value, elemType);
+                     list[target.Index] = converted;
+                }
+            }
+
+            if (target.Parent != null && target.Instance != null && target.Instance.GetType().IsValueType)
+            {
+                PerformAssignment(target.Parent, target.Instance);
+            }
         }
 
         private object ParseRoot()
@@ -286,10 +351,13 @@ namespace MetaMystia.Debugger
                 {
                     object current = null; // Static context initially
                     Type currentType = type;
+                    bool accessedMember = false;
+                    _lastTarget = null;
 
                     // Process the remaining parts that were tentatively parsed as type name
                     for (int j = i; j < parts.Count; j++)
                     {
+                        accessedMember = true;
                         string memberName = parts[j];
                         bool isLast = (j == parts.Count - 1);
                         
@@ -301,15 +369,17 @@ namespace MetaMystia.Debugger
                                 var args = ParseArgumentList('(', ')');
                                 current = InvokeMethodOnTarget(currentType, current, memberName, args);
                                 if (current != null) currentType = current.GetType();
+                                _lastTarget = null;
                                 continue;
                             }
                         }
                         
-                        current = AccessMember(currentType, current, memberName);
+                        var parent = _lastTarget;
+                        current = AccessMember(currentType, current, memberName, parent);
                         if (current != null) currentType = current.GetType();
                     }
                     
-                    return current ?? type; 
+                    return accessedMember ? current : type; 
                 }
             }
 
@@ -365,15 +435,16 @@ namespace MetaMystia.Debugger
                 }
                 else
                 {
+                    if (depthParen == 0 && depthBracket == 0 && delimiters.Contains(c))
+                    {
+                        break;
+                    }
+
                     if (c == '"') inQuote = true;
                     else if (c == '(') depthParen++;
                     else if (c == ')') depthParen--;
                     else if (c == '[') depthBracket++;
                     else if (c == ']') depthBracket--;
-                    else if (depthParen == 0 && depthBracket == 0 && delimiters.Contains(c))
-                    {
-                        break;
-                    }
                 }
                 _pos++;
             }
@@ -414,14 +485,47 @@ namespace MetaMystia.Debugger
         private object ParseNumberLiteral()
         {
             int start = _pos;
-            if (_text[_pos] == '-') _pos++;
-            while (_pos < _text.Length && (char.IsDigit(_text[_pos]) || _text[_pos] == '.'))
+            bool isHex = false;
+
+            if (_text[_pos] == '0' && _pos + 1 < _text.Length && (_text[_pos + 1] == 'x' || _text[_pos + 1] == 'X'))
             {
-                _pos++;
+                isHex = true;
+                _pos += 2; 
+                start = _pos;
+                while (_pos < _text.Length && IsHexDigit(_text[_pos]))
+                {
+                    _pos++;
+                }
             }
+            else
+            {
+                if (_text[_pos] == '-') _pos++;
+                while (_pos < _text.Length && (char.IsDigit(_text[_pos]) || _text[_pos] == '.'))
+                {
+                    _pos++;
+                }
+            }
+
             string numStr = _text.Substring(start, _pos - start);
+            
+            if (isHex)
+            {
+                if (string.IsNullOrEmpty(numStr)) return 0;
+                if (ulong.TryParse(numStr, System.Globalization.NumberStyles.HexNumber, null, out ulong ul)) return ul;
+                throw new Exception($"Invalid hex number: 0x{numStr}");
+            }
+
             if (numStr.Contains(".")) return double.Parse(numStr);
-            return int.Parse(numStr);
+            
+            if (long.TryParse(numStr, out long l)) return l;
+            if (ulong.TryParse(numStr, out ulong ul2)) return ul2;
+            
+            return double.Parse(numStr);
+        }
+
+        private bool IsHexDigit(char c)
+        {
+            return char.IsDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
         }
 
         private void SkipWhitespace()
@@ -441,7 +545,7 @@ namespace MetaMystia.Debugger
             return null;
         }
 
-        private object AccessMember(object target, string memberName)
+        private object AccessMember(object target, string memberName, AssignmentTarget parent = null)
         {
             if (target == null) throw new Exception($"Cannot access member '{memberName}' on null");
             
@@ -453,7 +557,11 @@ namespace MetaMystia.Debugger
             {
                 flags |= BindingFlags.Static;
                 instance = null;
-                if (TryGetMember(type, null, memberName, flags, out object result)) return result;
+                if (TryGetMember(type, null, memberName, flags, out object result, out MemberInfo info))
+                {
+                    _lastTarget = new AssignmentTarget { Instance = null, Member = info, Parent = parent };
+                    return result;
+                }
 
                 flags = BindingFlags.Public | BindingFlags.Instance;
                 instance = type;
@@ -465,24 +573,34 @@ namespace MetaMystia.Debugger
                 flags |= BindingFlags.Instance;
             }
 
-            if (TryGetMember(type, instance, memberName, flags, out object res)) return res;
+            if (TryGetMember(type, instance, memberName, flags, out object res, out MemberInfo info2))
+            {
+                _lastTarget = new AssignmentTarget { Instance = instance, Member = info2, Parent = parent };
+                return res;
+            }
 
             throw new Exception($"Member '{memberName}' not found on type '{type.FullName}'");
         }
         
-        private object AccessMember(Type type, object instance, string memberName)
+        private object AccessMember(Type type, object instance, string memberName, AssignmentTarget parent = null)
         {
              var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
-             if (TryGetMember(type, instance, memberName, flags, out object res)) return res;
+             if (TryGetMember(type, instance, memberName, flags, out object res, out MemberInfo info))
+             {
+                 _lastTarget = new AssignmentTarget { Instance = instance, Member = info, Parent = parent };
+                 return res;
+             }
              throw new Exception($"Member '{memberName}' not found on type '{type.FullName}'");
         }
 
-        private bool TryGetMember(Type type, object instance, string memberName, BindingFlags flags, out object result)
+        private bool TryGetMember(Type type, object instance, string memberName, BindingFlags flags, out object result, out MemberInfo memberInfo)
         {
+            memberInfo = null;
             var prop = type.GetProperty(memberName, flags);
             if (prop != null) 
             {
                 result = prop.GetValue(instance);
+                memberInfo = prop;
                 return true;
             }
 
@@ -490,6 +608,7 @@ namespace MetaMystia.Debugger
             if (field != null) 
             {
                 result = field.GetValue(instance);
+                memberInfo = field;
                 return true;
             }
             
@@ -497,17 +616,19 @@ namespace MetaMystia.Debugger
             return false;
         }
 
-        private object AccessIndexer(object target, object[] args)
+        private object AccessIndexer(object target, object[] args, AssignmentTarget parent = null)
         {
             if (target == null) throw new Exception("Cannot index null");
             
             if (target is Array arr && args.Length == 1 && args[0] is int idx)
             {
+                _lastTarget = new AssignmentTarget { Collection = arr, Index = idx, Parent = parent };
                 return arr.GetValue(idx);
             }
             
             if (target is IList list && args.Length == 1 && args[0] is int listIdx)
             {
+                _lastTarget = new AssignmentTarget { Collection = list, Index = listIdx, Parent = parent };
                 return list[listIdx];
             }
 
@@ -531,6 +652,11 @@ namespace MetaMystia.Debugger
                 {
                     convertedArgs[i] = ConvertArg(args[i], parameters[i].ParameterType);
                 }
+                // Indexer assignment is not fully supported via reflection in this simple parser for write-back yet, 
+                // but we can at least return the value.
+                // For write-back to work with indexers, we'd need to store the indexer PropertyInfo in AssignmentTarget.
+                // Currently AssignmentTarget has Collection/Index for arrays/lists, but not generic indexers.
+                // Let's stick to arrays/lists for now.
                 return indexer.GetValue(target, convertedArgs);
             }
 
