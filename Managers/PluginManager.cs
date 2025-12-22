@@ -5,11 +5,6 @@ using Il2CppInterop.Runtime;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Common.UI;
-using Il2CppInterop.Runtime.Runtime;
-using System.IO.Pipes;
-using GameData.Core.Collections;
-using DEYU.Utils;
-using MetaMiku;
 
 namespace MetaMystia;
 public class PluginManager : MonoBehaviour
@@ -98,19 +93,6 @@ public class PluginManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.KeypadDivide))
         {
             MpManager.ConnectToPeer("TX_VOLCANO", 40815); // 这是 MetaMiku 的 PC，测试用
-        }
-
-        if (Input.GetKeyDown(KeyCode.F1))
-        {
-            Dialog.ShowTestDialog();
-        }
-        if (Input.GetKeyDown(KeyCode.F2))
-        {
-            ResourceExManager.InjectCharacters();
-        }
-        if (Input.GetKeyDown(KeyCode.F3))
-        {
-            // Common.DialogUtility.DialogPannel.
         }
     }
 

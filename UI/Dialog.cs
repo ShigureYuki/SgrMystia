@@ -1,9 +1,6 @@
-using System;
 using BepInEx.Logging;
-using UnityEngine;
 using Common.UI;
 using GameData.Profile;
-using Il2CppInterop.Runtime;
 using Common.DialogUtility;
 
 namespace MetaMystia;
@@ -183,14 +180,10 @@ public static class Dialog
         BuildAndShow(dialogList, onFinishCallback);
 
     }
+    
     public static void ShowTestDialog(System.Action onFinishCallback = null) 
     {
         var dialogList = new CustomDialogList();
-        dialogList.AddDialog(-1, SpeakerIdentity.Identity.Self, 2, Position.Right, "test 1");
-        dialogList.AddDialog(14, SpeakerIdentity.Identity.Special, 13, Position.Left, "……");
-        dialogList.AddDialog(10000, SpeakerIdentity.Identity.Special, 0, Position.Left, "Special 10000 0");
-        dialogList.AddDialog(10001, SpeakerIdentity.Identity.Special, 0, Position.Right, "Special 10001 0");
-        dialogList.AddDialog(10002, SpeakerIdentity.Identity.Special, 0, Position.Right, "Special 10002 0");
         dialogList.AddDialog(-1, SpeakerIdentity.Identity.Self, 2, Position.Right, "你为什么上来就粉评啊，夜雀食堂不是这样的啊！");
         dialogList.AddDialog(-1, SpeakerIdentity.Identity.Self, 2, Position.Right, "你应该先慢慢跟我提要求，我猜一猜你的喜好，再偶尔来点绿评暗示我你还不够满意，还嘲讽我「您完全没有文化底蕴是吗」");
         dialogList.AddDialog(-1, SpeakerIdentity.Identity.Self, 7, Position.Right, "最后我饭团加好料的时候开始提新的要求，我继续加料说「怎么口味这么刁」，然后给你满足你4个喜好tag的食物和酒水你才正式开启奖励符卡啊！");
@@ -202,82 +195,35 @@ public static class Dialog
         dialogList.AddDialog(14, SpeakerIdentity.Identity.Special, 16, Position.Left, "……好~");
         BuildAndShow(dialogList, onFinishCallback);
     }
-    public static void ShowAnimationDialog()
-    {
-        var dialogList = new CustomDialogList();
-        dialogList.AddDialog(14, SpeakerIdentity.Identity.Special, 4, Position.Right, "夜雀食堂的七大不可思议……");
-        dialogList.AddDialog(14, SpeakerIdentity.Identity.Special, 4, Position.Right, "<i>（啊…）</i>");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 9, Position.Left, "大家好！这里是神秘的探访频道！");
-        dialogList.AddDialog(14, SpeakerIdentity.Identity.Special, 1, Position.Right, "<i>（呜…）</i>");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 9, Position.Left, "这是我们的特别节目！");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 1, Position.Left, "我们将探访夜雀食堂不为人知的七大不可思议！");
-        dialogList.AddDialog(14, SpeakerIdentity.Identity.Special, 1, Position.Right, "是……是哦！");
-        dialogList.AddDialog(14, SpeakerIdentity.Identity.Special, 1, Position.Right, "这是满足游戏玩家的超级福利单元哦！");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 9, Position.Left, "今天我们要为玩家们解开的话题是——");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 9, Position.Left, "夜雀食堂的食材并没有米！");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 0, Position.Left, "那么饭团到底是怎么做出来的！？");
-        dialogList.AddDialog(32, SpeakerIdentity.Identity.Special, 3, Position.Right, "<i>（嗯？）</i>");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 8, Position.Left, "<i>（盯—）</i>");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 2, Position.Left, "今天，在这里！");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 2, Position.Left, "请务必！");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 1, Position.Left, "务必向大家展示一下好吗？！");
-        dialogList.AddDialog(32, SpeakerIdentity.Identity.Special, 22, Position.Right, "诶~");
-        dialogList.AddDialog(32, SpeakerIdentity.Identity.Special, 18, Position.Right, "这，原来是这个意思啊—");
-        dialogList.AddDialog(32, SpeakerIdentity.Identity.Special, 16, Position.Right, "我，我知道啦");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 2, Position.Left, "是吗？竟然真的打算解释吗！？");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 2, Position.Left, "<i>不不不，我原本只是故意来凑个热闹</i>");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 2, Position.Left, "<i>没想到真的打算说明吗？</i>");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 1, Position.Left, "那可就太好了！");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 1, Position.Left, "帮了大忙啦！");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 0, Position.Left, "（嗯？）");
-        dialogList.AddDialog(32, SpeakerIdentity.Identity.Special, 8, Position.Right, "<i>（施法中…）</i>");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 8, Position.Left, "（啊？）");
-        dialogList.AddDialog(32, SpeakerIdentity.Identity.Special, 9, Position.Right, "好啦~就是这样~！");
-        dialogList.AddDialog(18, SpeakerIdentity.Identity.Special, 8, Position.Left, "你就扯吧！");
-        BuildAndShow(dialogList);
-    }
 
+    public static void ShowResourceExPackage(string packageName, System.Action onFinishCallback = null)
+    {
+        var dialogList = ResourceExManager.GetDialogPackage(packageName);
+        if (dialogList != null)
+        {
+            BuildAndShow(dialogList, onFinishCallback);
+        }
+        else
+        {
+            Log.LogWarning($"{LOG_TAG} Dialog package {packageName} not found in ResourceExManager.");
+        }
+    }
     public static void DumpExampleDialog()
     {
-        try
+        Utils.FindAndProcessResources<DialogPackage>(dialogPackage =>
         {
-            // 该方法直接从 Resources.FindObjectsOfTypeAll 获取内存中的 DialogCollectionProfile 资源，更全更简单
-            // 其中 ExampleDialog 为只有 Mystia 的对话模板，可作为基础模板使用
-            var dialogPackageType = Il2CppType.Of<GameData.Profile.DialogPackage>();
-            var foundAssets = Resources.FindObjectsOfTypeAll(dialogPackageType);
-
-            if (foundAssets == null || foundAssets.Length == 0)
+            var packageName = dialogPackage.name;
+            if (packageName == "OnTransitionToNight")
             {
-                Log.LogWarning($"{LOG_TAG} No DialogCollectionProfile assets found in memory.");
-                return;
+                ExampleDialog = dialogPackage;
+                Log.LogInfo($"{LOG_TAG} Stored ExampleDialog(OnTransitionToNight) package.");
             }
+            Log.LogDebug($"{LOG_TAG} id={dialogPackage.name}, package={packageName}");
+        });
 
-            Log.LogInfo($"{LOG_TAG} Found {foundAssets.Length} DialogCollectionProfile asset(s).");
-
-            for (var assetIndex = 0; assetIndex < foundAssets.Length; assetIndex++)
-            {
-                var dialogPackage = foundAssets[assetIndex].TryCast<GameData.Profile.DialogPackage>();
-                if (dialogPackage == null)
-                {
-                    Log.LogWarning($"{LOG_TAG} Object at index {assetIndex} could not be cast to DialogCollectionProfile.");
-                    continue;
-                }
-                var packageName = dialogPackage.name;
-                if (packageName == "OnTransitionToNight")
-                {
-                    ExampleDialog = dialogPackage;
-                    Log.LogInfo($"{LOG_TAG} Stored ExampleDialog(OnTransitionToNight) package.");
-                }
-                Log.LogDebug($"{LOG_TAG} id={dialogPackage.name}, package={packageName}");
-            }
-            if (ExampleDialog == null)
-            {
-                Log.LogWarning($"{LOG_TAG} ExampleDialog(OnTransitionToNight) package not found among loaded assets.");
-            }
-        }
-        catch (Exception e)
+        if (ExampleDialog == null)
         {
-            Log.LogError($"{LOG_TAG} Failed to dump DialogCollectionProfile contents: {e.Message}\n{e.StackTrace}");
+            Log.LogWarning($"{LOG_TAG} ExampleDialog(OnTransitionToNight) package not found among loaded assets.");
         }
     }
 };

@@ -67,8 +67,13 @@ DayScene 篇
 
 
 NightScene 篇
-- [ ] 同步普客生成
-- [ ] 同步稀客生成
+- [x] 同步普客生成
+- [x] 同步稀客生成
+- [ ] 同步顾客落座
+- [ ] 同步顾客点单
+- [ ] 同步顾客评价
+- [ ] 同步顾客结账
+- [ ] 同步顾客离开
 - [ ] 同步符卡奖励/惩罚
 - [x] 同步做菜取菜
 - [x] 同步保温箱
@@ -79,6 +84,7 @@ NightScene 篇
 
 其他
 - [x] 自定义二人对话
+- [x] 自定义角色立绘扩展
 
 已知 bug 或缺陷
 - [ ] InGameConsole 与原有面板 UI 冲突
@@ -88,12 +94,17 @@ NightScene 篇
 - [ ] A 在 loading 时 B 选择厨具会使 A 进入 Prep 后显示错误的厨具列表
 - [ ] 地图选择界面中不会缺少店铺等级的提示
 
+
+## ResouceEx 
+
+参见 ResourceEx 下的 README.md 文件，添加自定义角色立绘和对话包
+
 ## 鸣谢
 
 - 第一原作：ZUN@上海アリス幻樂団
 - 第二原作：东方夜雀食堂 - Touhou Mystia's Izakaya
 
-特别感谢 DEYU 和 kk 的支持和帮助
+特别感谢 DEYU 和 kk 等的支持和帮助
 
 
 ## Star History

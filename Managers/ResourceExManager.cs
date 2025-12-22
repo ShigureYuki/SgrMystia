@@ -1,11 +1,13 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Collections.Generic;
 using UnityEngine;
 using BepInEx;
 using BepInEx.Logging;
-using MetaMiku;
+using Common.DialogUtility;
 using GameData.CoreLanguage.Collections;
+
+using MetaMiku;
 
 namespace MetaMystia;
 public class CharacterConfig
@@ -16,6 +18,7 @@ public class CharacterConfig
     public List<string> descriptions { get; set; }
     public string type { get; set; }
     public List<PortraitConfig> portraits { get; set; }
+    public string ModRoot { get; set; }
 }
 
 public class PortraitConfig
@@ -27,6 +30,22 @@ public class PortraitConfig
 public class ResourceConfig
 {
     public List<CharacterConfig> characters { get; set; }
+    public List<DialogPackageConfig> dialogPackages { get; set; }
+}
+
+public class DialogConfig
+{
+    public int characterId { get; set; }
+    public string characterType { get; set; }
+    public int pid { get; set; }
+    public string position { get; set; }
+    public string text { get; set; }
+}
+
+public class DialogPackageConfig
+{
+    public string name { get; set; }
+    public List<DialogConfig> dialogList { get; set; }
 }
 
 public static class ResourceExManager
@@ -39,6 +58,8 @@ public static class ResourceExManager
     
     private static Dictionary<(int id, string type), CharacterConfig> _characterConfigs = new Dictionary<(int id, string type), CharacterConfig>();
     private static Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
+    private static Dictionary<string, CustomDialogList> _dialogPackages = new Dictionary<string, CustomDialogList>();
+    public static readonly string DialogPackageNamePrefix = "_";
 
     public static void Initialize()
     {
@@ -47,56 +68,100 @@ public static class ResourceExManager
 
     private static void LoadConfigs()
     {
-        string jsonPath = Path.Combine(ResourceRoot, "Characters.json");
-        if (!File.Exists(jsonPath))
+        if (!Directory.Exists(ResourceRoot))
         {
-            Log.LogError($"{LOG_TAG} Resource config not found at {jsonPath}");
+            Directory.CreateDirectory(ResourceRoot);
+            Log.LogInfo($"{LOG_TAG} Created ResourceEx directory at {ResourceRoot}");
             return;
         }
 
-        try
+        var modDirs = Directory.GetDirectories(ResourceRoot);
+        foreach (var modDir in modDirs)
         {
-            string jsonString = File.ReadAllText(jsonPath);
-            var config = JsonSerializer.Deserialize<ResourceConfig>(jsonString);
-            
-            if (config?.characters != null)
+            string modName = Path.GetFileName(modDir);
+            string jsonPath = Path.Combine(modDir, "ResourceEx.json");
+
+            if (!File.Exists(jsonPath))
             {
-                foreach (var charConfig in config.characters)
+                continue;
+            }
+
+            Log.LogInfo($"{LOG_TAG} Loading mod: {modName} from {jsonPath}");
+            try
+            {
+                string jsonString = File.ReadAllText(jsonPath);
+                var config = JsonSerializer.Deserialize<ResourceConfig>(jsonString);
+                
+                if (config?.characters != null)
                 {
-                    _characterConfigs[(charConfig.id, charConfig.type)] = charConfig;
-                    Log.LogInfo($"{LOG_TAG} Loaded config for character {charConfig.name} ({charConfig.id}, {charConfig.type})");
+                    foreach (var charConfig in config.characters)
+                    {
+                        charConfig.ModRoot = modDir;
+                        _characterConfigs[(charConfig.id, charConfig.type)] = charConfig;
+                        Log.LogInfo($"{LOG_TAG} [{modName}] Loaded config for character {charConfig.name} ({charConfig.id}, {charConfig.type})");
+                    }
+                }
+
+                if (config?.dialogPackages != null)
+                {
+                    foreach (var pkgConfig in config.dialogPackages)
+                    {
+                        var dialogList = new CustomDialogList();
+                        dialogList.packageName = DialogPackageNamePrefix + pkgConfig.name;
+                        foreach (var d in pkgConfig.dialogList)
+                        {
+                            var speakerType = SpeakerIdentity.Identity.Unknown;
+                            if (!string.IsNullOrEmpty(d.characterType) && System.Enum.TryParse<SpeakerIdentity.Identity>(d.characterType, true, out var st))
+                            {
+                                speakerType = st;
+                            }
+
+                            var position = Position.Left;
+                            if (System.Enum.TryParse<Position>(d.position, out var pos))
+                            {
+                                position = pos;
+                            }
+
+                            dialogList.AddDialog(d.characterId, speakerType, d.pid, position, d.text);
+                        }
+                        _dialogPackages[pkgConfig.name] = dialogList;
+                        Log.LogInfo($"{LOG_TAG} [{modName}] Loaded dialog package: {pkgConfig.name}");
+                    }
                 }
             }
-        }
-        catch (System.Exception e)
-        {
-            Log.LogError($"{LOG_TAG} Failed to load resource config: {e.Message}");
+            catch (System.Exception e)
+            {
+                Log.LogError($"{LOG_TAG} Failed to load mod {modName}: {e.Message}");
+            }
         }
     }
 
-    public static CharacterConfig GetCharacterConfig(int id, string type)
+    public static CustomDialogList GetDialogPackage(string name)
     {
-        if (_characterConfigs.TryGetValue((id, type), out var config))
+        if (_dialogPackages.TryGetValue(name, out var pkg))
         {
-            return config;
+            return pkg;
         }
         return null;
     }
 
-    public static Sprite GetSprite(string relativePath)
+    public static Sprite GetSprite(string relativePath, string modRoot = null)
     {
         if (string.IsNullOrEmpty(relativePath)) return null;
 
-        if (_spriteCache.TryGetValue(relativePath, out var sprite))
+        string fullPath = string.IsNullOrEmpty(modRoot) 
+            ? Path.Combine(ResourceRoot, relativePath) 
+            : Path.Combine(modRoot, relativePath);
+
+        if (_spriteCache.TryGetValue(fullPath, out var sprite))
         {
             return sprite;
         }
 
-        string fullPath = Path.Combine(ResourceRoot, relativePath);
         sprite = Utils.GetArtWork(fullPath);
         if (sprite != null)
         {
-            _spriteCache[relativePath] = sprite;
+            _spriteCache[fullPath] = sprite;
         }
         else
         {
@@ -109,6 +174,16 @@ public static class ResourceExManager
     {
         return _characterConfigs.Values;
     }
+    
+    public static CharacterConfig GetCharacterConfig(int id, string type)
+    {
+        if (_characterConfigs.TryGetValue((id, type), out var config))
+        {
+            return config;
+        }
+        return null;
+    }
+
     public static void InjectCharacters()
     {
         Log.LogInfo($"{LOG_TAG} Injecting characters from ResourceEx...");
@@ -125,18 +200,28 @@ public static class ResourceExManager
                 desc2,
                 desc3);
 
-            if (charConfig.type == "Special")
+            var identity = SpeakerIdentity.Identity.Unknown;
+            if (!string.IsNullOrEmpty(charConfig.type) && System.Enum.TryParse<SpeakerIdentity.Identity>(charConfig.type, true, out var idt))
+            {
+                identity = idt;
+            }
+
+            if (identity == SpeakerIdentity.Identity.Special)
             {
                 DataBaseLanguage.SpecialGuest.ForceAddOrUpdateValueTuple(charConfig.id, val);
                 Log.LogInfo($"{LOG_TAG} Injected Special character: {charConfig.name} ({charConfig.id})");
             }
-            else if (charConfig.type == "Normal")
+            else if (identity == SpeakerIdentity.Identity.Normal)
             {
                 Log.LogInfo($"{LOG_TAG} Normal character detected but injection not yet implemented: {charConfig.name} ({charConfig.id})");
             }
+            else if (identity == SpeakerIdentity.Identity.Self)
+            {
+                Log.LogInfo($"{LOG_TAG} Self character detected: {charConfig.name} ({charConfig.id})");
+            }
             else
             {
-                Log.LogWarning($"{LOG_TAG} Unknown character detected but injection not yet implemented: {charConfig.name} ({charConfig.id})");
+                Log.LogWarning($"{LOG_TAG} Unknown character type for {charConfig.name} ({charConfig.id}): {charConfig.type}");
             }
         }
     }

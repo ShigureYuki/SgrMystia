@@ -2,6 +2,10 @@ using System.Linq;
 using BepInEx.Logging;
 using System.IO;
 using UnityEngine;
+using System;
+using Il2CppInterop.Runtime;
+
+
 
 namespace MetaMystia;
 
@@ -59,9 +63,6 @@ public static class Utils
         // }
         return stack.GetFrames().Any(frame => frame.GetMethod().Name.Contains(funcName));
     }
-
-
-    
     public static Sprite GetArtWork(string filePath)
     {
         if (!File.Exists(filePath)) return null;
@@ -77,6 +78,34 @@ public static class Utils
             
         sprite.name = Path.GetFileNameWithoutExtension(filePath);
         return sprite;
+    }
+
+    public static void FindAndProcessResources<T>(Action<T> action) where T : UnityEngine.Object
+    {
+        try
+        {
+            var type = Il2CppType.Of<T>();
+            var foundAssets = Resources.FindObjectsOfTypeAll(type);
+
+            if (foundAssets == null || foundAssets.Length == 0)
+            {
+                Log.LogWarning($"{LOG_TAG} No {typeof(T).Name} assets found in memory.");
+                return;
+            }
+
+            Log.LogDebug($"{LOG_TAG} Found {foundAssets.Length} {typeof(T).Name} asset(s).");
+
+            for (var i = 0; i < foundAssets.Length; i++)
+            {
+                var asset = foundAssets[i].TryCast<T>();
+                if (asset == null) continue;
+                action(asset);
+            }
+        }
+        catch (Exception e)
+        {
+            Log.LogError($"{LOG_TAG} Failed to process {typeof(T).Name} contents: {e.Message}\n{e.StackTrace}");
+        }
     }
 };
 

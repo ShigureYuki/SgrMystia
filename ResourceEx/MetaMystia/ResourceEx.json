@@ -1,0 +1,282 @@
+{
+  "characters": [
+    {
+      "id": 10000,
+      "name": "秋静叶",
+      "label": "AkiSizuha",
+      "descriptions": [
+          "红叶之神",
+          "八百万之神",
+          "掌管红叶程度的能力"
+    ],
+    "type": "Special",
+      "portraits": [
+        { "pid": 0, "path": "assets/AkiSizuha_0.png" }
+      ]
+    },
+    {
+      "id": 10001,
+      "name": "秋穰子",
+      "label": "AkiMinoriko",
+      "descriptions": [
+        "丰收之神",
+        "八百万之神",
+        "掌管丰收程度的能力"
+      ],
+      "type": "Special",
+      "portraits": [
+        { "pid": 0, "path": "assets/AkiMinoriko_0.png" }
+      ]
+    },
+    {
+      "id": 10002,
+      "name": "八云蓝",
+      "label": "YakumoRan",
+      "descriptions": [
+        "使役式神程度的能力",
+        "",
+        ""
+      ],
+      "type": "Special",
+      "portraits": [
+        { "pid": 0, "path": "assets/YakumoRan_0.png" }
+      ]
+    }
+  ],
+  "dialogPackages": [
+    {
+      "name": "Test",
+      "dialogList": [
+        {
+          "characterId": 10000,
+          "characterType": "Special",
+          "pid": 0,
+          "position": "Left",
+          "text": "秋静叶 Testing..."
+        },
+        {
+          "characterId": 10001,
+          "characterType": "Special",
+          "pid": 0,
+          "position": "Right",
+          "text": "秋穰子 Testing..."
+        },
+        {
+          "characterId": 10002,
+          "characterType": "Special",
+          "pid": 0,
+          "position": "Left",
+          "text": "八云蓝 Testing..."
+        }
+      ]
+    },
+    {
+      "name": "Animation",
+      "dialogList": [
+        {
+          "characterId": 14,
+          "characterType": "Special",
+          "pid": 4,
+          "position": "Right",
+          "text": "夜雀食堂的七大不可思议……"
+        },
+        {
+          "characterId": 14,
+          "characterType": "Special",
+          "pid": 4,
+          "position": "Right",
+          "text": "<i>（啊…）</i>"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 9,
+          "position": "Left",
+          "text": "大家好！这里是神秘的探访频道！"
+        },
+        {
+          "characterId": 14,
+          "characterType": "Special",
+          "pid": 1,
+          "position": "Right",
+          "text": "<i>（呜…）</i>"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 9,
+          "position": "Left",
+          "text": "这是我们的特别节目！"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 1,
+          "position": "Left",
+          "text": "我们将探访夜雀食堂不为人知的七大不可思议！"
+        },
+        {
+          "characterId": 14,
+          "characterType": "Special",
+          "pid": 1,
+          "position": "Right",
+          "text": "是……是哦！"
+        },
+        {
+          "characterId": 14,
+          "characterType": "Special",
+          "pid": 1,
+          "position": "Right",
+          "text": "这是满足游戏玩家的超级福利单元哦！"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 9,
+          "position": "Left",
+          "text": "今天我们要为玩家们解开的话题是——"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 9,
+          "position": "Left",
+          "text": "夜雀食堂的食材并没有米！"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 0,
+          "position": "Left",
+          "text": "那么饭团到底是怎么做出来的！？"
+        },
+        {
+          "characterId": 32,
+          "characterType": "Special",
+          "pid": 3,
+          "position": "Right",
+          "text": "<i>（嗯？）</i>"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 8,
+          "position": "Left",
+          "text": "<i>（盯—）</i>"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 2,
+          "position": "Left",
+          "text": "今天，在这里！"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 2,
+          "position": "Left",
+          "text": "请务必！"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 1,
+          "position": "Left",
+          "text": "务必向大家展示一下好吗？！"
+        },
+        {
+          "characterId": 32,
+          "characterType": "Special",
+          "pid": 22,
+          "position": "Right",
+          "text": "诶~"
+        },
+        {
+          "characterId": 32,
+          "characterType": "Special",
+          "pid": 18,
+          "position": "Right",
+          "text": "这，原来是这个意思啊—"
+        },
+        {
+          "characterId": 32,
+          "characterType": "Special",
+          "pid": 16,
+          "position": "Right",
+          "text": "我，我知道啦"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 2,
+          "position": "Left",
+          "text": "是吗？竟然真的打算解释吗！？"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 2,
+          "position": "Left",
+          "text": "<i>不不不，我原本只是故意来凑个热闹</i>"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 2,
+          "position": "Left",
+          "text": "<i>没想到真的打算说明吗？</i>"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 1,
+          "position": "Left",
+          "text": "那可就太好了！"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 1,
+          "position": "Left",
+          "text": "帮了大忙啦！"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 0,
+          "position": "Left",
+          "text": "（嗯？）"
+        },
+        {
+          "characterId": 32,
+          "characterType": "Special",
+          "pid": 8,
+          "position": "Right",
+          "text": "<i>（施法中…）</i>"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 8,
+          "position": "Left",
+          "text": "（啊？）"
+        },
+        {
+          "characterId": 32,
+          "characterType": "Special",
+          "pid": 9,
+          "position": "Right",
+          "text": "好啦~就是这样~！"
+        },
+        {
+          "characterId": 18,
+          "characterType": "Special",
+          "pid": 8,
+          "position": "Left",
+          "text": "你就扯吧！"
+        }
+      ]
+    }
+  ]
+}

@@ -66,6 +66,7 @@ public class Plugin : BasePlugin
                 typeof(WorkSceneStoragePannelPatch),
                 typeof(GuestsManagerPatch),
                 typeof(GuestGroupControllerPatch),
+                typeof(RunTimeAlbumPatch),
             };
             foreach (var patch in patchList)
             {
