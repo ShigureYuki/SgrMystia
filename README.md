@@ -97,7 +97,7 @@ NightScene 篇
 
 ## ResouceEx 
 
-参见 ResourceEx 下的 README.md 文件，添加自定义角色立绘和对话包
+参见 ResourceEx 下的 [README.md](https://github.com/MetaMikuAI/MetaMystia/tree/main/ResourceEx) 文件，添加自定义角色立绘和对话包
 
 ## 鸣谢
 
