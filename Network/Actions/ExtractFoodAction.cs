@@ -1,5 +1,3 @@
-using GameData.Core.Collections;
-using JetBrains.Annotations;
 using MemoryPack;
 
 namespace MetaMystia;

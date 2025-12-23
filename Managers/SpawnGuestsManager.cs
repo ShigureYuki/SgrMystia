@@ -2,13 +2,11 @@ using UnityEngine;
 using BepInEx.Logging;
 using Common.CharacterUtility;
 using NightScene.GuestManagementUtility;
-using Common.UI;
-using Il2CppSystem.Collections.Generic;
-using GameData.Core.Collections.NightSceneUtility;
 using NightScene.EventUtility;
 
 using MetaMystia;
 using Il2CppSystem.IO;
+using DEYU.Utils;
 
 public static class SpawnGuestsManager
 {
@@ -47,7 +45,7 @@ public static class SpawnGuestsManager
 
         var randomNormalGuestGroups = cookSystemManager.GetRandomNormalGuestGroups();
         if (randomNormalGuestGroups == null) return;
-
+        
         Log.LogWarning($"{LOG_TAG} Spawning normal guest group with {randomNormalGuestGroups.ToArray().ToString()} groups.");
 
         var eventManager = EventManager.Instance;

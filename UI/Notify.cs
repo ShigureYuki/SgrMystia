@@ -1,5 +1,4 @@
 using BepInEx.Logging;
-using GameData.Profile;
 using Common.UI;
 
 namespace MetaMystia;

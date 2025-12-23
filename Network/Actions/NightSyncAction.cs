@@ -10,9 +10,14 @@ public partial class NightSyncAction : NetAction
     public float Vy {get; set; }
     public float Px {get; set; }
     public float Py {get; set; }
+
+    public override void LogActionSend(bool onlyAction, string prefix)
+    {
+        LogActionSend(BepInEx.Logging.LogLevel.Debug, onlyAction, prefix);
+    }
     public override void OnReceived()
     {
-        LogActionReceived();
+        LogActionReceived(BepInEx.Logging.LogLevel.Debug);
         if (PluginManager.CurrentGameScene != Common.UI.Scene.WorkScene)
         {
             return;
