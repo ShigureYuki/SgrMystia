@@ -1,4 +1,3 @@
-using System.Linq;
 using BepInEx.Logging;
 using System.IO;
 using UnityEngine;
@@ -50,18 +49,6 @@ public static class Utils
         {
             Log.LogInfo($"{LOG_TAG} Ingredient ID: {kvp.Key}, Name: {kvp.Value.ToString()}");
         }
-    }
-
-    // Note: only available for those functions are patched. Not patched functions will not appear in the stacktrace
-    public static bool CheckStacktraceContains(string funcName)
-    {
-        var stack = new System.Diagnostics.StackTrace();
-        // foreach (var frame in stack.GetFrames())
-        // {
-        //     var method = frame.GetMethod();
-        //     Log.LogInfo($"{LOG_TAG} \t at {method.Name}");
-        // }
-        return stack.GetFrames().Any(frame => frame.GetMethod().Name.Contains(funcName));
     }
     public static Sprite GetArtWork(string filePath)
     {
