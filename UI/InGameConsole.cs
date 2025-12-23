@@ -43,32 +43,16 @@ namespace MetaMystia
 
         private void UpdateGameInputState()
         {
-            var inputGenerator = Object.FindObjectOfType<CharacterControllerInputGeneratorComponent>();
-            if (inputGenerator != null)
-            {
-                inputGenerator.enabled = !IsOpen;
-                PluginLog.LogDebug($"Console: InputGenerator enabled = {inputGenerator.enabled}");
-            }
-            else
-            {
-                PluginLog.LogWarning("Console: No CharacterControllerInputGeneratorComponent found.");
-            }
-
             try
             {
-                // UpdatePlayerInputAvailability is static
+                // PluginLog.LogInfo($"Console: UniversalGameManager input availability before set {UniversalGameManager.IsInputEnabled}");
+                // UniversalGameManager.UpdatePlayerInputAvailability();
+                // UniversalGameManager.IsInputEnabled = !IsOpen;
                 UniversalGameManager.UpdatePlayerInputAvailability(!IsOpen);
-                
-                if (IsOpen)
-                {
-                    UniversalGameManager.OpenInputBlockerMenu();
-                }
-                else
-                {
-                    UniversalGameManager.CloseInputBlockerMenu();
-                }
-                
-                PluginLog.LogDebug($"Console: UniversalGameManager input availability set to {!IsOpen}");
+                // DEYU.AdpUISystem.Managers.AdpUIPanelManager.PlayerInput.m_InputActive = !IsOpen;
+
+                // PluginLog.LogInfo($"Console: UniversalGameManager input availability set to {UniversalGameManager.IsInputEnabled}");
+
             }
             catch (System.Exception e)
             {
@@ -78,12 +62,12 @@ namespace MetaMystia
             // 3. Toggle EventSystem to block UI navigation (Main Menu AD/JK)
             // We use sendNavigationEvents instead of enabled, because disabling the component
             // makes EventSystem.current return null, preventing us from re-enabling it later.
-            // var eventSystem = EventSystem.current;
-            // if (eventSystem != null)
-            // {
-            //     eventSystem.sendNavigationEvents = !IsOpen;
-            //     PluginLog.LogDebug($"Console: EventSystem sendNavigationEvents = {eventSystem.sendNavigationEvents}");
-            // }
+            var eventSystem = EventSystem.current;
+            if (eventSystem != null)
+            {
+                eventSystem.sendNavigationEvents = !IsOpen;
+                PluginLog.LogDebug($"Console: EventSystem sendNavigationEvents = {eventSystem.sendNavigationEvents}");
+            }
         }
 
         public void Update()

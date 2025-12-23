@@ -33,6 +33,10 @@ public static class FloatingTextHelper
         {
             UnityEngine.Object.Destroy(activeTextPeer);
         }
+        if (comp == null)
+        {
+            return;
+        }
         activeTextPeer = MakeFloatingText(comp.transform, text);                        
         comp.StartCoroutine(FadeAndDestroy(activeTextPeer.GetComponent<TextMeshPro>(), duration));
     }
@@ -43,8 +47,12 @@ public static class FloatingTextHelper
         {
             UnityEngine.Object.Destroy(activeTextSelf);
         }
-        
+
         var character = MystiaManager.Instance.GetCharacterUnit();
+        if (character == null)
+        {
+            return;
+        }
         activeTextSelf = MakeFloatingText(character.transform, text);         
         character.StartCoroutine(FadeAndDestroy(activeTextSelf.GetComponent<TextMeshPro>(), duration));
     }
