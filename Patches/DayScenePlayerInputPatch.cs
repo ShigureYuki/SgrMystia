@@ -4,7 +4,8 @@ using DayScene.Input;
 namespace MetaMystia;
 
 [HarmonyPatch(typeof(DayScene.Input.DayScenePlayerInputGenerator))]
-public class DayScenePlayerInputPatch : PatchBase<DayScenePlayerInputPatch>
+[AutoLog]
+public partial class DayScenePlayerInputPatch
 {
     [HarmonyPatch(nameof(DayScenePlayerInputGenerator.OnSprintPerformed))]
     [HarmonyPrefix]

@@ -5,13 +5,14 @@ namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(GameData.Core.Collections.CharacterUtility.DataBaseCharacter))]
-public class DataBaseCharacterPatch : PatchBase<DataBaseCharacterPatch>
+[AutoLog]
+public partial class DataBaseCharacterPatch
 {
     [HarmonyPatch(nameof(DataBaseCharacter.GetNPCLabel))]
     [HarmonyPrefix]
     public static bool GetNPCLabel_Prefix(ref string __result, SchedulerNode.Character identity)
     {
-        // Log.LogWarning($"{LOG_TAG} GetNPCLabel_Prefix called for identity: {identity} result: {__result}");
+        // Log.LogWarning($"GetNPCLabel_Prefix called for identity: {identity} result: {__result}");
         
         var config = ResourceExManager.GetCharacterConfig(identity.characterId, identity.characterIdentity.ToString());
         if (config != null)

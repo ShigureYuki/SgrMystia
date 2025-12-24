@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace MetaMystia;
 
-
 [HarmonyPatch(typeof(CharacterControllerUnit))]
-public class CharacterControllerUnitPatch : PatchBase<CharacterControllerUnitPatch>
+[AutoLog]
+public partial class CharacterControllerUnitPatch
 {
     [HarmonyPatch(nameof(CharacterControllerUnit.Initialize))]
     [HarmonyPrefix]
@@ -25,7 +25,7 @@ public class CharacterControllerUnitPatch : PatchBase<CharacterControllerUnitPat
         if (kyoukoNames.Any(name => __instance.name.Equals(name)))
         {
             shouldTurnOnCollider = true;
-            Log.LogMessage($"{LOG_TAG} found {__instance.name}, forcing shouldTurnOnCollider to true");
+            Log.LogMessage($"found {__instance.name}, forcing shouldTurnOnCollider to true");
         } 
     }
 }

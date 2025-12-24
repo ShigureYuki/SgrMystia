@@ -5,7 +5,8 @@ using BepInEx.Logging;
 
 namespace MetaMystia;
 
-public static class MpManager
+[AutoLog]
+public static partial class MpManager
 {
     public enum ROLE
     {
@@ -14,7 +15,6 @@ public static class MpManager
         Both    // For debug
     }
 
-    private static ManualLogSource Log => Plugin.Instance.Log;
     private const int TCP_PORT = 40815;
     private static string _playerId = Environment.MachineName;
     public static string PlayerId { get { return _playerId; } set { _playerId = value; Log.LogInfo($"Player ID set to: {value}"); } }

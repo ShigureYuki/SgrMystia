@@ -3,10 +3,9 @@ using Common.UI;
 
 namespace MetaMystia;
 
-public static class Notify
+[AutoLog]
+public static partial class Notify
 {
-    private static ManualLogSource Log => Plugin.Instance.Log;
-    private static readonly string LOG_TAG = "[Notify.cs]";
 
     // Note: should run on main thread
     public static void Show(string text)

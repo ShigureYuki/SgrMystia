@@ -3,6 +3,7 @@ using MemoryPack;
 namespace MetaMystia;
 
 [MemoryPackable]
+[AutoLog]
 public partial class ReadyAction : NetAction
 {
     public override ActionType Type => ActionType.READY;

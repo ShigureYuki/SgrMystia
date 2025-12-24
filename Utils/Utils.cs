@@ -8,11 +8,9 @@ using Il2CppInterop.Runtime;
 
 namespace MetaMystia;
 
-public static class Utils
+[AutoLog]
+public static partial class Utils
 {
-    private static ManualLogSource Log => Plugin.Instance.Log;
-    private static readonly string LOG_TAG = "[Utils.cs]";
-
     public static string GetMapNameCN(string mapLabel)
     {
         return mapLabel switch
@@ -47,7 +45,7 @@ public static class Utils
         var Ingredients = GameData.CoreLanguage.Collections.DataBaseLanguage.Ingredients;
         foreach (var kvp in Ingredients)
         {
-            Log.LogInfo($"{LOG_TAG} Ingredient ID: {kvp.Key}, Name: {kvp.Value.ToString()}");
+            Log.LogInfo($"Ingredient ID: {kvp.Key}, Name: {kvp.Value.ToString()}");
         }
     }
     public static Sprite GetArtWork(string filePath)
@@ -76,11 +74,11 @@ public static class Utils
 
             if (foundAssets == null || foundAssets.Length == 0)
             {
-                Log.LogWarning($"{LOG_TAG} No {typeof(T).Name} assets found in memory.");
+                Log.LogWarning($"No {typeof(T).Name} assets found in memory.");
                 return;
             }
 
-            Log.LogDebug($"{LOG_TAG} Found {foundAssets.Length} {typeof(T).Name} asset(s).");
+            Log.LogDebug($"Found {foundAssets.Length} {typeof(T).Name} asset(s).");
 
             for (var i = 0; i < foundAssets.Length; i++)
             {
@@ -91,7 +89,7 @@ public static class Utils
         }
         catch (Exception e)
         {
-            Log.LogError($"{LOG_TAG} Failed to process {typeof(T).Name} contents: {e.Message}\n{e.StackTrace}");
+            Log.LogError($"Failed to process {typeof(T).Name} contents: {e.Message}\n{e.StackTrace}");
         }
     }
 };

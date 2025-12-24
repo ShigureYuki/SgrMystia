@@ -4,6 +4,7 @@ using GameData.Core.Collections;
 namespace MetaMystia;
 
 [MemoryPackable]
+[AutoLog]
 public partial class CookAction : NetAction
 {
     public override ActionType Type => ActionType.COOK;

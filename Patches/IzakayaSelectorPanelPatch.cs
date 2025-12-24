@@ -5,7 +5,8 @@ namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(Common.UI.IzakayaSelectorPanel_New))]
-public class IzakayaSelectorPanelPatch : PatchBase<IzakayaSelectorPanelPatch>
+[AutoLog]
+public partial class IzakayaSelectorPanelPatch
 {
     public static bool _skipPatchIzakayaSelectionConfirmation = false;
     public static Common.UI.IzakayaSelectorPanel_New instanceRef = null;
@@ -16,7 +17,7 @@ public class IzakayaSelectorPanelPatch : PatchBase<IzakayaSelectorPanelPatch>
     public static void OnGuideMapInitialize_Prefix(Common.UI.IzakayaSelectorPanel_New __instance)
     {   
         instanceRef = __instance;
-        Log.LogInfo($"{LOG_TAG} OnGuideMapInitialize called");
+        Log.LogInfo($"OnGuideMapInitialize called");
     }
 
     [HarmonyPatch(nameof(Common.UI.IzakayaSelectorPanel_New._OnGuideMapInitialize_b__21_0))]
@@ -49,16 +50,16 @@ public class IzakayaSelectorPanelPatch : PatchBase<IzakayaSelectorPanelPatch>
         //                                -> 展示「确认」对话
         //                                -> 对话回调中调用 _OnGuideMapInitialize_b__21_0 以结束
         
-        Log.LogInfo($"{LOG_TAG} _OnGuideMapInitialize_b__21_0 called");
+        Log.LogInfo($"_OnGuideMapInitialize_b__21_0 called");
 
         if (!MpManager.IsConnected)
         {
-            Log.LogWarning($"{LOG_TAG} Not in multiplayer session, skipping patch");
+            Log.LogWarning($"Not in multiplayer session, skipping patch");
             return true;
         }
         if (_skipPatchIzakayaSelectionConfirmation)
         {
-            Log.LogWarning($"{LOG_TAG} skipPatchIzakayaSelectionConfirmation is true, skipping patch");
+            Log.LogWarning($"skipPatchIzakayaSelectionConfirmation is true, skipping patch");
             return true;
         }
 
@@ -77,7 +78,7 @@ public class IzakayaSelectorPanelPatch : PatchBase<IzakayaSelectorPanelPatch>
 
         if (KyoukoManager.IzakayaMapLabel == "" || KyoukoManager.IzakayaLevel == 0)
         {
-            Log.LogWarning($"{LOG_TAG} Kyouko has not selected an Izakaya yet -> send SELECT and skip");
+            Log.LogWarning($"Kyouko has not selected an Izakaya yet -> send SELECT and skip");
             MpManager.SendSelectedIzakaya(izakayaMapLabel, izakayaLevel);
             Dialog.ShowSelectedDialog(izakayaMapLabel, null);
             return false;
@@ -85,12 +86,12 @@ public class IzakayaSelectorPanelPatch : PatchBase<IzakayaSelectorPanelPatch>
 
         if (izakayaMapLabel != KyoukoManager.IzakayaMapLabel || izakayaLevel != KyoukoManager.IzakayaLevel)
         {
-            Log.LogWarning($"{LOG_TAG} Selected Izakaya does not match Kyouko's selection -> show rejection dialog");
+            Log.LogWarning($"Selected Izakaya does not match Kyouko's selection -> show rejection dialog");
             Dialog.ShowRejectDialog(izakayaMapLabel, KyoukoManager.IzakayaMapLabel, null);
             return false;
         }
 
-        Log.LogWarning($"{LOG_TAG} Selected Izakaya matches Kyouko's selection -> send CONFIRM and show confirmation dialog");
+        Log.LogWarning($"Selected Izakaya matches Kyouko's selection -> send CONFIRM and show confirmation dialog");
         MpManager.SendConfirmedIzakaya(izakayaMapLabel, izakayaLevel);
         
         System.Action closePanelCallback = () => {
@@ -107,7 +108,7 @@ public class IzakayaSelectorPanelPatch : PatchBase<IzakayaSelectorPanelPatch>
     [HarmonyPrefix]
     public static void TryChangeIzakayaLevel_Prefix(ref Common.UI.IzakayaLevel izakayaLevel, Common.UI.IzakayaLevel targetLevel)
     {
-        Log.LogInfo($"{LOG_TAG} TryChangeIzakayaLevel called with izakayaLevel: {izakayaLevel}, targetLevel: {targetLevel}");
+        Log.LogInfo($"TryChangeIzakayaLevel called with izakayaLevel: {izakayaLevel}, targetLevel: {targetLevel}");
     }
 
 
@@ -120,7 +121,7 @@ public class IzakayaSelectorPanelPatch : PatchBase<IzakayaSelectorPanelPatch>
             cachedSpots[guideMapSpot.PrimaryName] = guideMapSpot;
         }
 
-        Log.LogInfo($"{LOG_TAG} OnGuideMapSpotSelected called, guideMapSpot.PrimaryName: {guideMapSpot.PrimaryName}");
+        Log.LogInfo($"OnGuideMapSpotSelected called, guideMapSpot.PrimaryName: {guideMapSpot.PrimaryName}");
 
     }
 }

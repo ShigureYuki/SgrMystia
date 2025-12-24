@@ -49,6 +49,7 @@ public enum ActionType : ushort
 [MemoryPackUnion((ushort)ActionType.GUEST_GEN_SPECIAL_ORDER, typeof(GuestGenSPOrderAction))]
 [MemoryPackUnion((ushort)ActionType.GUEST_SERVE, typeof(GuestServeAction))]
 [MemoryPackUnion((ushort)ActionType.GUEST_LEAVE, typeof(GuestLeaveAction))]
+[AutoLog]
 
 public abstract partial class NetAction
 {
@@ -69,19 +70,19 @@ public abstract partial class NetAction
         switch (logLevel)
         {
             case BepInEx.Logging.LogLevel.Debug:
-                Log.LogDebug(logStr);
+                Log.LogDebug(logStr, false);
                 break;
             case BepInEx.Logging.LogLevel.Warning:
-                Log.LogWarning(logStr);
+                Log.LogWarning(logStr, false);
                 break;
             case BepInEx.Logging.LogLevel.Error:
-                Log.LogError(logStr);
+                Log.LogError(logStr, false);
                 break;
             case BepInEx.Logging.LogLevel.Message:
-                Log.LogMessage(logStr);
+                Log.LogMessage(logStr, false);
                 break;
             default:
-                Log.LogInfo(logStr);
+                Log.LogInfo(logStr, false);
                 break;
         }
     }
@@ -107,9 +108,6 @@ public abstract partial class NetAction
     {
         LogActionSend(BepInEx.Logging.LogLevel.Info, onlyAction, prefix);
     }
-
-    [MemoryPackIgnore]
-    protected static BepInEx.Logging.ManualLogSource Log => Plugin.Instance.Log;
 
     public static void RegisterAllFormatter()
     {

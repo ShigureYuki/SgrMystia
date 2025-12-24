@@ -3,7 +3,8 @@ using GameData.RunTime.Common;
 namespace MetaMystia;
 
 [HarmonyPatch(typeof(RunTimeScheduler))]
-public class RunTimeSchedulerPatch : PatchBase<RunTimeSchedulerPatch>
+[AutoLog]
+public partial class RunTimeSchedulerPatch
 {
     [HarmonyPatch(nameof(RunTimeScheduler.OnEnterDaySceneMap))]
     [HarmonyPostfix]

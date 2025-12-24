@@ -6,7 +6,8 @@ namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(NightScene.UI.CookingUtility.WorkSceneStoragePannel))]
-public class WorkSceneStoragePannelPatch : PatchBase<WorkSceneStoragePannelPatch>
+[AutoLog]
+public partial class WorkSceneStoragePannelPatch
 {
 
     public static WorkSceneStoragePannel instanceRef = null;

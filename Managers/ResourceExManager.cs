@@ -48,11 +48,9 @@ public class DialogPackageConfig
     public List<DialogConfig> dialogList { get; set; }
 }
 
-public static class ResourceExManager
+[AutoLog]
+public static partial class ResourceExManager
 {
-    private static ManualLogSource Log => Plugin.Instance.Log;
-    private static readonly string LOG_TAG = "[ResourceExManager]";
-    
     // Abstracted resource root path
     public static string ResourceRoot { get; set; } = Path.Combine(Paths.GameRootPath, "ResourceEx");
     
@@ -71,7 +69,7 @@ public static class ResourceExManager
         if (!Directory.Exists(ResourceRoot))
         {
             Directory.CreateDirectory(ResourceRoot);
-            Log.LogInfo($"{LOG_TAG} Created ResourceEx directory at {ResourceRoot}");
+            Log.LogInfo($"Created ResourceEx directory at {ResourceRoot}");
             return;
         }
 
@@ -86,7 +84,7 @@ public static class ResourceExManager
                 continue;
             }
 
-            Log.LogInfo($"{LOG_TAG} Loading mod: {modName} from {jsonPath}");
+            Log.LogInfo($"Loading mod: {modName} from {jsonPath}");
             try
             {
                 string jsonString = File.ReadAllText(jsonPath);
@@ -98,7 +96,7 @@ public static class ResourceExManager
                     {
                         charConfig.ModRoot = modDir;
                         _characterConfigs[(charConfig.id, charConfig.type)] = charConfig;
-                        Log.LogInfo($"{LOG_TAG} [{modName}] Loaded config for character {charConfig.name} ({charConfig.id}, {charConfig.type})");
+                        Log.LogInfo($"[{modName}] Loaded config for character {charConfig.name} ({charConfig.id}, {charConfig.type})");
                     }
                 }
 
@@ -125,13 +123,13 @@ public static class ResourceExManager
                             dialogList.AddDialog(d.characterId, speakerType, d.pid, position, d.text);
                         }
                         _dialogPackages[pkgConfig.name] = dialogList;
-                        Log.LogInfo($"{LOG_TAG} [{modName}] Loaded dialog package: {pkgConfig.name}");
+                        Log.LogInfo($"[{modName}] Loaded dialog package: {pkgConfig.name}");
                     }
                 }
             }
             catch (System.Exception e)
             {
-                Log.LogError($"{LOG_TAG} Failed to load mod {modName}: {e.Message}");
+                Log.LogError($"Failed to load mod {modName}: {e.Message}");
             }
         }
     }
@@ -165,7 +163,7 @@ public static class ResourceExManager
         }
         else
         {
-            Log.LogWarning($"{LOG_TAG} Failed to load sprite at {fullPath}");
+            Log.LogWarning($"Failed to load sprite at {fullPath}");
         }
         return sprite;
     }
@@ -186,7 +184,7 @@ public static class ResourceExManager
 
     public static void InjectCharacters()
     {
-        Log.LogInfo($"{LOG_TAG} Injecting characters from ResourceEx...");
+        Log.LogInfo($"Injecting characters from ResourceEx...");
         
         foreach (var charConfig in GetAllCharacters())
         {
@@ -209,19 +207,19 @@ public static class ResourceExManager
             if (identity == SpeakerIdentity.Identity.Special)
             {
                 DataBaseLanguage.SpecialGuest.ForceAddOrUpdateValueTuple(charConfig.id, val);
-                Log.LogInfo($"{LOG_TAG} Injected Special character: {charConfig.name} ({charConfig.id})");
+                Log.LogInfo($"Injected Special character: {charConfig.name} ({charConfig.id})");
             }
             else if (identity == SpeakerIdentity.Identity.Normal)
             {
-                Log.LogInfo($"{LOG_TAG} Normal character detected but injection not yet implemented: {charConfig.name} ({charConfig.id})");
+                Log.LogInfo($"Normal character detected but injection not yet implemented: {charConfig.name} ({charConfig.id})");
             }
             else if (identity == SpeakerIdentity.Identity.Self)
             {
-                Log.LogInfo($"{LOG_TAG} Self character detected: {charConfig.name} ({charConfig.id})");
+                Log.LogInfo($"Self character detected: {charConfig.name} ({charConfig.id})");
             }
             else
             {
-                Log.LogWarning($"{LOG_TAG} Unknown character type for {charConfig.name} ({charConfig.id}): {charConfig.type}");
+                Log.LogWarning($"Unknown character type for {charConfig.name} ({charConfig.id}): {charConfig.type}");
             }
         }
     }

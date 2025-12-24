@@ -8,14 +8,15 @@ namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(Common.DialogUtility.DialogPannel))]
-public class DialogPannelPatch : PatchBase<DialogPannelPatch>
+[AutoLog]
+public partial class DialogPannelPatch
 {
     
     // [HarmonyPatch(nameof(DialogPannel.GetSpeakerName))]
     // [HarmonyPostfix]
     // public static void GetSpeakerName_Postfix(ref string line, DialogMeta meta, string speakerName)
     // {
-    //     Log.LogWarning($"{LOG_TAG}  with meta.SpeakerID: {meta.ToString()}, line: {line}, speakerName: {speakerName}");
+    //     Log.LogWarning($" with meta.SpeakerID: {meta.ToString()}, line: {line}, speakerName: {speakerName}");
     // }
 
     // prefix
@@ -30,7 +31,7 @@ public class DialogPannelPatch : PatchBase<DialogPannelPatch>
             if (portrait != null && !string.IsNullOrEmpty(portrait.path))
             {
                 visual = ResourceExManager.GetSprite(portrait.path, config.ModRoot);
-                Log.LogInfo($"{LOG_TAG} GetSpeakerVisual_Prefix: Loaded custom sprite for characterType {meta.speakerIdentity.speakerType} characterId {meta.speakerIdentity.speakerId} from path {portrait.path} (ModRoot: {config.ModRoot})");
+                Log.LogInfo($"GetSpeakerVisual_Prefix: Loaded custom sprite for characterType {meta.speakerIdentity.speakerType} characterId {meta.speakerIdentity.speakerId} from path {portrait.path} (ModRoot: {config.ModRoot})");
                 return false;
             }
         }

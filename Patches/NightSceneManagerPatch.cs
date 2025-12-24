@@ -6,7 +6,8 @@ namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(NightScene.SceneManager))]
-public class NightSceneManagerPatch : PatchBase<NightSceneManagerPatch>
+[AutoLog]
+public partial class NightSceneManagerPatch
 {
 
     [HarmonyPatch(nameof(SceneManager.Start))]
@@ -14,7 +15,7 @@ public class NightSceneManagerPatch : PatchBase<NightSceneManagerPatch>
     public static void NightScene_Start_Postfix()
     {
         PluginManager.CurrentGameScene = Scene.WorkScene;
-        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to WorkScene");
+        Log.LogInfo($"CurrentGameStage switched to WorkScene");
 
         if (!MpManager.IsConnected)
         {

@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using Common.UI;
 
 namespace MetaMystia;
-public class PluginManager : MonoBehaviour
+
+[AutoLog]
+public partial class PluginManager : MonoBehaviour
 {
     public static PluginManager Instance { get; private set; }
-    private static ManualLogSource Log => Plugin.Instance.Log;
-    private static readonly string LOG_TAG = "[PluginManager.cs]";
     private readonly string label = $"{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION} loaded";
     public static InGameConsole Console { get; private set; }
     private bool isTextVisible = true;
@@ -23,7 +23,7 @@ public class PluginManager : MonoBehaviour
     {
         if (Instance != null)
         {
-            Log.LogWarning($"{LOG_TAG} Another instance of PluginManager already exists! Destroying this one.");
+            Log.LogWarning($"Another instance of PluginManager already exists! Destroying this one.");
             Destroy(this);
             return;
         }
@@ -66,11 +66,11 @@ public class PluginManager : MonoBehaviour
             try
             {
                 action();
-                // Log.LogDebug($"{LOG_TAG} Successfully executed action on main thread");
+                // Log.LogDebug($"Successfully executed action on main thread");
             }
             catch (Exception e)
             {
-                Log.LogError($"{LOG_TAG} Error executing on main thread: {e.Message}\n{e.StackTrace}");
+                Log.LogError($"Error executing on main thread: {e.Message}\n{e.StackTrace}");
             }
         }
 
@@ -83,7 +83,7 @@ public class PluginManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Backslash)) 
         {
             isTextVisible = !isTextVisible;
-            Log.LogMessage($"{LOG_TAG} Toggled text visibility: " + isTextVisible);
+            Log.LogMessage($"Toggled text visibility: " + isTextVisible);
         }
 
 
@@ -104,7 +104,7 @@ public class PluginManager : MonoBehaviour
 
     public void RunOnMainThread(Action action)
     {
-        // Log.LogDebug($"{LOG_TAG} Enqueue action to run on main thread");
+        // Log.LogDebug($"Enqueue action to run on main thread");
         _mainThreadQueue.Enqueue(action);
     }
 
@@ -137,7 +137,7 @@ public class PluginManager : MonoBehaviour
                 }
                 catch (Exception e)
                 {
-                    Log.LogError($"{LOG_TAG} Error checking condition: {e.Message}");
+                    Log.LogError($"Error checking condition: {e.Message}");
                     _conditionalActions.RemoveAt(i);
                     continue;
                 }

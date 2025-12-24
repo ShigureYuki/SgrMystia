@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using BepInEx.Logging;
 using GameData.Core.Collections;
 
 namespace MetaMystia;
 
-public static class PrepSceneManager
+[AutoLog]
+public static partial class PrepSceneManager
 {
-    private static ManualLogSource Log => Plugin.Instance.Log;
-    private static readonly string LOG_TAG = "[PrepSceneManager.cs]";
-
     public static PrepAction.Table localPrepTable = new ();
 
     public static readonly int MaxRecipes = 8;
@@ -48,7 +45,7 @@ public static class PrepSceneManager
 
         if (changed)
         {
-            Log.LogInfo($"{LOG_TAG} Merged from peer, state changed.");
+            Log.LogInfo($"Merged from peer, state changed.");
             UpdateAll();
         }
     }
@@ -82,7 +79,7 @@ public static class PrepSceneManager
                 var itemToRemove = validItems[i];
                 deletions[itemToRemove.Key] = MpManager.GetSynchronizedTimestampNow;
                 changed = true;
-                Log.LogInfo($"{LOG_TAG} Trimmed item {itemToRemove.Key} due to limit.");
+                Log.LogInfo($"Trimmed item {itemToRemove.Key} due to limit.");
             }
         }
         return changed;
@@ -205,7 +202,7 @@ public static class PrepSceneManager
     {
         if (dailyList == null)
         {
-            Log.LogError($"{LOG_TAG} {listName} list is null!");
+            Log.LogError($"{listName} list is null!");
             return;
         }
 
@@ -239,11 +236,11 @@ public static class PrepSceneManager
             }
             else
             {
-                Log.LogWarning($"{LOG_TAG} {itemTypeName} with ID {kvp.Key} not found in GameData.Core.Collections.DataBaseCore.{itemTypeName}s");
+                Log.LogWarning($"{itemTypeName} with ID {kvp.Key} not found in GameData.Core.Collections.DataBaseCore.{itemTypeName}s");
             }
         }
         
-        Log.LogInfo($"{LOG_TAG} Updated {listName} with {dailyList.Count} items.");
+        Log.LogInfo($"Updated {listName} with {dailyList.Count} items.");
     }
 
     public static void UpdateRecipes()
@@ -274,7 +271,7 @@ public static class PrepSceneManager
         var cookerConfigure = GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.CookerConfigure;
         if (cookerConfigure == null)
         {
-            Log.LogError($"{LOG_TAG} CookerConfigure array is null!");
+            Log.LogError($"CookerConfigure array is null!");
             return;
         }
 
@@ -301,7 +298,7 @@ public static class PrepSceneManager
             }
         }
 
-        Log.LogInfo($"{LOG_TAG} Updated cookersList with {activeCount} active slots (limit {usableLength}).");
+        Log.LogInfo($"Updated cookersList with {activeCount} active slots (limit {usableLength}).");
     }
 
 
@@ -313,10 +310,10 @@ public static class PrepSceneManager
     }
     public static void UpdateUI()
     {
-        IzakayaConfigPannelPatch.instanceRef.SolveDailyCompletion();
-        IzakayaConfigPannelPatch.instanceRef.m_CookerGroup.UpdateGroupRaw();
-        IzakayaConfigPannelPatch.instanceRef.m_BeverageGroup.UpdateGroupRaw();
-        IzakayaConfigPannelPatch.instanceRef.m_RecipeGroup.UpdateGroupRaw();
+        IzakayaConfigPannelPatch.instanceRef?.SolveDailyCompletion();
+        IzakayaConfigPannelPatch.instanceRef?.m_CookerGroup?.UpdateGroupRaw();
+        IzakayaConfigPannelPatch.instanceRef?.m_BeverageGroup?.UpdateGroupRaw();
+        IzakayaConfigPannelPatch.instanceRef?.m_RecipeGroup?.UpdateGroupRaw();
     }
 
     public static void UpdateAll()

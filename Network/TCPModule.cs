@@ -92,9 +92,9 @@ public class PacketBuffer
 }
 
 // ---------------- TCP Server ----------------
-public sealed class TcpServer : IDisposable
+[AutoLog]
+public sealed partial class TcpServer : IDisposable
 {
-    private static BepInEx.Logging.ManualLogSource Log => Plugin.Instance.Log;
 
     private readonly TcpListener listener;
     private TcpClient currentClient;
@@ -434,10 +434,9 @@ public sealed class TcpServer : IDisposable
 }
 
 // ===================== TCP Client with Heartbeat & Auto-Reconnect =====================
-public sealed class TcpClientWrapper : IDisposable
+[AutoLog]
+public sealed partial class TcpClientWrapper : IDisposable
 {
-    private static BepInEx.Logging.ManualLogSource Log => Plugin.Instance.Log;
-
     private readonly string host;
     private readonly int port;
 

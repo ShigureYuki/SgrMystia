@@ -5,10 +5,9 @@ using Common.DialogUtility;
 
 namespace MetaMystia;
 
-public static class Dialog
+[AutoLog]
+public static partial class Dialog
 {
-    private static ManualLogSource Log => Plugin.Instance.Log;
-    private static readonly string LOG_TAG = "[Dialogs.cs]";
     public static DialogPackage ExampleDialog = null;
 
     public static void BuildAndShow(
@@ -41,7 +40,7 @@ public static class Dialog
             DumpExampleDialog();
             if (ExampleDialog == null)
             {
-                Log.LogError($"{LOG_TAG} ExampleDialog template is not loaded. Cannot build dialog.");
+                Log.LogError($"ExampleDialog template is not loaded. Cannot build dialog.");
                 return;
             }
         }
@@ -205,7 +204,7 @@ public static class Dialog
         }
         else
         {
-            Log.LogWarning($"{LOG_TAG} Dialog package {packageName} not found in ResourceExManager.");
+            Log.LogWarning($"Dialog package {packageName} not found in ResourceExManager.");
         }
     }
     public static void DumpExampleDialog()
@@ -216,14 +215,14 @@ public static class Dialog
             if (packageName == "OnTransitionToNight")
             {
                 ExampleDialog = dialogPackage;
-                Log.LogInfo($"{LOG_TAG} Stored ExampleDialog(OnTransitionToNight) package.");
+                Log.LogInfo($"Stored ExampleDialog(OnTransitionToNight) package.");
             }
-            Log.LogDebug($"{LOG_TAG} id={dialogPackage.name}, package={packageName}");
+            Log.LogDebug($"id={dialogPackage.name}, package={packageName}");
         });
 
         if (ExampleDialog == null)
         {
-            Log.LogWarning($"{LOG_TAG} ExampleDialog(OnTransitionToNight) package not found among loaded assets.");
+            Log.LogWarning($"ExampleDialog(OnTransitionToNight) package not found among loaded assets.");
         }
     }
 };

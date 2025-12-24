@@ -5,7 +5,8 @@ using GameData.Core.Collections;
 namespace MetaMystia;
 
 [HarmonyPatch(typeof(GameData.RunTime.NightSceneUtility.IzakayaConfigure))]
-public class IzakayaConfigurePatch : PatchBase<IzakayaConfigurePatch>
+[AutoLog]
+public partial class IzakayaConfigurePatch
 {
     // MetaMiku 注:
     //     下面分别是 IzakayaConfigure 中 菜单/酒水/厨具 注册与注销 的 hook
@@ -15,7 +16,7 @@ public class IzakayaConfigurePatch : PatchBase<IzakayaConfigurePatch>
     [HarmonyPrefix]
     public static void RegisterToDailyRecipes_Prefix(int id)
     {
-        Log.LogInfo($"{LOG_TAG} RegisterToDailyRecipes: {id}");
+        Log.LogInfo($"RegisterToDailyRecipes: {id}");
         PrepSceneManager.localPrepTable.RecipeAdditions[id] = MpManager.GetSynchronizedTimestampNow;
         MpManager.SendPrep(PrepSceneManager.localPrepTable);
     }
@@ -24,7 +25,7 @@ public class IzakayaConfigurePatch : PatchBase<IzakayaConfigurePatch>
     [HarmonyPrefix]
     public static void RegisterToDailyBeverages_Prefix(int id)
     {
-        Log.LogInfo($"{LOG_TAG} RegisterToDailyBeverages: {id}");
+        Log.LogInfo($"RegisterToDailyBeverages: {id}");
         PrepSceneManager.localPrepTable.BeverageAdditions[id] = MpManager.GetSynchronizedTimestampNow;
         MpManager.SendPrep(PrepSceneManager.localPrepTable);
     }
@@ -36,7 +37,7 @@ public class IzakayaConfigurePatch : PatchBase<IzakayaConfigurePatch>
         var slots = PrepSceneManager.GetLocalCookerSlots();
         if (index < 0 || index >= slots.Length)
         {
-            Log.LogWarning($"{LOG_TAG} RegisterToCookers out of range: id={id}, index={index}, checkPlayerHaveCooker={checkPlayerHaveCooker}");
+            Log.LogWarning($"RegisterToCookers out of range: id={id}, index={index}, checkPlayerHaveCooker={checkPlayerHaveCooker}");
             return;
         }
 
@@ -44,7 +45,7 @@ public class IzakayaConfigurePatch : PatchBase<IzakayaConfigurePatch>
         slots[index].Id = id;
         slots[index].Timestamp = timestamp;
 
-        Log.LogInfo($"{LOG_TAG} RegisterToCookers: id={id}, index={index}, ts={timestamp}, checkPlayerHaveCooker={checkPlayerHaveCooker}");
+        Log.LogInfo($"RegisterToCookers: id={id}, index={index}, ts={timestamp}, checkPlayerHaveCooker={checkPlayerHaveCooker}");
 
         MpManager.SendPrep(PrepSceneManager.localPrepTable);
     }
@@ -53,7 +54,7 @@ public class IzakayaConfigurePatch : PatchBase<IzakayaConfigurePatch>
     [HarmonyPrefix]
     public static void LogoffFromDailyRecipes_Prefix(int id)
     {
-        Log.LogInfo($"{LOG_TAG} LogoffFromDailyRecipes: {id}");
+        Log.LogInfo($"LogoffFromDailyRecipes: {id}");
         PrepSceneManager.localPrepTable.RecipeDeletions[id] = MpManager.GetSynchronizedTimestampNow;
         MpManager.SendPrep(PrepSceneManager.localPrepTable);
     }
@@ -62,7 +63,7 @@ public class IzakayaConfigurePatch : PatchBase<IzakayaConfigurePatch>
     [HarmonyPrefix]
     public static void LogoffFromDailyBeverages_Prefix(int id)
     {
-        Log.LogInfo($"{LOG_TAG} LogoffFromDailyBeverages: {id}");
+        Log.LogInfo($"LogoffFromDailyBeverages: {id}");
         PrepSceneManager.localPrepTable.BeverageDeletions[id] = MpManager.GetSynchronizedTimestampNow;
         MpManager.SendPrep(PrepSceneManager.localPrepTable);
     }
@@ -71,7 +72,7 @@ public class IzakayaConfigurePatch : PatchBase<IzakayaConfigurePatch>
     [HarmonyPrefix]
     public static void LogOffFromCookers_Prefix(int index)
     {
-        Log.LogInfo($"{LOG_TAG} LogOffFromCookers: {index}");
+        Log.LogInfo($"LogOffFromCookers: {index}");
     }
 
 

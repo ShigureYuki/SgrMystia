@@ -7,7 +7,8 @@ using Common.UI;
 namespace MetaMystia;
 
 [HarmonyPatch(typeof(Common.CharacterUtility.CharacterControllerInputGeneratorComponent))]
-public class CharacterInputPatch : PatchBase<CharacterInputPatch>
+[AutoLog]
+public partial class CharacterInputPatch
 {
     [HarmonyPatch(nameof(CharacterControllerInputGeneratorComponent.UpdateInputDirection))]
     [HarmonyPrefix]
@@ -33,7 +34,7 @@ public class CharacterInputPatch : PatchBase<CharacterInputPatch>
             var characterCollection = Common.SceneDirector.Instance.characterCollection;
             if (!characterCollection.ContainsKey("Self"))
             {
-                Log.LogWarning($"{LOG_TAG} characterCollection does not contain 'Self' key");
+                Log.LogWarning($"characterCollection does not contain 'Self' key");
                 return;
             }
             if (__instance.name == characterCollection["Self"].name)
@@ -44,7 +45,7 @@ public class CharacterInputPatch : PatchBase<CharacterInputPatch>
         }
         catch (System.Exception e)
         {
-            Log.LogError($"{LOG_TAG} Error in UpdateInputDirection_Prefix: {e.Message}");
+            Log.LogError($"Error in UpdateInputDirection_Prefix: {e.Message}");
         }
     }
 }

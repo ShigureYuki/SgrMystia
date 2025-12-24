@@ -4,7 +4,8 @@ using GameData.RunTime.Common;
 namespace MetaMystia;
 
 [HarmonyPatch(typeof(RunTimeAlbum))]
-public class RunTimeAlbumPatch : PatchBase<RunTimeAlbumPatch>
+[AutoLog]
+public partial class RunTimeAlbumPatch
 {
     // [HarmonyPatch(nameof(RunTimeAlbum.RefSpecialPixel))]
     // [HarmonyPrefix] // public unsafe static CharacterSpriteSetCompact RefSpecialPixel(this int id, bool useDefaultSkin = false)

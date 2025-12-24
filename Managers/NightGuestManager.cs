@@ -6,16 +6,15 @@ using BepInEx.Logging;
 using GameData.Core.Collections.NightSceneUtility;
 using GameData.Profile;
 using LibCpp2IL;
-using MetaMystia;
 using NightScene.GuestManagementUtility;
 using SgrYuki.Utils;
-using static NightScene.GuestManagementUtility.GuestsManager;
+using static NightScene.GuestManagementUtility.GuestsManager;   // OrderBase
 
-public static class NightGuestManager
+namespace MetaMystia;
+
+[AutoLog]
+public static partial class NightGuestManager
 {
-    private static ManualLogSource Log => Plugin.Instance.Log;
-    private static readonly string LOG_TAG = "[NightGuestManager.cs]";
-
     /// <summary>
     /// 1. Host generated a guest, send SendGuestSpawn to client
     ///    Host: Generated
@@ -87,7 +86,7 @@ public static class NightGuestManager
         string uuid = Guid.NewGuid().ToString();
         guests[uuid] = guest;
         guestIds[guest.Pointer] = uuid;
-        Log.LogMessage($"{LOG_TAG} stored pointer {guest.Pointer} => {uuid}");
+        Log.Message($"stored pointer {guest.Pointer} => {uuid}");
         return uuid;
 
     }
@@ -96,14 +95,14 @@ public static class NightGuestManager
     {
         guests[uuid] = guest;
         guestIds[guest.Pointer] = uuid;
-        Log.LogMessage($"{LOG_TAG} stored pointer {guest.Pointer} => {uuid}");
+        Log.Message($"stored pointer {guest.Pointer} => {uuid}");
     }
 
     public static string GetGuestUUID(GuestGroupController guest)
     {
         if (guest == null)
         {
-            Log.LogError($"{LOG_TAG} guest is null!");
+            Log.Error($"guest is null!");
             return "";
         }
         if (guestIds.TryGetValue(guest.Pointer, out var value))
@@ -112,9 +111,9 @@ public static class NightGuestManager
         }
         else
         {
-            Log.LogError($"{LOG_TAG} pointer {guest.Pointer} not found");
+            Log.Error($"pointer {guest.Pointer} not found");
             // ShigureYuki.DiagnosticUtils.LogAllProperties(guest);
-            FunctionUtil.LogStacktrace(Log);
+            FunctionUtil.LogStacktrace(Log._inner);
             return null;
         }
     }
@@ -130,7 +129,7 @@ public static class NightGuestManager
     private static Status GetGuestStatus(string uuid) => guestStatus.GetOrDefault(uuid, Status.Null);
 
     public static void SetGuestStatus(string uuid, Status value) {
-        Log.LogMessage($"{LOG_TAG} {uuid} Desk [{GetGuestDeskcode(uuid)}] status {GetGuestStatus(uuid)} -> {value}");
+        Log.Message($"{uuid} Desk [{GetGuestDeskcode(uuid)}] status {GetGuestStatus(uuid)} -> {value}");
         guestStatus[uuid] = value;
     }
 
@@ -210,7 +209,7 @@ public static class NightGuestManager
         p.textColor = textColor;
         normalGuestProfile[guest1.Pointer] = p;
 
-        Log.LogMessage($"{LOG_TAG} {UUID} stored color {p.bgColor}, {p.textColor}");
+        Log.Message($"{UUID} stored color {p.bgColor}, {p.textColor}");
 
         guests.Add(guest1);
         if (id2 != null)
@@ -235,6 +234,39 @@ public static class NightGuestManager
         StoreGuest(controller, UUID);
         SetGuestStatus(UUID, Status.Generated);
         return controller;
+    }
+
+    public static void MoveToDesk(GuestGroupController __instance, int deskCode, Il2CppSystem.Action onMovementFinishCallback, int deskSeat = -1)
+    {
+        if (__instance.queued) __instance.RemoveFromQueue();
+        var desk = NightScene.Tiles.TileManager.Instance.GuestTables[deskCode];
+        var seatDir = desk.seatPositions.ToList();
+        __instance.DeskCode = deskCode;
+        var characterInMotion = __instance.guestInstances.Length;
+        __instance.OnMoveToSeatCallback?.Invoke(desk.tablePosition, __instance);
+
+        for (var i = 0; i < __instance.guestInstances.Length; i++)
+        {
+            var item = __instance.guestInstances[i];
+            int randNum = deskSeat;
+            if (deskSeat == -1)
+            {
+                randNum = UnityEngine.Random.Range(0, seatDir.Count);
+            }
+            var onArrive = () =>
+            {
+                var current = --characterInMotion;
+                if (current == 0) onMovementFinishCallback.Invoke();
+            };
+            item.SetPath(
+                seatDir[randNum], 
+                __instance.tileManager.GetCollider(seatDir[randNum], new Il2CppSystem.Collections.Generic.IReadOnlyList<UnityEngine.Vector3Int>(__instance.tileManager.PasserBorder.Pointer)),
+                i * 0.2f,
+                onArrive,
+                NightScene.Tiles.TileManager.FindDirection(seatDir[randNum], desk.tablePosition)
+            );
+            seatDir.RemoveAt(randNum);
+        }
     }
 
     public static bool CheckStatus(string uuid, Status targetStatus) => GetGuestStatus(uuid) == targetStatus;

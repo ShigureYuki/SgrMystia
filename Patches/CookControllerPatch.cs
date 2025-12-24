@@ -6,7 +6,8 @@ using System;
 namespace MetaMystia;
 
 [HarmonyPatch(typeof(NightScene.CookingUtility.CookController))]
-public class CookControllerPatch : PatchBase<CookControllerPatch>
+[AutoLog]
+public partial class CookControllerPatch
 {
 
     [HarmonyPatch(nameof(CookController.SetCook))]
@@ -20,7 +21,7 @@ public class CookControllerPatch : PatchBase<CookControllerPatch>
     [HarmonyPostfix]
     public static void SetCook_Postfix(CookController __instance, Sellable thisResult, Recipe recipe, bool thisCouldReturnIngredients)
     {
-        // Log.LogDebug($"{LOG_TAG} SetCook_Postfix called for food:\n {thisResult.ToString()}\n\nrecipe:\n {recipe.ToString()}\n\nthisCouldReturnIngredients: {thisCouldReturnIngredients}"); 
+        // Log.LogDebug($"SetCook_Postfix called for food:\n {thisResult.ToString()}\n\nrecipe:\n {recipe.ToString()}\n\nthisCouldReturnIngredients: {thisCouldReturnIngredients}"); 
         var gridIndex = __instance.GridIndex;
         var recipeId = recipe.Id;
         SellableFood food = SellableFood.FromSellable(thisResult);

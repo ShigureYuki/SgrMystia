@@ -5,7 +5,8 @@ namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(PrepNightScene.UI.IzakayaConfigPannel))]
-public class IzakayaConfigPannelPatch : PatchBase<IzakayaConfigPannelPatch>
+[AutoLog]
+public partial class IzakayaConfigPannelPatch
 {
     public static IzakayaConfigPannel instanceRef = null;
 
@@ -14,7 +15,7 @@ public class IzakayaConfigPannelPatch : PatchBase<IzakayaConfigPannelPatch>
     public static void IzakayaConfigPannel_OnPanelOpen_Postfix(IzakayaConfigPannel __instance)
     {
         instanceRef = __instance;
-        Log.LogInfo($"{LOG_TAG} IzakayaConfigPannel OnPanelOpen called");
+        Log.LogInfo($"IzakayaConfigPannel OnPanelOpen called");
     }
 
     [HarmonyPatch(nameof(IzakayaConfigPannel.GoToSpecific))]
@@ -23,7 +24,7 @@ public class IzakayaConfigPannelPatch : PatchBase<IzakayaConfigPannelPatch>
     {
         if (MpManager.IsConnected == false)
         {
-            Log.LogInfo($"{LOG_TAG} Not in multiplayer session, skipping patch");
+            Log.LogInfo($"Not in multiplayer session, skipping patch");
             return;
         }
 
@@ -46,7 +47,7 @@ public class IzakayaConfigPannelPatch : PatchBase<IzakayaConfigPannelPatch>
     {
         if (!MpManager.IsConnected)
         {
-            Log.LogInfo($"{LOG_TAG} Not in multiplayer session, skipping patch");
+            Log.LogInfo($"Not in multiplayer session, skipping patch");
             return true;
         }
 
@@ -58,14 +59,14 @@ public class IzakayaConfigPannelPatch : PatchBase<IzakayaConfigPannelPatch>
         //     Mystia 必须等待对方也 Ready 才能继续的目的是确保数据的一致性
         //     _SolveDailyCompletion_b__61_7 负责关闭 PrepScene 并进入 WorkScene （大概）
 
-        Log.LogInfo($"{LOG_TAG} _SolveDailyCompletion_b__61_7 called");
+        Log.LogInfo($"_SolveDailyCompletion_b__61_7 called");
         var remotePlayerReady = PrepSceneManager.remotePlayerReady;
         if (!PrepSceneManager.localPlayerReady)
         {
             PrepSceneManager.localPlayerReady = true;
             MpManager.SendPrep(PrepSceneManager.localPrepTable, true);
         }
-        Log.LogInfo($"{LOG_TAG} remotePlayerReady: {remotePlayerReady}");
+        Log.LogInfo($"remotePlayerReady: {remotePlayerReady}");
         return remotePlayerReady;
     }
 }

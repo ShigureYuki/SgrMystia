@@ -97,6 +97,7 @@ public partial class GuestSeatedAction : NetAction
 }
 
 [MemoryPackable]
+[AutoLog]
 public partial class GuestGenNormalOrderAction : NetAction
 {
     public override ActionType Type => ActionType.GUEST_GEN_NORMAL_ORDER;
@@ -143,6 +144,7 @@ public partial class GuestGenNormalOrderAction : NetAction
 }
 
 [MemoryPackable]
+[AutoLog]
 public partial class GuestGenSPOrderAction : NetAction
 {
     public override ActionType Type => ActionType.GUEST_GEN_SPECIAL_ORDER;
@@ -188,6 +190,7 @@ public partial class GuestGenSPOrderAction : NetAction
 }
 
 [MemoryPackable]
+[AutoLog]
 public partial class GuestServeAction : NetAction
 {
     public override ActionType Type => ActionType.GUEST_SERVE;

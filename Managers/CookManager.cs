@@ -4,15 +4,11 @@ using Il2CppSystem.IO;
 using NightScene.CookingUtility;
 using System.Linq;
 
-using MetaMystia;
+namespace MetaMystia;
 
-
-public static class CookManager
+[AutoLog]
+public static partial class CookManager
 {
-    
-    private static ManualLogSource Log => Plugin.Instance.Log;
-    private static readonly string LOG_TAG = "[CookManager.cs]";
-
     public static CookController GetCookerControllerByIndex(int gridIndex)
     {
         var AllCookerControllers = CookSystemManager.Instance.AllCookerControllers;

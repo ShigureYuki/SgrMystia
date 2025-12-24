@@ -4,15 +4,14 @@ using Common.CharacterUtility;
 using NightScene.GuestManagementUtility;
 using NightScene.EventUtility;
 
-using MetaMystia;
+namespace MetaMystia;
 using Il2CppSystem.IO;
 using DEYU.Utils;
 
-public static class SpawnGuestsManager
+
+[AutoLog]
+public static partial class SpawnGuestsManager
 {
-    private static ManualLogSource Log => Plugin.Instance.Log;
-    private static readonly string LOG_TAG = "[SpawnGuestsManager.cs]";
-    
     // public static void SpawnAndSyncNormalGuests()
     // {
     //     if (PluginManager.CurrentGameScene != Scene.WorkScene) return;
@@ -46,7 +45,7 @@ public static class SpawnGuestsManager
         var randomNormalGuestGroups = cookSystemManager.GetRandomNormalGuestGroups();
         if (randomNormalGuestGroups == null) return;
         
-        Log.LogWarning($"{LOG_TAG} Spawning normal guest group with {randomNormalGuestGroups.ToArray().ToString()} groups.");
+        Log.LogWarning($"Spawning normal guest group with {randomNormalGuestGroups.ToArray().ToString()} groups.");
 
         var eventManager = EventManager.Instance;
         if (eventManager == null) return;

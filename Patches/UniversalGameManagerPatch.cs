@@ -6,7 +6,8 @@ namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(Common.UI.UniversalGameManager))]
-public class UniversalGameManagerPatch : PatchBase<UniversalGameManagerPatch>
+[AutoLog]
+public partial class UniversalGameManagerPatch
 {
     [HarmonyPatch(nameof(UniversalGameManager.OpenDialogMenu))]
     [HarmonyPrefix]
@@ -17,13 +18,13 @@ public class UniversalGameManagerPatch : PatchBase<UniversalGameManagerPatch>
         //     直接执行 onFinishCallback?.Invoke() 会有异步问题，导致挂起
         //     使用携带原有 onFinishCallback 回调的空对话包替代原有对话包实现
 
-        // Log.LogInfo($"{LOG_TAG} OpenDialogMenu called with dialogPackage: {dialogPackage?.name}");
+        // Log.LogInfo($"OpenDialogMenu called with dialogPackage: {dialogPackage?.name}");
         if (!MpManager.IsConnected || dialogPackage?.name != "OnTransitionToNight") // dialogPackage 可能为空
         {
             return true;
         }
         
-        Log.LogInfo($"{LOG_TAG} In multiplayer session and dialogPackage is OnTransitionToNight -> show empty dialog instead");
+        Log.LogInfo($"In multiplayer session and dialogPackage is OnTransitionToNight -> show empty dialog instead");
         UniversalGameManager.OpenDialogMenu(
             null,
             onFinishCallback: onFinishCallback,
@@ -38,6 +39,6 @@ public class UniversalGameManagerPatch : PatchBase<UniversalGameManagerPatch>
     public static void LoadScene_Prefix()
     {
         PluginManager.CurrentGameScene = Scene.LoadScene;
-        Log.LogInfo($"{LOG_TAG} LoadScene called.");
+        Log.LogInfo($"LoadScene called.");
     }
 }

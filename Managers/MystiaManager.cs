@@ -4,19 +4,18 @@ using Common.CharacterUtility;
 
 namespace MetaMystia;
 
-public class MystiaManager
+[AutoLog]
+public partial class MystiaManager
 {
     private static MystiaManager _instance;
     private static readonly object _lock = new object();
     
     private DayScene.Input.DayScenePlayerInputGenerator _cachedInputGenerator;
-    private static ManualLogSource Log => Plugin.Instance.Log;
     public static string MapLabel { get; set; } = "";
     public static bool IsSprinting { get; set; } = false;
     public static Vector2 InputDirection { get; set; } = Vector2.zero;
 
     public static bool IsReady = false;
-    private static readonly string LOG_TAG = "[MystiaManager.cs]";
 
     public static MystiaManager Instance
     {
@@ -39,7 +38,7 @@ public class MystiaManager
 
     public void Initialize()
     {
-        Log.LogInfo($"{LOG_TAG} MystiaManager initialized");
+        Log.LogInfo($"MystiaManager initialized");
 
         _cachedInputGenerator = null;
         MapLabel = "";
@@ -55,12 +54,12 @@ public class MystiaManager
             var characters = UnityEngine.Object.FindObjectsOfType<DayScene.Input.DayScenePlayerInputGenerator>();
             if (characters == null || characters.Length == 0)
             {
-                Log.LogWarning($"{LOG_TAG} Cannot find DayScenePlayerInputGenerator instance");
+                Log.LogWarning($"Cannot find DayScenePlayerInputGenerator instance");
                 return null;
             }
             if (characters.Length > 1)
             {
-                Log.LogWarning($"{LOG_TAG} Found {characters.Length} DayScenePlayerInputGenerator instances, using the first one");
+                Log.LogWarning($"Found {characters.Length} DayScenePlayerInputGenerator instances, using the first one");
             }
 
             _cachedInputGenerator = characters[0];
@@ -78,7 +77,7 @@ public class MystiaManager
                 var inputGenerator = GetInputGenerator(forceRefresh);
                 if (inputGenerator == null)
                 {
-                    Log.LogWarning($"{LOG_TAG} GetInputGenerator returned null");
+                    Log.LogWarning($"GetInputGenerator returned null");
                     return null;
                 }
                 var characterUnit = inputGenerator.Character;
@@ -86,12 +85,12 @@ public class MystiaManager
             case Common.UI.Scene.WorkScene:
                 if (!Common.SceneDirector.Instance.characterCollection.ContainsKey("Self"))
                 {
-                    Log.LogWarning($"{LOG_TAG} Character 'Self' not found in character collection");
+                    Log.LogWarning($"Character 'Self' not found in character collection");
                     return null;
                 }
                 return Common.SceneDirector.Instance.characterCollection["Self"];
             default:
-                Log.LogWarning($"{LOG_TAG} GetCharacterComponent called in invalid scene");
+                Log.LogWarning($"GetCharacterComponent called in invalid scene");
                 return null;
         }
     }
@@ -101,7 +100,7 @@ public class MystiaManager
         var characterUnit = GetCharacterUnit(forceRefresh);
         if (characterUnit == null)
         {
-            Log.LogWarning($"{LOG_TAG} GetCharacterUnit returned null");
+            Log.LogWarning($"GetCharacterUnit returned null");
             return null;
         }
         var rb = characterUnit.rb2d;
@@ -113,7 +112,7 @@ public class MystiaManager
         var rb = GetRigidbody2D();
         if (rb == null)
         {
-            Log.LogWarning($"{LOG_TAG} GetRigidbody2D returned null");
+            Log.LogWarning($"GetRigidbody2D returned null");
             return Vector2.zero;
         }
         return rb.position;

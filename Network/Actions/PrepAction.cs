@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MetaMystia;
 
 [MemoryPackable]
+[AutoLog]
 public partial class PrepAction : NetAction
 {
     public override ActionType Type => ActionType.PREP;

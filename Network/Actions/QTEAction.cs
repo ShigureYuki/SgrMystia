@@ -3,6 +3,7 @@ using MemoryPack;
 namespace MetaMystia;
 
 [MemoryPackable]
+[AutoLog]
 public partial class QTEAction : NetAction
 {
     public override ActionType Type => ActionType.QTE;

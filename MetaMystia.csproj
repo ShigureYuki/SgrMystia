@@ -17,6 +17,7 @@
     <OutputPath>$(GamePath)\BepInEx\plugins</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <Target Name="CopyToExtraOutputPaths" AfterTargets="Build">
@@ -25,6 +26,18 @@
     </ItemGroup>
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="@(ExtraOutputPaths)" />
   </Target>
+
+  
+  <ItemGroup>
+    <ProjectReference Include="LogGenerator\LogGenerator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="LogGenerator\**" />
+    <EmbeddedResource Remove="LogGenerator\**" />
+    <None Remove="LogGenerator\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Assembly-CSharp\**" />

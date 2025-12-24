@@ -4,7 +4,8 @@ namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(GameData.Profile.DaySceneMapProfile))]
-public class DaySceneMapProfilePatch : PatchBase<DaySceneMapProfilePatch>
+[AutoLog]
+public partial class DaySceneMapProfilePatch
 {
     public static GameData.Profile.DaySceneMapProfile instanceRef = null;
 

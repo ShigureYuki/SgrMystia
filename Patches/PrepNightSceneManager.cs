@@ -6,7 +6,8 @@ namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(PrepNightScene.SceneManager))]
-public class PrepNightSceneManagerPatch : PatchBase<PrepNightSceneManagerPatch>
+[AutoLog]
+public partial class PrepNightSceneManagerPatch
 {
     
     [HarmonyPatch(nameof(SceneManager.Start))]
@@ -15,7 +16,7 @@ public class PrepNightSceneManagerPatch : PatchBase<PrepNightSceneManagerPatch>
     {
         PluginManager.CurrentGameScene = Scene.IzakayaPrepScene;
         PrepSceneManager.init();
-        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to IzakayaPrepScene");
+        Log.LogInfo($"CurrentGameStage switched to IzakayaPrepScene");
         
     }
 }
