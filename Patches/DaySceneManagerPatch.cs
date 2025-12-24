@@ -5,7 +5,8 @@ namespace MetaMystia;
 
 
 [HarmonyPatch(typeof(DayScene.SceneManager))]
-public class DaySceneManagerPatch : PatchBase<DaySceneManagerPatch>
+[AutoLog]
+public partial class DaySceneManagerPatch
 {
     [HarmonyPatch(nameof(DayScene.SceneManager.Awake))]
     [HarmonyPostfix]
@@ -14,7 +15,7 @@ public class DaySceneManagerPatch : PatchBase<DaySceneManagerPatch>
         PluginManager.CurrentGameScene = Scene.DayScene;
         MystiaManager.Instance.Initialize();
         KyoukoManager.Initialize();
-        Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to DayScene");
+        Log.LogInfo($"CurrentGameStage switched to DayScene");
     }
 
 
@@ -30,16 +31,16 @@ public class DaySceneManagerPatch : PatchBase<DaySceneManagerPatch>
     [HarmonyPrefix]
     public static bool OnDayOver_Prefix()
     {
-        Log.LogInfo($"{LOG_TAG} OnDayOver called");
+        Log.LogInfo($"OnDayOver called");
         if (_skipPatchOnDayOver)
         {
-            Log.LogDebug($"{LOG_TAG} _skipPatchOnDayOver is true, skipping prefix");
+            Log.LogDebug($"_skipPatchOnDayOver is true, skipping prefix");
             return true;
         }
         
         if (!MpManager.IsConnected)
         {
-            Log.LogDebug($"{LOG_TAG} Not in multiplayer session, skipping prefix");
+            Log.LogDebug($"Not in multiplayer session, skipping prefix");
             return true;
         }
         /*
