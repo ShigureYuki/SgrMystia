@@ -1,6 +1,227 @@
 {
   "characters": [
     {
+      "id": 9000,
+      "name": "大妖精",
+      "label": "Daiyousei",
+      "descriptions": [
+          "生活在雾之湖的连本名都成谜的奇妙妖精，似乎和琪露诺是好朋友，其他的情报就一概不知道了。",
+          "其实是个很细心又很热心肠的家伙呢。琪露诺她虽然嘴上说着不在乎啊无所谓啊什么的，但是我能看出来内心深处她对大酱很是依赖呢。",
+          "妖精们每天的生活想必会很有趣吧？如果从责任和义务这些角度来想。大酱她相比起其她妖精，在这方面可能考虑的多一些，恰好是不至于负累又不会变成笨蛋的平衡点呢。真是让鸟脑袋羡慕的生活态度啊。"
+      ],
+      "type": "Special",
+      "portraits": [
+        { "pid": 0, "path": "assets/Daiyousei_0.png" },
+        { "pid": 1, "path": "assets/Daiyousei_1.png" },
+        { "pid": 2, "path": "assets/Daiyousei_2.png" },
+        { "pid": 3, "path": "assets/Daiyousei_3.png" },
+        { "pid": 4, "path": "assets/Daiyousei_4.png" }
+      ],
+      "guest": {
+        "fundRangeLower": 300,
+        "fundRangeUpper": 500,
+        "evaluation": [
+          "如果只有这样的话……",
+          "呃，一会去找朋友要些果子垫肚子好了。",
+          "不过，老板娘你一定不止于此对吧。",
+          "好吃耶，老板娘你的手艺真好！",
+          "哇塞，下次我一定要带大家来分享！",
+          "喂！这完全就是黑店吧！！",
+          "抱歉……我身上只有这些了……",
+          "诶诶，老板娘，你干什么？",
+          "还是去找朋友们要点果子吃吧……"
+        ],
+        "foodRequests": [
+          {
+            "tagId": 7,
+            "request": "那些我最爱的东西——水和风都是没有味道的。"
+          },
+          {
+            "tagId": 17,
+            "request": "甜味是这个世界上最本质、最美好的味道。"
+          },
+          {
+            "tagId": 21,
+            "request": "我最喜欢湖面微凉的清风流过的感觉了。"
+          },
+          {
+            "tagId": 28,
+            "request": "整个世界的话，大概…只会比雾之湖大一点吧？"
+          },
+          {
+            "tagId": 31,
+            "request": "我们妖精偶尔会去湖畔果树林摘点果子吃。"
+          }
+        ],
+        "hateFoodTag":[
+          22,
+          24
+        ],
+        "likeFoodTag": [
+          {
+            "tagId": 7,
+            "weight": 1
+          },
+          {
+            "tagId": 17,
+            "weight": 1
+          },
+          {
+            "tagId": 21,
+            "weight": 1
+          },
+          {
+            "tagId": 28,
+            "weight": 1
+          },
+          {
+            "tagId": 31,
+            "weight": 1
+          }
+        ],
+        "likeBevTag": [
+          {
+            "tagId": -1,
+            "weight": 1
+          },
+          {
+            "tagId": 0,
+            "weight": 1
+          },
+          {
+            "tagId": 3,
+            "weight": 1
+          },
+          {
+            "tagId": 11,
+            "weight": 1
+          },
+          {
+            "tagId": 13,
+            "weight": 1
+          },
+          {
+            "tagId": 16,
+            "weight": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 9001,
+      "name": "小恶魔",
+      "label": "Koakuma",
+      "descriptions": [
+          "满脸写着杂鱼样的恶魔少女，不过似乎一直很用力地强调自己的存在感呢。",
+          "是那位名为帕秋莉的魔法使的使魔，不过看起来相比主仆更像是冤家就是了。虽然明面上看起来对自家的主人们不屑一顾，然而内心深处其实很在意红魔馆的大家呢。",
+          "还真是要强的性子啊。能看出来，虽然不愿意承认，但是她非常在乎自己能不能得到肯定和拥有价值。不过我从帕秋莉那里得到的消息是她早就承认小恶魔作为一位助手的能力和水平了，只是在长久的相处之下不知道怎么去开这个口。或许，她只是在因为心里的那点傲气坚持着吧？"
+    ],
+    "type": "Special",
+    "portraits": [
+      { "pid": 0, "path": "assets/Koakuma_0.png" },
+      { "pid": 1, "path": "assets/Koakuma_1.png" },
+      { "pid": 2, "path": "assets/Koakuma_2.png" },
+      { "pid": 3, "path": "assets/Koakuma_3.png" },
+      { "pid": 4, "path": "assets/Koakuma_4.png" }
+    ],
+      "guest": {
+        "fundRangeLower": 300,
+        "fundRangeUpper": 500,
+        "evaluation": [
+          "这甚至连图书馆做的饲料都比不上！",
+          "这样吗，也就只能比图书馆的伙食好一点了。",
+          "一般般。",
+          "偶尔找机会来这么一顿，惬意的很啊。",
+          "完美！这才叫完美…适合本姑娘的身份！",
+          "好呀你，连本姑娘的钱都敢骗？！",
+          "身上就带了这些……嘿嘿……",
+          "好不容易找到机会来一次来着……",
+          "诶诶？不至于吧！"
+        ],
+        "foodRequests": [
+          {
+            "tagId": 0,
+            "request": "纯种恶魔自然是要吃肉的！"
+          },
+          {
+            "tagId": 5,
+            "request": "高贵的，强大的恶魔血统自然需要最珍贵的料理！"
+          },
+          {
+            "tagId": 8,
+            "request": "带劲的酒精可以触动恶魔的内心…不过需要一道好菜配合。"
+          },
+          {
+            "tagId": 13,
+            "request": "帕秋莉她最喜欢的味道就是这种外国风味…这次让本姑娘也试试。"
+          },
+          {
+            "tagId": 17,
+            "request": "书上说糖分可以快速补充因施法损耗的体力…才不是嘴馋呢。"
+          },
+          {
+            "tagId": 33,
+            "request": "图书馆严禁烟火，好不容易有了机会，本姑娘可是得尝尝烧烤的滋味。"
+          },
+          {
+            "tagId": 34,
+            "request": "带点辣味的东西才能刺激本姑娘的味蕾！"
+          }
+        ],
+        "hateFoodTag":[
+          7
+        ],
+        "likeFoodTag": [
+          {
+            "tagId": 0,
+            "weight": 1
+          },
+          {
+            "tagId": 5,
+            "weight": 1
+          },
+          {
+            "tagId": 8,
+            "weight": 1
+          },
+          {
+            "tagId": 13,
+            "weight": 1
+          },
+          {
+            "tagId": 17,
+            "weight": 1
+          },
+          {
+            "tagId": 33,
+            "weight": 1
+          },
+          {
+            "tagId": 34,
+            "weight": 1
+          }
+        ],
+        "likeBevTag": [
+          {
+            "tagId": 2,
+            "weight": 1
+          },
+          {
+            "tagId": 14,
+            "weight": 1
+          },
+          {
+            "tagId": 19,
+            "weight": 1
+          },
+          {
+            "tagId": 4,
+            "weight": 1
+          }
+        ]
+      }
+    },
+    {
       "id": 10000,
       "name": "秋静叶",
       "label": "AkiSizuha",
@@ -10,9 +231,9 @@
           "掌管红叶程度的能力"
     ],
     "type": "Special",
-      "portraits": [
-        { "pid": 0, "path": "assets/AkiSizuha_0.png" }
-      ]
+    "portraits": [
+      { "pid": 0, "path": "assets/AkiSizuha_0.png" }
+    ]
     },
     {
       "id": 10001,
@@ -47,6 +268,76 @@
     {
       "name": "Test",
       "dialogList": [
+        {
+          "characterId": 9000,
+          "characterType": "Special",
+          "pid": 0,
+          "position": "Left",
+          "text": "大妖精 Testing... Special 0"
+        },
+        {
+          "characterId": 9000,
+          "characterType": "Special",
+          "pid": 1,
+          "position": "Left",
+          "text": "大妖精 Testing... Special 1"
+        },
+        {
+          "characterId": 9000,
+          "characterType": "Special",
+          "pid": 2,
+          "position": "Left",
+          "text": "大妖精 Testing... Special 2"
+        },
+        {
+          "characterId": 9000,
+          "characterType": "Special",
+          "pid": 3,
+          "position": "Left",
+          "text": "大妖精 Testing... Special 3"
+        },
+        {
+          "characterId": 9000,
+          "characterType": "Special",
+          "pid": 4,
+          "position": "Left",
+          "text": "大妖精 Testing... Special 4"
+        },
+        {
+          "characterId": 9001,
+          "characterType": "Special",
+          "pid": 0,
+          "position": "Right",
+          "text": "小恶魔 Testing... Special 0"
+        },
+        {
+          "characterId": 9001,
+          "characterType": "Special",
+          "pid": 1,
+          "position": "Right",
+          "text": "小恶魔 Testing... Special 1"
+        },
+        {
+          "characterId": 9001,
+          "characterType": "Special",
+          "pid": 2,
+          "position": "Right",
+          "text": "小恶魔 Testing... Special 2"
+        },
+        {
+          "characterId": 9001,
+          "characterType": "Special",
+          "pid": 3,
+          "position": "Right",
+          "text": "小恶魔 Testing... Special 3"
+        },
+        {
+          "characterId": 9001,
+          "characterType": "Special",
+          "pid": 4,
+          "position": "Right",
+          "text": "小恶魔 Testing... Special 4"
+        },
         {
           "characterId": 10000,
           "characterType": "Special",

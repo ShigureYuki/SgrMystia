@@ -67,6 +67,9 @@ public class Plugin : BasePlugin
                 typeof(GuestsManagerPatch),
                 typeof(GuestGroupControllerPatch),
                 typeof(RunTimeAlbumPatch),
+                typeof(SpecialGuestPatch),
+                typeof(CharacterPortrayalPatch),
+                typeof(SpecialGuestDescriberPatch)
             };
             foreach (var patch in patchList)
             {
@@ -106,7 +109,7 @@ public class Plugin : BasePlugin
         }
         
         ResourceExManager.Initialize();
-        ResourceExManager.InjectCharacters();
+        ResourceExManager.TryInjectSpecialPortraits();
     }
 
     class BootstrapPatch

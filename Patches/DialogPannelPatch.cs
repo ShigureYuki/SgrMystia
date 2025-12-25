@@ -23,16 +23,14 @@ public class DialogPannelPatch : PatchBase<DialogPannelPatch>
     [HarmonyPrefix]
     public static bool GetSpeakerVisual_Prefix(IAssetHandleArray<UnityEngine.Sprite> playerPortrayalCollection, IReadOnlyDictionary<int, IAssetHandleArray<UnityEngine.Sprite>> specialNPCPortrayalCollectionDictionary, IReadOnlyDictionary<DialogMeta, IAssetHandle<UnityEngine.Sprite>> overrideDialogMetaToSprites, DialogMeta meta, ref UnityEngine.Sprite visual)
     {        
-        var config = ResourceExManager.GetCharacterConfig(meta.speakerIdentity.speakerId, meta.speakerIdentity.speakerType.ToString());
-        if (config != null && config.portraits != null && config.portraits.Count > 0)
+        var id = meta.speakerIdentity.speakerId;
+        var type = meta.speakerIdentity.speakerType.ToString();
+        var pid = meta.speakerIdentity.speakerPortrayalVariationId;
+
+        if (ResourceExManager.ExistsCharacterConfig(id, type))
         {
-            var portrait = config.portraits[0]; 
-            if (portrait != null && !string.IsNullOrEmpty(portrait.path))
-            {
-                visual = ResourceExManager.GetSprite(portrait.path, config.ModRoot);
-                Log.LogInfo($"{LOG_TAG} GetSpeakerVisual_Prefix: Loaded custom sprite for characterType {meta.speakerIdentity.speakerType} characterId {meta.speakerIdentity.speakerId} from path {portrait.path} (ModRoot: {config.ModRoot})");
-                return false;
-            }
+            visual = ResourceExManager.GetPortraitSprite(id, pid);
+            return false;
         }
         
         return true;

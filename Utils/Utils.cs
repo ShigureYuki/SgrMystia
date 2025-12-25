@@ -63,15 +63,20 @@ public static class Utils
         // }
         return stack.GetFrames().Any(frame => frame.GetMethod().Name.Contains(funcName));
     }
+    
     public static Sprite GetArtWork(string filePath)
     {
         if (!File.Exists(filePath)) return null;
 
-        var texture2D = new Texture2D(2, 2);
-        texture2D.filterMode = FilterMode.Point; 
+        // 创建纹理时禁用 mipChain (false) 以防止像素模糊
+        var texture2D = new Texture2D(2, 2, TextureFormat.RGBA32, false);
         
         byte[] fileData = File.ReadAllBytes(filePath);
         ImageConversion.LoadImage(texture2D, fileData);
+
+        // 在加载数据后设置过滤模式为 Point (邻近过滤)，并关闭重复循环
+        texture2D.filterMode = FilterMode.Point; 
+        texture2D.wrapMode = TextureWrapMode.Clamp;
         
         var sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height),
             new Vector2(0.5f, 0.5f), 100f);
@@ -79,7 +84,6 @@ public static class Utils
         sprite.name = Path.GetFileNameWithoutExtension(filePath);
         return sprite;
     }
-
     public static void FindAndProcessResources<T>(Action<T> action) where T : UnityEngine.Object
     {
         try
