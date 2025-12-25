@@ -11,7 +11,7 @@ public partial class ReadyAction : NetAction
     public override void OnReceived()
     {
         LogActionReceived();
-        if (PluginManager.CurrentGameScene != Common.UI.Scene.DayScene)
+        if (MpManager.LocalScene != Common.UI.Scene.DayScene)
         {
             Log.LogWarning("READY action received outside DayScene, ignoring.");
             return;

@@ -19,7 +19,7 @@ public partial class CharacterInputPatch
             return;
         }
 
-        if (PluginManager.CurrentGameScene != Scene.DayScene && PluginManager.CurrentGameScene != Scene.WorkScene)
+        if (MpManager.LocalScene != Scene.DayScene && MpManager.LocalScene != Scene.WorkScene)
         {
             return;
         }

@@ -24,7 +24,7 @@ public partial class IzakayaConfigPannelPatch
     {
         if (MpManager.IsConnected == false)
         {
-            Log.LogInfo($"Not in multiplayer session, skipping patch");
+            Log.LogDebug($"Not in multiplayer session, skipping patch");
             return;
         }
 
@@ -47,7 +47,7 @@ public partial class IzakayaConfigPannelPatch
     {
         if (!MpManager.IsConnected)
         {
-            Log.LogInfo($"Not in multiplayer session, skipping patch");
+            Log.LogDebug($"Not in multiplayer session, skipping patch");
             return true;
         }
 

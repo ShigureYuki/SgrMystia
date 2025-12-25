@@ -21,6 +21,7 @@ public static partial class MpManager
     private static TcpServer server = null;
     private static TcpClientWrapper client = null;
     public static ROLE Role {get; private set;}
+    public static string RoleTag => Role == ROLE.Host ? "[S]" : "[C]";
     public static bool IsRunning { get; private set; }
     public static bool IsConnected => (Role == ROLE.Host ? server?.HasAliveClient : client?.IsConnected)?? false;
     public static string PeerAddress {get; set;}
@@ -34,6 +35,7 @@ public static partial class MpManager
 
     public static bool IsConnectedClient => IsConnected && Role == ROLE.Client;
     public static bool IsConnectedHost => IsConnected && Role == ROLE.Host;
+    public static Common.UI.Scene LocalScene => PluginManager.CurrentGameScene;
 
     public static void Start(ROLE r = ROLE.Host)
     {
@@ -147,7 +149,7 @@ public static partial class MpManager
     {
         if (IsConnected)
         {
-            packet.GetFirstAction().LogActionSend(true, Role == ROLE.Host ? "[S] " : "[C] ");
+            packet.GetFirstAction().LogActionSend(true);
             if (Role == ROLE.Host)
             {
                 server.Send(packet);
@@ -216,7 +218,7 @@ public static partial class MpManager
         var position = MystiaManager.Instance.GetPosition();
 
         NetPacket packet;
-        if (PluginManager.CurrentGameScene == Common.UI.Scene.WorkScene)
+        if (LocalScene == Common.UI.Scene.WorkScene)
         {
             packet = new NetPacket([new NightSyncAction
             {
@@ -286,7 +288,7 @@ public static partial class MpManager
         }
         if (IsConnected)
         {
-            return $"Multiplayer: [{(Role == ROLE.Host ? "S" : "C")}] Connected to {PeerId} ({PeerAddress}), ping: {Latency} ms";
+            return $"Multiplayer: {RoleTag} Connected to {PeerId} ({PeerAddress}), ping: {Latency} ms";
         }
         else
         {
@@ -387,13 +389,14 @@ public static partial class MpManager
         SendToPeer(packet);
     }
 
-    public static void SendGuestSeated(string guestUniqId, int deskId, bool firstSpawn)
+    public static void SendGuestSeated(string guestUniqId, int deskId, bool firstSpawn, int seatId)
     {
         NetPacket packet = new NetPacket([new GuestSeatedAction
         {
             GuestUniqId = guestUniqId,
             DeskId = deskId,
-            FirstSpawn = firstSpawn
+            FirstSpawn = firstSpawn,
+            SeatId = seatId
         }]);
         SendToPeer(packet);
     }

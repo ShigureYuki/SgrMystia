@@ -71,7 +71,7 @@ public partial class MystiaManager
     public CharacterControllerUnit GetCharacterUnit(bool forceRefresh = false)
     {
         
-        switch (PluginManager.CurrentGameScene)
+        switch (MpManager.LocalScene)
         {
             case Common.UI.Scene.DayScene:
                 var inputGenerator = GetInputGenerator(forceRefresh);

@@ -18,7 +18,7 @@ public partial class NightSyncAction : NetAction
     public override void OnReceived()
     {
         LogActionReceived(BepInEx.Logging.LogLevel.Debug);
-        if (PluginManager.CurrentGameScene != Common.UI.Scene.WorkScene)
+        if (MpManager.LocalScene != Common.UI.Scene.WorkScene)
         {
             return;
         }

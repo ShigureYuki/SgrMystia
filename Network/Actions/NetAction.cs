@@ -89,13 +89,13 @@ public abstract partial class NetAction
 
     protected void LogActionReceived(BepInEx.Logging.LogLevel logLevel, bool onlyAction = false, string prefix = "")
     {
-        string logStr = $"{prefix}Received {Type}{(onlyAction ? "" : $": {ToString()}")}";
+        string logStr = $"{MpManager.RoleTag} {prefix}Received {Type}{(onlyAction ? "" : $": {ToString()}")}";
         LogAction(logLevel, onlyAction, logStr);
     }
 
     protected void LogActionSend(BepInEx.Logging.LogLevel logLevel, bool onlyAction = false, string prefix = "")
     {
-        string logStr = $"{prefix}Send {Type}{(onlyAction ? "" : $": {ToString()}")}";
+        string logStr = $"{MpManager.RoleTag} {prefix}Send {Type}{(onlyAction ? "" : $": {ToString()}")}";
         LogAction(logLevel, onlyAction, logStr);
     }
 

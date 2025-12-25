@@ -86,7 +86,7 @@ public static partial class KyoukoManager
 
     public static CharacterControllerUnit GetCharacterUnit()
     {
-        switch (PluginManager.CurrentGameScene)
+        switch (MpManager.LocalScene)
         {
             case Common.UI.Scene.DayScene:
                 return DayScene.DaySceneMap.TryGetCharacter(KYOUKO_ID)?.Character;        
@@ -299,7 +299,7 @@ public static partial class KyoukoManager
         // var selfHeightProcessor = selfUnit.gameObject.GetComponent<Common.CharacterUtility.HeightBlendedInputProcessorComponent>();
         // heightProcessor.Initialize(selfHeightProcessor.heightMap);
         
-        switch (PluginManager.CurrentGameScene)
+        switch (MpManager.LocalScene)
         {
             case Common.UI.Scene.DayScene:
                 heightProcessor.Initialize(DayScene.SceneManager.Instance.CurrentActiveMap.height);

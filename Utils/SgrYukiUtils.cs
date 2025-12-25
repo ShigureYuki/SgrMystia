@@ -51,13 +51,13 @@ public sealed class LogWrapper
 
     private static string GetTime() => DateTime.Now.ToString("HH:mm:ss.fff");
 
-    private string TagString(bool withTag) => withTag ? $"[{_tag}]" : "";
+    private string TagString(bool withTag) => withTag ? $"[{_tag}] " : "";
 
-    public void Debug(string msg, bool withTag = true) => _inner.LogDebug($"[{GetTime()}] {(withTag ? $"[{_tag}]" : "")} {msg}");
-    public void Info(string msg, bool withTag = true) => _inner.LogInfo($"[{GetTime()}] {(withTag ? $"[{_tag}]" : "")} {msg}");
-    public void Message(string msg, bool withTag = true) => _inner.LogMessage($"[{GetTime()}] {(withTag ? $"[{_tag}]" : "")} {msg}");
-    public void Warning(string msg, bool withTag = true) => _inner.LogWarning($"[{GetTime()}] {(withTag ? $"[{_tag}]" : "")} {msg}");
-    public void Error(string msg, bool withTag = true) => _inner.LogError($"[{GetTime()}] {(withTag ? $"[{_tag}]" : "")} {msg}");
+    public void Debug(string msg, bool withTag = true) => _inner.LogDebug($"[{GetTime()}] {TagString(withTag)}{msg}");
+    public void Info(string msg, bool withTag = true) => _inner.LogInfo($"[{GetTime()}] {TagString(withTag)}{msg}");
+    public void Message(string msg, bool withTag = true) => _inner.LogMessage($"[{GetTime()}] {TagString(withTag)}{msg}");
+    public void Warning(string msg, bool withTag = true) => _inner.LogWarning($"[{GetTime()}] {TagString(withTag)}{msg}");
+    public void Error(string msg, bool withTag = true) => _inner.LogError($"[{GetTime()}] {TagString(withTag)}{msg}");
 
     public void LogDebug(string msg, bool withTag = true) => Debug(msg, withTag);
     public void LogInfo(string msg, bool withTag = true) => Info(msg, withTag);
