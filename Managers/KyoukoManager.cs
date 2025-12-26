@@ -1,8 +1,8 @@
-using BepInEx.Logging;
 using UnityEngine;
 using Common.CharacterUtility;
 using DayScene.Interactables.Collections.ConditionComponents;
-using AsmResolver.DotNet;
+using GameData.RunTime.DaySceneUtility;
+using Il2CppSystem.Collections.Generic;
 
 namespace MetaMystia;
 
@@ -87,6 +87,15 @@ public static partial class KyoukoManager
         }
         SetMoving(true);
         characterUnit.UpdateInputVelocity(velocity);
+        if (PluginManager.CurrentGameScene == Common.UI.Scene.DayScene)
+        {  
+            var trackedNPC = RunTimeDayScene.GetTrackedNPC("Kyouko");
+            var position = characterUnit.rb2d.position;
+            trackedNPC.overridePosition.position = new KeyValuePair<float, float>( 
+                position.x,
+                position.y
+            ); // TODO: 也许有更优雅的方式？
+        }
     }
 
     public static CharacterControllerUnit GetCharacterUnit()
@@ -213,7 +222,7 @@ public static partial class KyoukoManager
             Log.LogMessage($"Position offset too large ({positionOffset.magnitude}), teleporting Kyouko to sync position");
             GameData.RunTime.DaySceneUtility.RunTimeDayScene.MoveCharacter(KYOUKO_ID, MapLabel, syncPosition, 0, out var oldNPCData);
             GetCharacterUnit().rb2d.position = syncPosition;
-            positionOffset = Vector2.zero;    
+            positionOffset = Vector2.zero;
         }
 
     }
