@@ -32,7 +32,7 @@ public partial class GuestSpawnAction : NetAction
         }
 
         CommandScheduler.Enqueue(
-            canExecute: () => true,
+            executeWhen: () => true,
             execute: () =>
             {
                 NightGuestManager.SetGuestStatus(UUID, NightGuestManager.Status.PendingGenerate);

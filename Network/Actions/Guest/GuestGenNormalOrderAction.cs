@@ -30,7 +30,7 @@ public partial class GuestGenNormalOrderAction : NetAction
         }
 
         CommandScheduler.Enqueue(
-            canExecute: () => NightGuestManager.CheckStatusInOrThrow(GuestUniqId, [NightGuestManager.Status.PendingOrder, NightGuestManager.Status.OrderEvaluated]),
+            executeWhen: () => NightGuestManager.CheckStatusInOrThrow(GuestUniqId, [NightGuestManager.Status.PendingOrder, NightGuestManager.Status.OrderEvaluated]),
             execute: () =>
             {
                 var guest = NightGuestManager.GetGuest(GuestUniqId);
@@ -41,6 +41,9 @@ public partial class GuestGenNormalOrderAction : NetAction
                 try
                 {
                     GuestsManagerPatch.GenerateOrderSession_Original(GuestsManager.instance, guest, true);
+                    const int PatientSecs = 30;
+                    guest.AddPatient(PatientSecs);
+
                     NightGuestManager.ResetGuestOrderServed(GuestUniqId);
                     NightGuestManager.SetGuestStatus(GuestUniqId, NightGuestManager.Status.OrderGenerated);
                 }

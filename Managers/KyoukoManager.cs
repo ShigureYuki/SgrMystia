@@ -97,7 +97,7 @@ public static partial class KyoukoManager
                 {
                     Log.LogWarning($"Character '{KYOUKO_ID}' not found in character collection, try respawn..");
                     SgrYuki.Utils.CommandScheduler.Enqueue(
-                        canExecute: () => Common.SceneDirector.instance.characterCollection.ContainsKey("Self"),
+                        executeWhen: () => Common.SceneDirector.instance.characterCollection.ContainsKey("Self"),
                         execute: () => SpawnNightKyouko(MystiaManager.Instance.GetPosition(), true, true)
                     );
                     return null;
@@ -279,6 +279,11 @@ public static partial class KyoukoManager
 
     public static void SpawnNightKyouko(Vector2 position, bool enableHeightProcessor = true, bool ignoreCollisionWithSelf = true)
     {
+        if (Common.SceneDirector.Instance.characterCollection.ContainsKey(KYOUKO_ID))
+        {
+            Log.LogWarning($"NightKyouko already exists, skip spawning");
+            return;
+        }
         Common.SceneDirector.Instance.SpawnCharacter(Common.SceneDirector.Identity.Special, 14, position, KYOUKO_ID);
         Log.LogWarning($"Spawned NightKyouko for testing");
         if (enableHeightProcessor)
