@@ -54,5 +54,17 @@ public partial class GuestGenSPOrderAction : NetAction
             }
          );
     }
+
+    public static void Send(string guestUniqId, int requestFoodTag, int requestBevTag, int deskCode, bool notShowInUI, bool isFree, string message)
+    {
+        var order = new GuestOrder(requestFoodTag, requestBevTag, deskCode, notShowInUI, isFree);
+        NetPacket packet = new([new GuestGenSPOrderAction
+        {
+            GuestUniqId = guestUniqId,
+            Order = order,
+            Message = message
+        }]);
+        SendToPeer(packet);
+    }
 }
 

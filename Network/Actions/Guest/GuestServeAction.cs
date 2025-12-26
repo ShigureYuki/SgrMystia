@@ -105,7 +105,18 @@ public partial class GuestServeAction : NetAction
                 // NightGuestManager.SetGuestStatus(GuestUniqId, NightGuestManager.Status.OrderEvaluated); 
             }
         );
+    }
 
+    public static void Send(string guestUniqId, SellableFood food, int beverageId, ServeType type)
+    {
+        NetPacket packet = new([new GuestServeAction
+        {
+            GuestUniqId = guestUniqId,
+            Food = food,
+            BeverageId = beverageId,
+            FoodType = type
+        }]);
+        SendToPeer(packet);
     }
 }
 

@@ -62,16 +62,16 @@ public partial class GuestsManagerPatch
                                     break;
                                 }
                             }
-                            MpManager.SendGuestSpawn(array[0].id, false, uuid, normalGuestVisual, array[1].id, normalGuest2Visual);
+                            GuestSpawnAction.Send(array[0].id, false, uuid, normalGuestVisual, array[1].id, normalGuest2Visual);
                         }
                         else
                         {
-                            MpManager.SendGuestSpawn(array[0].id, false, uuid, normalGuestVisual);
+                            GuestSpawnAction.Send(array[0].id, false, uuid, normalGuestVisual);
                         }
                     }
                     else
                     {
-                        MpManager.SendGuestSpawn(array[0].id, true, uuid);
+                        GuestSpawnAction.Send(array[0].id, true, uuid);
                     }
                 }
             } 
@@ -238,7 +238,7 @@ public partial class GuestsManagerPatch
 
                 Log.LogDebug($"TrySendToSeat_Prefix called, desk code {targetDeskCode}, seat {seatRand}");
 
-                MpManager.SendGuestSeated(NightGuestManager.GetGuestUUID(toTry), targetDeskCode, firstSpawn, seatRand);
+                GuestSeatedAction.Send(NightGuestManager.GetGuestUUID(toTry), targetDeskCode, firstSpawn, seatRand);
             }
         }
         return true;
@@ -275,7 +275,7 @@ public partial class GuestsManagerPatch
                     return true;
                 }
                 NightGuestManager.SetGuestStatus(uuid, NightGuestManager.Status.Left);
-                MpManager.SendGuestLeave(uuid, GuestLeaveAction.LeaveType.Other);
+                GuestLeaveAction.Send(uuid, GuestLeaveAction.LeaveType.Other);
             }
         }
 
@@ -301,7 +301,7 @@ public partial class GuestsManagerPatch
         else if (MpManager.IsConnectedHost && MpManager.LocalScene == Common.UI.Scene.WorkScene)
         {
             NightGuestManager.SetGuestStatus(NightGuestManager.GetGuestUUID(toPayAndLeave), NightGuestManager.Status.Left);
-            MpManager.SendGuestLeave(NightGuestManager.GetGuestUUID(toPayAndLeave), GuestLeaveAction.LeaveType.PayAndLeave);
+            GuestLeaveAction.Send(NightGuestManager.GetGuestUUID(toPayAndLeave), GuestLeaveAction.LeaveType.PayAndLeave);
         }
         return true;
     }
@@ -325,7 +325,7 @@ public partial class GuestsManagerPatch
         else if (MpManager.IsConnectedHost && MpManager.LocalScene == Common.UI.Scene.WorkScene)
         {
             NightGuestManager.SetGuestStatus(NightGuestManager.GetGuestUUID(toExBadLeave), NightGuestManager.Status.Left);
-            MpManager.SendGuestLeave(NightGuestManager.GetGuestUUID(toExBadLeave), GuestLeaveAction.LeaveType.ExBadLeave);
+            GuestLeaveAction.Send(NightGuestManager.GetGuestUUID(toExBadLeave), GuestLeaveAction.LeaveType.ExBadLeave);
         }
         return true;
     }
@@ -345,7 +345,7 @@ public partial class GuestsManagerPatch
         if (MpManager.IsConnected && MpManager.LocalScene == Common.UI.Scene.WorkScene)
         {
             NightGuestManager.SetGuestStatus(NightGuestManager.GetGuestUUID(toRepell), NightGuestManager.Status.Left);
-            MpManager.SendGuestLeave(NightGuestManager.GetGuestUUID(toRepell), GuestLeaveAction.LeaveType.RepellAndLeavePay);
+            GuestLeaveAction.Send(NightGuestManager.GetGuestUUID(toRepell), GuestLeaveAction.LeaveType.RepellAndLeavePay);
         }
         return true;
     }
@@ -370,7 +370,7 @@ public partial class GuestsManagerPatch
                 return true;
             }
             NightGuestManager.SetGuestStatus(uuid, NightGuestManager.Status.Left);
-            MpManager.SendGuestLeave(uuid, GuestLeaveAction.LeaveType.RepellAndLeaveNoPay);
+            GuestLeaveAction.Send(uuid, GuestLeaveAction.LeaveType.RepellAndLeaveNoPay);
         }
         return true;
     }
@@ -391,7 +391,7 @@ public partial class GuestsManagerPatch
         {
             var toRepell = GuestsManager.instance.GetInDeskGuest(deskCode);
             NightGuestManager.SetGuestStatus(NightGuestManager.GetGuestUUID(toRepell), NightGuestManager.Status.Left);
-            MpManager.SendGuestLeave(NightGuestManager.GetGuestUUID(toRepell), GuestLeaveAction.LeaveType.PlayerRepell);
+            GuestLeaveAction.Send(NightGuestManager.GetGuestUUID(toRepell), GuestLeaveAction.LeaveType.PlayerRepell);
 
             if (__instance == null || __instance?.GetInDeskGuest(deskCode) == null)
             {
@@ -425,7 +425,7 @@ public partial class GuestsManagerPatch
             else
             {
                 NightGuestManager.SetGuestStatus(NightGuestManager.GetGuestUUID(toPatientDepletedLeave), NightGuestManager.Status.Left);
-                MpManager.SendGuestLeave(NightGuestManager.GetGuestUUID(toPatientDepletedLeave), GuestLeaveAction.LeaveType.PatientDepletedLeave);
+                GuestLeaveAction.Send(NightGuestManager.GetGuestUUID(toPatientDepletedLeave), GuestLeaveAction.LeaveType.PatientDepletedLeave);
             }
         }
         return true;
@@ -450,7 +450,7 @@ public partial class GuestsManagerPatch
             if (FunctionUtil.CheckStacktraceContains("GenerateOrderSession"))
             {
                 NightGuestManager.SetGuestStatus(NightGuestManager.GetGuestUUID(toPayAndLeave), NightGuestManager.Status.Left);
-                MpManager.SendGuestLeave(NightGuestManager.GetGuestUUID(toPayAndLeave), GuestLeaveAction.LeaveType.PayAndLeave);
+                GuestLeaveAction.Send(NightGuestManager.GetGuestUUID(toPayAndLeave), GuestLeaveAction.LeaveType.PayAndLeave);
             }
         }
         return true;
