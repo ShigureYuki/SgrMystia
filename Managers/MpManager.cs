@@ -131,6 +131,7 @@ public static partial class MpManager
         PeerAddress = ip;
         SendHello();
         SendSync();
+        Notify.ShowOnMainThread($"联机系统：已连接！");
     }
     
 
@@ -138,6 +139,7 @@ public static partial class MpManager
     {
         PeerAddress = "<Unknown>";
         PeerId = "<Unknown>";
+        Notify.ShowOnMainThread($"联机系统：连接已断开！");
     }
 
     public static void OnAction(NetAction action)
@@ -259,7 +261,7 @@ public static partial class MpManager
     public static void SendMessage(string message)
     {
         FloatingTextHelper.ShowFloatingTextSelfOnMainThread(message);
-        PluginManager.Instance.RunOnMainThread(() => Notify.Show($"你: {message}"));
+        Notify.ShowOnMainThread($"你: {message}");
         SendToPeer(MessageAction.CreateMsgPacket(message));
     }
 

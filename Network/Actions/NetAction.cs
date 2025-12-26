@@ -61,7 +61,8 @@ public abstract partial class NetAction
             new System.Text.Json.JsonSerializerOptions
             {
                 WriteIndented = false,
-                IncludeFields = true
+                IncludeFields = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             });
     }
 
