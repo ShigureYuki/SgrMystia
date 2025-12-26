@@ -27,12 +27,12 @@ public partial class NightSceneManagerPatch
         KyoukoManager.Initialize();
 
         CommandScheduler.Enqueue(
-            canExecute: () => Common.SceneDirector.instance.characterCollection.ContainsKey("Self"),
+            executeWhen: () => Common.SceneDirector.instance.characterCollection.ContainsKey("Self"),
             execute: () =>
             {
                 var position = MystiaManager.Instance.GetPosition();
                 KyoukoManager.SpawnNightKyouko(position, true, true);
-                NightScene.EventUtility.EventManager.Instance.totalCountDown = NightScene.SceneManager.NIGHT_WHOLE_TIME * 2;
+                NightScene.EventUtility.EventManager.Instance.totalCountDown = SceneManager.NIGHT_WHOLE_TIME * 2;
             },
             timeoutSeconds: 120
         );

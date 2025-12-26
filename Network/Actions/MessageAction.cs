@@ -10,12 +10,17 @@ public partial class MessageAction : NetAction
     [MemoryPackIgnore]
     private const int maxMessageLen = 1024;
     public string Message {get; private set; }
+    public override void LogActionSend(bool _onlyAction, string prefix)
+    {
+        LogActionSend(BepInEx.Logging.LogLevel.Message, false, prefix);
+    }
+
     public override void OnReceived()
     {
-        LogActionReceived();
+        LogActionReceived(BepInEx.Logging.LogLevel.Message);
         PluginManager.Console.AddPeerMessage(Message);
         FloatingTextHelper.ShowFloatingTextOnMainThread(KyoukoManager.GetCharacterUnit(), Message);
-        PluginManager.Instance.RunOnMainThread(() => Notify.Show($"响子: {Message}"));
+        Notify.ShowOnMainThread($"响子: {Message}");
     }
     private static MessageAction CreateMsgAction(string msg)
     {

@@ -263,19 +263,19 @@ public static class CommandScheduler
     // Public API 
     // ================================
     public static void Enqueue(
-        Func<bool> canExecute,
+        Func<bool> executeWhen,
         Action execute,
         float timeoutSeconds = 60f,
         Action onTimeout = null)
     {
-        if (canExecute == null)
-            throw new ArgumentNullException(nameof(canExecute));
+        if (executeWhen == null)
+            throw new ArgumentNullException(nameof(executeWhen));
         if (execute == null)
             throw new ArgumentNullException(nameof(execute));
 
         _pending.Enqueue(new Command
         {
-            CanExecute = canExecute,
+            CanExecute = executeWhen,
             Execute = execute,
             OnTimeout = onTimeout,
             ExpireTime = UnityEngine.Time.unscaledTime + timeoutSeconds

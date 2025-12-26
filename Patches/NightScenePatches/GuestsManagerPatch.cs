@@ -77,14 +77,6 @@ public partial class GuestsManagerPatch
         return true;
     }
 
-    [HarmonyPatch(nameof(GuestsManager.PostInitializeGuestGroup))]
-    [HarmonyPostfix]    
-    public static void PostInitializeGuestGroup_Postfix(GuestGroupController initializedController)
-    {
-        const int PatientSecs = 30;
-        initializedController.AddPatient(PatientSecs);
-    }
-
     [HarmonyPatch(nameof(GuestsManager.SpawnNormalGuestGroup), [])]
     [HarmonyPrefix]    
     public static bool SpawnNormalGuestGroup_Prefix()
@@ -474,5 +466,16 @@ public partial class GuestsManagerPatch
             return false;
         }
         return true;
+    }
+
+    [HarmonyPatch(nameof(GuestsManager.GenerateOrderSession))]
+    [HarmonyPostfix]    
+    public static void GenerateOrderSession_Postfix(GuestsManager __instance, GuestGroupController guestGroup)
+    {
+        if (MpManager.IsConnectedHost && MpManager.LocalScene == Common.UI.Scene.WorkScene)
+        {
+            const int PatientSecs = 30;
+            guestGroup.AddPatient(PatientSecs);
+        }
     }
 }

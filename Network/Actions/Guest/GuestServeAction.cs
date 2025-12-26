@@ -41,7 +41,7 @@ public partial class GuestServeAction : NetAction
         const int PatientRecoverSecs = 60;
 
         CommandScheduler.Enqueue(
-            canExecute: () => NightGuestManager.CheckStatusOrThrow(GuestUniqId, NightGuestManager.Status.OrderGenerated),
+            executeWhen: () => NightGuestManager.CheckStatusOrThrow(GuestUniqId, NightGuestManager.Status.OrderGenerated),
             execute: () =>
             {
                 var guest = NightGuestManager.GetGuest(GuestUniqId);

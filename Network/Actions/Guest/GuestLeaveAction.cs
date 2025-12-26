@@ -41,7 +41,7 @@ public partial class GuestLeaveAction : NetAction
 
 
         CommandScheduler.Enqueue(
-            canExecute: () => NightGuestManager.CheckStatusGreaterOrThrow(GuestUniqId, NightGuestManager.Status.Generated),
+            executeWhen: () => NightGuestManager.CheckStatusGreaterOrThrow(GuestUniqId, NightGuestManager.Status.Generated),
             execute: () =>
             {
                 var guest = NightGuestManager.GetGuest(GuestUniqId);
