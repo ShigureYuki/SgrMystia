@@ -7,16 +7,16 @@ public partial class SelectAction : NetAction
 {
     public override ActionType Type => ActionType.SELECT;
     public string MapLabel { get; set; } = "";
-    public int Level { get; set; } = 0;
+    public int MapLevel { get; set; } = 0;
     public override void OnReceived()
     {
         LogActionReceived();
         PluginManager.Instance.RunOnMainThread(() =>
         {
             KyoukoManager.IzakayaMapLabel = MapLabel;
-            KyoukoManager.IzakayaLevel = Level;
+            KyoukoManager.IzakayaLevel = MapLevel;
 
-            Dialog.ShowInformDialog(KyoukoManager.IzakayaMapLabel, null);
+            Dialog.ShowInformDialog(MapLabel, MapLevel, null);
         });
     }
 }

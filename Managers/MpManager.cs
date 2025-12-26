@@ -204,7 +204,11 @@ public static partial class MpManager
 
     public static void SendHello()
     {
-        SendToPeer(new NetPacket([new HelloAction { PeerId = PlayerId }]));
+        SendToPeer(new NetPacket([new HelloAction { 
+            PeerId = PlayerId,
+            Version = MyPluginInfo.PLUGIN_VERSION,
+            CurrentGameScene = LocalScene
+        }]));
     }
 
     public static void SendSync()
@@ -301,7 +305,7 @@ public static partial class MpManager
         NetPacket packet = new NetPacket([new SelectAction
         {
             MapLabel = mapLabel,
-            Level = level
+            MapLevel = level
         }]);
         SendToPeer(packet);
     }

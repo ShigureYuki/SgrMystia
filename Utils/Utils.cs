@@ -11,7 +11,7 @@ namespace MetaMystia;
 [AutoLog]
 public static partial class Utils
 {
-    public static string GetMapNameCN(string mapLabel)
+    public static string GetMapLabelNameCN(string mapLabel)
     {
         return mapLabel switch
         {
@@ -37,6 +37,17 @@ public static partial class Utils
             "DLC5_Makai" => "魔界",
             "DLC5_LunarCapital" => "月之都",
             _ => mapLabel
+        };
+    }
+
+    public static string GetMapLevelNameCN(int level)
+    {
+        return level switch
+        {
+            1 => "推车",
+            2 => "小屋",
+            3 => "食堂",
+            _ => $"Level {level}",
         };
     }
 

@@ -20,8 +20,6 @@ public static partial class Dialog
         // 其中对话的文本内容需要通过 overrideReplaceTextCallback 来替换
         // 使用方法可以参考后面的函数
         // TODO: 【重要】如果显示某个对话时又触发新的对话，可能导致回调混乱
-        // TODO: 使用 json 或其他格式来定义对话内容，以便避免硬编码
-        // TODO: i18n
 
         if (dialogList == null)
         {
@@ -103,7 +101,7 @@ public static partial class Dialog
 
     public static void ShowSelectedDialog(string mapLabelM, System.Action onFinishCallback = null) 
     {
-        var mapNameM = Utils.GetMapNameCN(mapLabelM);
+        var mapNameM = Utils.GetMapLabelNameCN(mapLabelM);
         var textsM = new[] 
         {
             $"那么，今天就决定是「{mapNameM}」了！",
@@ -116,13 +114,14 @@ public static partial class Dialog
         BuildAndShow(dialogList, onFinishCallback);
     }
 
-    public static void ShowInformDialog(string mapLabelK, System.Action onFinishCallback = null) 
+    public static void ShowInformDialog(string mapLabelK, int mapLevelK, System.Action onFinishCallback = null) 
     {
-        var mapNameK = Utils.GetMapNameCN(mapLabelK);
+        var mapNameK = Utils.GetMapLabelNameCN(mapLabelK);
+        var levelNameK = Utils.GetMapLevelNameCN(mapLevelK);
         var textsK = new[] 
         {
-            $"让我想想……「{mapNameK}」好像是个好主意！",
-            $"就决定是这里啦！「{mapNameK}」！",
+            $"让我想想……「{mapNameK} {levelNameK}」好像是个好主意！",
+            $"就决定是这里啦！「{mapNameK} {levelNameK}」！",
         };
         var textK = textsK[UnityEngine.Random.Range(0, textsK.Length)];
 
@@ -134,7 +133,7 @@ public static partial class Dialog
 
     public static void ShowRejectDialog(string mapLabelM, string mapLabelK, System.Action onFinishCallback = null) 
     {
-        var mapNameM = Utils.GetMapNameCN(mapLabelM);
+        var mapNameM = Utils.GetMapLabelNameCN(mapLabelM);
         var textsM = new[] 
         {
             $"所以，今天的计划如何？关于去「{mapNameM}」这件事。",
@@ -142,7 +141,7 @@ public static partial class Dialog
         };
         var textM = textsM[UnityEngine.Random.Range(0, textsM.Length)];
 
-        var mapNameK = Utils.GetMapNameCN(mapLabelK);
+        var mapNameK = Utils.GetMapLabelNameCN(mapLabelK);
         var textsK = new[] 
         {
             $"不过米斯琪，「{mapNameK}」会不会好些呢？",
@@ -158,7 +157,7 @@ public static partial class Dialog
 
     public static void ShowConfirmDialog(string mapLabel, System.Action onFinishCallback = null) 
     {
-        var mapName = Utils.GetMapNameCN(mapLabel); // Confirm 中不分 M/K
+        var mapName = Utils.GetMapLabelNameCN(mapLabel); // Confirm 中不分 M/K
         var textsM = new[] 
         {
             $"所以，今天的计划如何？关于去「{mapName}」这件事。",

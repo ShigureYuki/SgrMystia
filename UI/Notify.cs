@@ -12,4 +12,12 @@ public static partial class Notify
     {
         ReceivedObjectDisplayerController.Instance.NotifyTextMessage(text);   
     }
+
+    public static void ShowOnMainThread(string text)
+    {
+        PluginManager.Instance.RunOnMainThread(() => 
+        {
+            Show(text);
+        });
+    }
 }
