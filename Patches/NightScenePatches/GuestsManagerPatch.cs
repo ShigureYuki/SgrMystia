@@ -4,6 +4,8 @@ using NightScene.GuestManagementUtility;
 using DEYU.Utils;
 using SgrYuki.Utils;
 using GameData.Core.Collections.CharacterUtility;
+using System.Linq;
+using Il2CppSystem.IO;
 
 namespace MetaMystia;
 
@@ -23,7 +25,7 @@ public partial class GuestsManagerPatch
         // Sync host's guest spawn here because GuestsManager::SpawnNormalGuestGroup/0 does not return guest controller
         if (MpManager.IsConnected && MpManager.LocalScene == Common.UI.Scene.WorkScene)
         {
-            if (MpManager.Role == MpManager.ROLE.Host){
+            if (MpManager.IsHost){
                 string uuid = NightGuestManager.StoreGuest(initializedController);
 
                 var array = initializedController.GetAllGuests().ToIl2CppReferenceArray();
@@ -82,7 +84,34 @@ public partial class GuestsManagerPatch
     public static bool SpawnNormalGuestGroup_Prefix()
     {
         // Log.LogInfo($"SpawnNormalGuestGroup_Prefix called");
-        return !MpManager.IsConnectedClient && MpManager.LocalScene == Common.UI.Scene.WorkScene;
+        if (MpManager.IsConnected && MpManager.LocalScene == Common.UI.Scene.WorkScene)
+        {
+            if (MpManager.IsClient)
+            {
+                return false;
+            }
+            else
+            {
+                var cook = NightScene.CookingUtility.CookSystemManager.Instance;
+                while (true)
+                {
+                    var guestGroups = cook?.GetRandomNormalGuestGroups();
+                    if (guestGroups == null)
+                    {
+                        Log.LogError($"CookSystemManager failed to GetRandomNormalGuestGroups!");
+                        return true;
+                    }
+                    var arr = guestGroups.ToArray();
+                    if (arr.All((guest) => DLCManager.PeerNormalGuestAvailable(guest.id)))
+                    {
+                        _ = SpawnNormalGuestGroup_WithArg_Original(
+                                    GuestsManager.instance, guestGroups, new Il2CppSystem.Nullable<UnityEngine.Vector3>(), GuestGroupController.LeaveType.Move, -1, true);
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
 
@@ -146,7 +175,7 @@ public partial class GuestsManagerPatch
     [HarmonyPatch(nameof(GuestsManager.SpawnSpecialGuestGroup))]
     [HarmonyPrefix]    
     public static bool SpawnSpecialGuestGroup_Prefix(GuestsManager __instance, ref SpecialGuestsController __result,
-        int id, 
+        ref int id, 
         SpecialGuestsController.GuestSpawnType guestSpawnType,
         ref Il2CppSystem.Nullable<UnityEngine.Vector3> overrideSpawnPosition, 
         Il2CppSystem.Action<GuestGroupController> onGuestLeave, 
@@ -166,6 +195,12 @@ public partial class GuestsManagerPatch
             }
             return false;
         }
+        if (!DLCManager.PeerSpecialGuestAvailable(id))
+        {
+            var newId = DLCManager.CoreSpecialGuests.GetRandomOne();
+            Log.LogWarning($"id {id} is not available for peer, use new {newId}");
+            id = newId;
+        }
         __result = SpawnSpecialGuestGroup_Original(__instance, id, guestSpawnType, overrideSpawnPosition, onGuestLeave, leaveType, recordIzakaya, targetDeskCode, tryToJumpQueue, postProcessCharacterCallback, shouldFade);
         return false;
     }
@@ -183,7 +218,7 @@ public partial class GuestsManagerPatch
     {
         if (MpManager.IsConnected && MpManager.LocalScene == Common.UI.Scene.WorkScene)
         {
-            if(MpManager.Role == MpManager.ROLE.Client)
+            if(MpManager.IsClient)
             {
                 Log.LogDebug($"TrySendToSeat prevented");
                 return false;
@@ -223,7 +258,7 @@ public partial class GuestsManagerPatch
         Log.LogInfo($"LeaveFromDesk_Prefix called");
         if (MpManager.IsConnected && MpManager.LocalScene == Common.UI.Scene.WorkScene)
         {
-            if (MpManager.Role == MpManager.ROLE.Client)
+            if (MpManager.IsClient)
             {
                 if (toLeave == null || toLeave.guestInstances == null)
                 {
@@ -383,7 +418,7 @@ public partial class GuestsManagerPatch
         Log.LogDebug($"PatientDepletedLeave_Prefix called");
         if (MpManager.IsConnected && MpManager.LocalScene == Common.UI.Scene.WorkScene)
         {
-            if (MpManager.Role == MpManager.ROLE.Client)
+            if (MpManager.IsClient)
             {
                 return NightGuestManager.CheckStatus(NightGuestManager.GetGuestUUID(toPatientDepletedLeave), NightGuestManager.Status.Left);
             }
@@ -475,7 +510,8 @@ public partial class GuestsManagerPatch
         if (MpManager.IsConnectedHost && MpManager.LocalScene == Common.UI.Scene.WorkScene)
         {
             const int PatientSecs = 30;
-            guestGroup.AddPatient(PatientSecs);
+            guestGroup.SetPatient(System.Math.Min(guestGroup.CurrentPatient + PatientSecs, guestGroup.MaxPatient));
+
         }
     }
 }

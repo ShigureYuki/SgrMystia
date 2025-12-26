@@ -42,7 +42,8 @@ public partial class GuestGenNormalOrderAction : NetAction
                 {
                     GuestsManagerPatch.GenerateOrderSession_Original(GuestsManager.instance, guest, true);
                     const int PatientSecs = 30;
-                    guest.AddPatient(PatientSecs);
+
+                    guest.SetPatient(Math.Min(guest.CurrentPatient + PatientSecs, guest.MaxPatient));
 
                     NightGuestManager.ResetGuestOrderServed(GuestUniqId);
                     NightGuestManager.SetGuestStatus(GuestUniqId, NightGuestManager.Status.OrderGenerated);

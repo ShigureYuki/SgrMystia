@@ -1,7 +1,6 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using BepInEx.Logging;
 
 namespace MetaMystia;
 
@@ -20,10 +19,10 @@ public static partial class MpManager
     public static string PlayerId { get { return _playerId; } set { _playerId = value; Log.LogInfo($"Player ID set to: {value}"); } }
     private static TcpServer server = null;
     private static TcpClientWrapper client = null;
-    public static ROLE Role {get; private set;}
-    public static string RoleTag => Role == ROLE.Host ? "[S]" : "[C]";
+    private static ROLE Role;
+    private static ROLE GameRole;
     public static bool IsRunning { get; private set; }
-    public static bool IsConnected => (Role == ROLE.Host ? server?.HasAliveClient : client?.IsConnected)?? false;
+    public static bool IsConnected => (IsHost ? server?.HasAliveClient : client?.IsConnected)?? false;
     public static string PeerAddress {get; set;}
     public static string PeerId {get; set;}
     public static long Latency {get; private set;} = 0;
@@ -33,9 +32,19 @@ public static partial class MpManager
     public static long GetSynchronizedTimestampNow => GetTimestampNow - TimeOffset;
     private static int _pingId = 0;
 
-    public static bool IsConnectedClient => IsConnected && Role == ROLE.Client;
-    public static bool IsConnectedHost => IsConnected && Role == ROLE.Host;
+    public static bool IsConnectedClient => IsConnected && IsClient;
+    public static bool IsConnectedHost => IsConnected && IsHost;
+    public static bool IsHost => Role == ROLE.Host;
+    public static bool IsClient => Role == ROLE.Client;
+    public static string RoleTag => IsHost ? "[S]" : "[C]";
+
+    public static bool IsGameRoleHost => GameRole == ROLE.Host;
+    public static bool IsGameRoleClient => GameRole == ROLE.Client;
+
     public static Common.UI.Scene LocalScene => PluginManager.CurrentGameScene;
+
+    public static System.Collections.Generic.List<string> LocalActiveDLCLabel => DLCManager.ActiveDLCLabel;
+    public static System.Collections.Generic.List<string> PeerActiveDLCLabel => DLCManager.PeerActiveDLCLabel;
 
     public static void Start(ROLE r = ROLE.Host)
     {
@@ -48,6 +57,7 @@ public static partial class MpManager
         IsRunning = true;
         PeerId = "<Unknown>";
         Role = r;
+        GameRole = Role;
 
         switch (r) 
         {
@@ -88,6 +98,13 @@ public static partial class MpManager
         Log.LogInfo("MpManager has stopped");
     }
 
+    public static void Initialize()
+    {
+        Log.LogInfo($"MpManager initialized");
+        MystiaManager.Instance.Initialize();
+        KyoukoManager.Initialize();
+    }
+
     public static void Restart()
     {
         Stop();
@@ -124,11 +141,11 @@ public static partial class MpManager
         }
     }
 
-
     public static void OnConnected(string ip)
     {
         // PeerAddress = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
         PeerAddress = ip;
+        Initialize();
         SendHello();
         SendSync();
         Notify.ShowOnMainThread($"联机系统：已连接！");
@@ -152,7 +169,7 @@ public static partial class MpManager
         if (IsConnected)
         {
             packet.GetFirstAction().LogActionSend(true);
-            if (Role == ROLE.Host)
+            if (IsHost)
             {
                 server.Send(packet);
             }
@@ -167,7 +184,7 @@ public static partial class MpManager
     {
         if (IsConnected)
         {
-            if (Role == ROLE.Host)
+            if (IsHost)
             {
                 server.DisconnectClient();
             } 
@@ -208,8 +225,15 @@ public static partial class MpManager
     {
         SendToPeer(new NetPacket([new HelloAction { 
             PeerId = PlayerId,
+            PeerActiveDLCLabel = LocalActiveDLCLabel,
             Version = MyPluginInfo.PLUGIN_VERSION,
-            CurrentGameScene = LocalScene
+            CurrentGameScene = LocalScene,
+            PeerDLCBeverages = DLCManager.Beverages,
+            PeerDLCCookers = DLCManager.Cookers,
+            PeerDLCFoods = DLCManager.Foods,
+            PeerDLCNormalGuests = DLCManager.NormalGuests,
+            PeerDLCRecipes = DLCManager.Recipes,
+            PeerDLCSpecialGuests = DLCManager.SpecialGuests,
         }]));
     }
 

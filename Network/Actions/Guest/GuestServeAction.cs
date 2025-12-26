@@ -94,7 +94,7 @@ public partial class GuestServeAction : NetAction
                 {
                     Log.LogWarning($"handing GUEST_SERVE: begin evaluate order for {GuestUniqId}");
                     GuestsManager.instance.EvaluateOrder(guest, false);
-                    guest.AddPatient(PatientRecoverSecs);
+                    guest.SetPatient(Math.Min(guest.CurrentPatient + PatientRecoverSecs, guest.MaxPatient));
                 }
                 else
                 {
