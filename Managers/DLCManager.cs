@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using GameData.Core.Collections;
 using GameData.Core.Collections.NightSceneUtility;
 using SgrYuki.Utils;
@@ -38,6 +39,7 @@ public static class DLCManager
 
     public static bool PeerNormalGuestAvailable(int id) => CoreNormalGuests.Contains(id) || PeerNormalGuests.Contains(id);
     public static bool PeerSpecialGuestAvailable(int id) => CoreSpecialGuests.Contains(id) || PeerSpecialGuests.Contains(id);
+    public static bool SpecialGuestAvailable(int id) => CoreSpecialGuests.Contains(id) || SpecialGuests.Contains(id);
 
     public static void Initialize()
     {
@@ -102,93 +104,48 @@ public static class DLCManager
 
     private static List<GameData.Profile.GameDataProfile.DLCGameDataPack> GetAllDLCGameDataPacks()
     {
-        List<GameData.Profile.GameDataProfile.DLCGameDataPack> res = new();
-        foreach (var pack in DLCDataPacks)
-        {
-            if (pack.key.Equals("DLCMUSIC"))
-            {
-                continue;
-            }
-            res.Add(pack);
-        }
-        return res;
+        return [.. DLCDataPacks.Where(pack => !pack.key.Equals("DLCMUSIC"))];
     }
 
     private static HashSet<int> GetAllDLCRecipes()
     {
-        HashSet<int> ids = [];
-        foreach(var pack in GetAllDLCGameDataPacks())
-        {
-            foreach(Recipe item in GetRecipesFromDLC(pack))
-            {
-                ids.Add(item.Id);
-            }
-        }
-        return ids;
+        return [.. GetAllDLCGameDataPacks()
+            .SelectMany(pack => GetRecipesFromDLC(pack))
+            .Select(r => r.Id)];
     }
 
     private static HashSet<int> GetAllDLCFoods()
     {
-        HashSet<int> ids = [];
-        foreach(var pack in GetAllDLCGameDataPacks())
-        {
-            foreach(Sellable food in GetFoodsFromDLC(pack))
-            {
-                ids.Add(food.Id);
-            }
-        }
-        return ids;
+        return [.. GetAllDLCGameDataPacks()
+            .SelectMany(pack => GetFoodsFromDLC(pack))
+            .Select(food => food.Id)];
     }
 
     private static HashSet<int> GetAllDLCBeverages()
     {
-        HashSet<int> ids = [];
-        foreach (var pack in GetAllDLCGameDataPacks())
-        {
-            foreach(Sellable beverage in GetBeveragesFromDLC(pack))
-            {
-                ids.Add(beverage.Id);
-            }
-        }
-        return ids;
+        return [.. GetAllDLCGameDataPacks()
+            .SelectMany(pack => GetBeveragesFromDLC(pack))
+            .Select(beverage => beverage.Id)];
     }
     
     private static HashSet<int> GetAllDLCNormalGuests()
     {
-        HashSet<int> ids = [];
-        foreach(var pack in GetAllDLCGameDataPacks())
-        {
-            foreach(NormalGuest item in GetNormalGuestsFromDLC(pack))
-            {
-                ids.Add(item.Id);
-            }
-        }
-        return ids;
+        return [.. GetAllDLCGameDataPacks()
+            .SelectMany(pack => GetNormalGuestsFromDLC(pack))
+            .Select(item => item.Id)];
     }
 
     private static HashSet<int> GetAllDLCSpecialGuests()
     {
-        HashSet<int> ids = [];
-        foreach(var pack in GetAllDLCGameDataPacks())
-        {
-            foreach(SpecialGuest item in GetSpecialGuestsFromDLC(pack))
-            {
-                ids.Add(item.Id);
-            }
-        }
-        return ids;
+        return [.. GetAllDLCGameDataPacks()
+            .SelectMany(pack => GetSpecialGuestsFromDLC(pack))
+            .Select(item => item.Id)];
     }
 
     private static HashSet<int> GetAllDLCCookers()
     {
-        HashSet<int> ids = [];
-        foreach(var pack in GetAllDLCGameDataPacks())
-        {
-            foreach(Cooker item in GetCookersFromDLC(pack))
-            {
-                ids.Add(item.Id);
-            }
-        }
-        return ids;
+        return [.. GetAllDLCGameDataPacks()
+            .SelectMany(pack => GetCookersFromDLC(pack))
+            .Select(item => item.Id)];
     }
 }

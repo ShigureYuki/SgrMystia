@@ -119,7 +119,7 @@ public static partial class NightGuestManager
         {
             Log.Error($"pointer {guest.Pointer} not found");
             // ShigureYuki.DiagnosticUtils.LogAllProperties(guest);
-            FunctionUtil.LogStacktrace(Log._inner);
+            Log.LogStacktrace();
             return null;
         }
     }

@@ -251,6 +251,8 @@ public sealed class LogWrapper
     public void LogMessage(string msg, bool withTag = true) => Message(msg, withTag);
     public void LogWarning(string msg, bool withTag = true) => Warning(msg, withTag);
     public void LogError(string msg, bool withTag = true) => Error(msg, withTag);
+
+    public void LogStacktrace() => FunctionUtil.LogStacktrace(_inner);
 }
 
 // Support "foreach" any container that implements [] operator and Count member method

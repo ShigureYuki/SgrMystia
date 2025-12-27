@@ -11,7 +11,10 @@ public partial class RunTimeSchedulerPatch
     public static void OnEnterDaySceneMap_Postfix(string mapLabel)
     {
         MystiaManager.MapLabel = mapLabel;
-        MpManager.SendSync();
-        KyoukoManager.TryAddHeightProcessor();
+        if (MpManager.IsConnected && !MpManager.InStory)
+        {
+            SyncAction.Send();
+            KyoukoManager.TryAddHeightProcessor();
+        }
     }
 }

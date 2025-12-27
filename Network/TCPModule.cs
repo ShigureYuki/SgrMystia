@@ -535,6 +535,7 @@ public sealed partial class TcpClientWrapper : IDisposable
 
         CloseInternal(resetClosedFlag: false);
 
+        MpManager.OnDisconnected();
         Log.LogWarning("[C] Disconnected. Reconnecting...");
         try
         {

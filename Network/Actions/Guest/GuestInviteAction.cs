@@ -1,6 +1,7 @@
 
 using System.Collections.Generic;
 using MemoryPack;
+using System.Linq;
 
 namespace MetaMystia;
 
@@ -14,7 +15,7 @@ public partial class GuestInviteAction : NetAction
         LogActionReceived();
         PluginManager.Instance.RunOnMainThread(() =>
         {
-            foreach (var item in InvitedGuestIDs)
+            foreach (var item in InvitedGuestIDs.Where(item => DLCManager.SpecialGuestAvailable(item)))
             {
                 GameData.RunTime.Common.StatusTracker.Instance.RecordInvitedGuest(item);
             }

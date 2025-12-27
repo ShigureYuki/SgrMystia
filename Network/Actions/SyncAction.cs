@@ -3,6 +3,7 @@ using MemoryPack;
 namespace MetaMystia;
 
 [MemoryPackable]
+[AutoLog]
 public partial class SyncAction : NetAction
 {
     public override ActionType Type => ActionType.SYNC;
@@ -21,12 +22,55 @@ public partial class SyncAction : NetAction
     public override void OnReceived()
     {
         LogActionReceived(BepInEx.Logging.LogLevel.Debug);
-        if (MpManager.LocalScene != Common.UI.Scene.DayScene)
+        if (MpManager.LocalScene != Common.UI.Scene.DayScene || MpManager.InStory)
         {
+            Log.LogDebug("skipping on received");
             return;
         }
         PluginManager.Instance.RunOnMainThread(() =>
             KyoukoManager.SyncFromPeer(MapLabel, IsSprinting,
                 new UnityEngine.Vector2(Vx, Vy), new UnityEngine.Vector2(Px, Py)));
+    }
+
+    // Also send nightsync
+    public static void Send()
+    {
+        if (!MpManager.IsConnected || MpManager.InStory || !MpManager.InputAvailable)
+        {
+            Log.LogWarning("skipping send");
+            return;
+        }
+
+        var inputDirection = MystiaManager.InputDirection;
+        var position = MystiaManager.Instance.GetPosition();
+
+        NetPacket packet;
+        if (MpManager.LocalScene == Common.UI.Scene.WorkScene)
+        {
+            packet = new NetPacket([new NightSyncAction
+            {
+                Vx = inputDirection.x,
+                Vy = inputDirection.y,
+                Px = position.x,
+                Py = position.y
+            }]);
+        }
+        else
+        {
+            var mapLabel = MystiaManager.MapLabel;
+            var isSprinting = MystiaManager.IsSprinting;
+
+            packet = new NetPacket([new SyncAction
+            {
+                IsSprinting = isSprinting,
+                Vx = inputDirection.x,
+                Vy = inputDirection.y,
+                MapLabel = mapLabel,
+                Px = position.x,
+                Py = position.y
+            }]);
+        }
+
+        SendToPeer(packet);
     }
 }

@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>MetaMystia</AssemblyName>
     <Product>MetaMystia</Product>
-    <Version>0.8.1</Version>
+    <Version>0.8.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>preview</LangVersion>
     <RestoreAdditionalProjectSources>
@@ -113,8 +113,16 @@
       <HintPath>$(GamePath)\BepInEx\interop\Il2CppSystem.Net.Http.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UniTask">
+      <HintPath>$(GamePath)\BepInEx\interop\UniTask.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
@@ -123,10 +131,6 @@
     </Reference>
     <Reference Include="UnityEngine.TilemapModule">
       <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.TilemapModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UniTask">
-      <HintPath>$(GamePath)\BepInEx\interop\UniTask.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
@@ -141,10 +145,6 @@
       <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.UI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
@@ -157,6 +157,18 @@
       <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.JSONSerializeModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.DirectorModule">
+      <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.DirectorModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputModule">
+      <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.InputModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Addressables">
+      <HintPath>$(GamePath)\BepInEx\interop\Unity.Addressables.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(GamePath)\BepInEx\interop\Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
@@ -167,10 +179,6 @@
     </Reference>
     <Reference Include="Unity.ResourceManager">
       <HintPath>$(GamePath)\BepInEx\interop\Unity.ResourceManager.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.InputModule">
-      <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.InputModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="DEYU.Singletons">
@@ -191,10 +199,6 @@
     </Reference>
     <Reference Include="Omt.GamePlatformAPI">
       <HintPath>$(GamePath)\BepInEx\interop\DEYU.AdaptiveUISystem.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Addressables">
-      <HintPath>$(GamePath)\BepInEx\interop\Unity.Addressables.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MemoryPack.Core">

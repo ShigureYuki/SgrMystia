@@ -46,6 +46,10 @@ public static partial class MpManager
     public static System.Collections.Generic.List<string> LocalActiveDLCLabel => DLCManager.ActiveDLCLabel;
     public static System.Collections.Generic.List<string> PeerActiveDLCLabel => DLCManager.PeerActiveDLCLabel;
 
+    public static bool InStory => Common.SceneDirector.Instance.playableDirector.state == UnityEngine.Playables.PlayState.Playing || Common.SceneDirector.Instance.playableDirector.state == UnityEngine.Playables.PlayState.Delayed;
+
+    public static bool InputAvailable => Common.UI.UniversalGameManager.IsInputEnabled;
+
     public static void Start(ROLE r = ROLE.Host)
     {
         if (IsRunning)
@@ -146,7 +150,7 @@ public static partial class MpManager
         // PeerAddress = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
         PeerAddress = ip;
         SendHello();
-        SendSync();
+        SyncAction.Send();
         Notify.ShowOnMainThread($"联机系统：已连接！");
     }
     
@@ -235,47 +239,6 @@ public static partial class MpManager
             PeerDLCSpecialGuests = DLCManager.SpecialGuests,
         }]));
     }
-
-    public static void SendSync()
-    {
-        if (!IsConnected)
-        {
-            return;
-        }
-
-        var inputDirection = MystiaManager.InputDirection;
-        var position = MystiaManager.Instance.GetPosition();
-
-        NetPacket packet;
-        if (LocalScene == Common.UI.Scene.WorkScene)
-        {
-            packet = new NetPacket([new NightSyncAction
-            {
-                Vx = inputDirection.x,
-                Vy = inputDirection.y,
-                Px = position.x,
-                Py = position.y
-            }]);
-        }
-        else
-        {
-            var mapLabel = MystiaManager.MapLabel;
-            var isSprinting = MystiaManager.IsSprinting;
-
-            packet = new NetPacket([new SyncAction
-            {
-                IsSprinting = isSprinting,
-                Vx = inputDirection.x,
-                Vy = inputDirection.y,
-                MapLabel = mapLabel,
-                Px = position.x,
-                Py = position.y
-            }]);
-        }
-
-        SendToPeer(packet);
-    }
-
 
     public static string GetStatus()
     {

@@ -16,7 +16,7 @@ public partial class DayScenePlayerInputPatch
             return false;
         }
         MystiaManager.IsSprinting = true;
-        MpManager.SendSync();
+        SyncAction.Send();
         return true;
     }
 
@@ -25,7 +25,7 @@ public partial class DayScenePlayerInputPatch
     public static void OnSprintCanceled_Prefix()
     {
         MystiaManager.IsSprinting = false;
-        MpManager.SendSync();
+        SyncAction.Send();
     }
 
     [HarmonyPatch(nameof(DayScenePlayerInputGenerator.TryInteract))]

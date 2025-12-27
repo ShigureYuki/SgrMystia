@@ -40,7 +40,7 @@ public partial class CharacterInputPatch
             if (__instance.name == characterCollection["Self"].name)
             {
                 MystiaManager.InputDirection = inputDirection;
-                MpManager.SendSync();
+                SyncAction.Send();
             }
         }
         catch (System.Exception e)

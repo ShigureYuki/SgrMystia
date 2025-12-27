@@ -4,6 +4,7 @@ using DayScene.Interactables.Collections.ConditionComponents;
 using GameData.RunTime.DaySceneUtility;
 using Il2CppSystem.Collections.Generic;
 
+
 namespace MetaMystia;
 
 [AutoLog]
@@ -39,7 +40,7 @@ public static partial class KyoukoManager
 
     public static void OnFixedUpdate()
     {
-        if (!MpManager.IsConnected)
+        if (!MpManager.IsConnected || MpManager.InStory)
         {
             return;
         }
@@ -88,7 +89,7 @@ public static partial class KyoukoManager
         characterUnit.UpdateInputVelocity(velocity);
         if (PluginManager.CurrentGameScene == Common.UI.Scene.DayScene)
         {  
-            var trackedNPC = RunTimeDayScene.GetTrackedNPC("Kyouko");
+            var trackedNPC = RunTimeDayScene.GetTrackedNPC(KYOUKO_ID);
             var position = characterUnit.rb2d.position;
             trackedNPC.overridePosition.position = new KeyValuePair<float, float>( 
                 position.x,
@@ -240,6 +241,7 @@ public static partial class KyoukoManager
         characterUnit.MoveSpeedMultiplier = speed;
         Log.LogDebug($"Kyouko move speed set to {speed}");
     }
+
     public static void SyncFromPeer(string mapLabel, bool isSprinting, Vector2 inputDirection, Vector2 position)
     {
         if (FirstSync)
@@ -269,7 +271,7 @@ public static partial class KyoukoManager
             TryAddHeightProcessor();
             UpdateInputDirection(inputDirection);
             UpdateSprintState(isSprinting);
-            MpManager.SendSync();
+            SyncAction.Send();
         }
         else 
         {
