@@ -95,6 +95,9 @@ public partial class IzakayaSelectorPanelPatch
         ConfirmAction.Send(izakayaMapLabel, izakayaLevel);
         
         System.Action closePanelCallback = () => {
+            cachedSpots.TryGetValue(izakayaMapLabel, out var spot);
+            instanceRef.m_CurrentSelectedSpot = spot;
+            instanceRef.m_CurrentSelectedIzakayaLevel = (Common.UI.IzakayaLevel)izakayaLevel;
             _skipPatchIzakayaSelectionConfirmation = true;
             instanceRef._OnGuideMapInitialize_b__21_0();
             _skipPatchIzakayaSelectionConfirmation = false;
@@ -103,14 +106,6 @@ public partial class IzakayaSelectorPanelPatch
         Dialog.ShowConfirmDialog(izakayaMapLabel, closePanelCallback);
         return false;
     }
-
-    [HarmonyPatch(nameof(Common.UI.IzakayaSelectorPanel_New.TryChangeIzakayaLevel), new[] { typeof(Common.UI.IzakayaLevel), typeof(Common.UI.IzakayaLevel) }, new[] { ArgumentType.Ref, ArgumentType.Normal })]
-    [HarmonyPrefix]
-    public static void TryChangeIzakayaLevel_Prefix(ref Common.UI.IzakayaLevel izakayaLevel, Common.UI.IzakayaLevel targetLevel)
-    {
-        Log.LogInfo($"TryChangeIzakayaLevel called with izakayaLevel: {izakayaLevel}, targetLevel: {targetLevel}");
-    }
-
 
     [HarmonyPatch(nameof(Common.UI.IzakayaSelectorPanel_New.OnGuideMapSpotSelected))]
     [HarmonyPrefix]
@@ -121,7 +116,6 @@ public partial class IzakayaSelectorPanelPatch
             cachedSpots[guideMapSpot.PrimaryName] = guideMapSpot;
         }
 
-        Log.LogInfo($"OnGuideMapSpotSelected called, guideMapSpot.PrimaryName: {guideMapSpot.PrimaryName}");
-
+        Log.Info($"OnGuideMapSpotSelected called, guideMapSpot.PrimaryName: {guideMapSpot.PrimaryName}");
     }
 }

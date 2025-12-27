@@ -18,24 +18,19 @@ public partial class ConfirmAction : NetAction
 
         PluginManager.Instance.RunOnMainThread(() =>
         {
-            if (IzakayaSelectorPanelPatch.cachedSpots.TryGetValue(MapLabel, out var spot))
-            {
-                IzakayaSelectorPanelPatch.instanceRef.OnGuideMapSpotSelected(spot);
-            }
+            IzakayaSelectorPanelPatch.cachedSpots.TryGetValue(MapLabel, out var spot);
             var targetLevel = (Common.UI.IzakayaLevel)Level;
-            var currentLevel = IzakayaSelectorPanelPatch.instanceRef.m_CurrentSelectedIzakayaLevel;
-            IzakayaSelectorPanelPatch.instanceRef.TryChangeIzakayaLevel(ref currentLevel, targetLevel);
-            IzakayaSelectorPanelPatch.instanceRef.m_CurrentSelectedIzakayaLevel = currentLevel;
+            KyoukoManager.IzakayaLevel = Level;
+            KyoukoManager.IzakayaMapLabel = MapLabel;
 
-            static void closePanelCallback()
+            Dialog.ShowConfirmDialog(MapLabel, () =>
             {
+                IzakayaSelectorPanelPatch.instanceRef.m_CurrentSelectedSpot = spot;
+                IzakayaSelectorPanelPatch.instanceRef.m_CurrentSelectedIzakayaLevel = targetLevel;
                 IzakayaSelectorPanelPatch._skipPatchIzakayaSelectionConfirmation = true;
                 IzakayaSelectorPanelPatch.instanceRef._OnGuideMapInitialize_b__21_0();
                 IzakayaSelectorPanelPatch._skipPatchIzakayaSelectionConfirmation = false;
-            }
-            KyoukoManager.IzakayaLevel = Level;
-            KyoukoManager.IzakayaMapLabel = MapLabel;
-            Dialog.ShowConfirmDialog(MapLabel, closePanelCallback);
+            });
         });
     }
 

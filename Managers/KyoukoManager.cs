@@ -61,7 +61,7 @@ public static partial class KyoukoManager
         // 实际速度由对端 Kyouko 同步而来
         // 修正速度要保证在「一定时间内」完成位置修正
         // 这里使用较为取巧的方法，使用比较好实现的指数衰减模型（线性还要保存历史数据）
-        currectVelocity = positionOffset / 0.5f / 5f * 2f;
+        currectVelocity = positionOffset / 0.5f / 5f;
         positionOffset -= currectVelocity * Time.fixedDeltaTime * 5f * characterUnit.sprintMultiplier;
 
         // 这样假设位置偏差为 3px, dt = 0.02s
@@ -74,8 +74,6 @@ public static partial class KyoukoManager
 
         // 由于数据可能有误差，实际计算结果会有不同，但是都是指数衰减的趋势，实测观感还好
         // https://www.bilibili.com/video/av115571395922890?p=3
-
-        // 20251226 根据实际情况增加了参数以加快收敛速度
 
         // 每 Fixed Frame 都要根据 actualVelocity + currectVelocity 设置实际速度
         var velocity = actualVelocity + currectVelocity;
