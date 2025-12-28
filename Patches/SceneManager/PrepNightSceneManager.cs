@@ -17,6 +17,7 @@ public partial class PrepNightSceneManagerPatch
         PluginManager.CurrentGameScene = Scene.IzakayaPrepScene;
         PrepSceneManager.init();
         Log.LogInfo($"CurrentGameStage switched to IzakayaPrepScene");
-        
+        ResourceExManager.TryInjectAllSpecialGuests();
+        ResourceExManager.TryInjectAllSpecialGuestEvaluations();
     }
 }

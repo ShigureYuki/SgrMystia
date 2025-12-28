@@ -195,6 +195,12 @@ public partial class GuestsManagerPatch
             }
             return false;
         }
+
+        if (!MpManager.IsConnected)
+        {
+            return true;
+        }
+
         if (!DLCManager.PeerSpecialGuestAvailable(id))
         {
             var newId = DLCManager.CoreSpecialGuests.GetRandomOne();

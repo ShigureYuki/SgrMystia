@@ -68,7 +68,9 @@ public class Plugin : BasePlugin
                 typeof(WorkSceneServePannelPatch),
                 typeof(GameTimeManagerPatch),
                 typeof(RunTimeAlbumPatch),
-                typeof(ResultSceneManagerPatch)
+                typeof(ResultSceneManagerPatch),
+                typeof(CharacterPortrayalPatch),
+                typeof(SpecialGuestDescriberPatch)
             };
             foreach (var patch in patchList)
             {
@@ -85,7 +87,7 @@ public class Plugin : BasePlugin
         }
     }
 
-    public static void EnterMainScene()
+    public static void OnEnterMainScene()
     {
         if (!FirstEnterMain)
         {
@@ -101,10 +103,17 @@ public class Plugin : BasePlugin
             Debugger.Start();
         }
         
-        ResourceExManager.Initialize();
-        ResourceExManager.InjectCharacters();
-
         DLCManager.Initialize();
+        
+        ResourceExManager.Initialize();
+        ResourceExManager.TryInjectSpecialPortraits();
+        ResourceExManager.PreloadAllImages();
+    }
+
+    public static void OnEnterWorkScene()
+    {
+        ResourceExManager.TryInjectAllSpriteSetCompact(); // TODO: 实际上这里没用
+
     }
 
     class BootstrapPatch
