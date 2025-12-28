@@ -127,6 +127,10 @@ ResourceEx 支持创作者们为游戏添加自定义资源，目前实现了自
 
 ```
 
+**使用 [ResourceEx 小助手](https://meta-mystia-editor.izakaya.cc/) 来自动生成 `ResourceEx.json` 文件！**
+
+**特别感谢 [东方也雀食堂小助手](https://izakaya.cc/) 的支持！**
+
 注意，
 1. `Character` 中 0~999 段为游戏原有资源，1000~5999 段为 DLC 资源，6000~9999 段为本项目 MetaMystia 为游戏保留的扩展资源 ID 段，10000 及以上为创作者自定义资源 ID 段，请避免使用 0~9999 的 ID 段，并遵循游戏内规范，每 1000 为一个创作者自由使用的 ID 段，尽量不要与其他创作者冲突。（p.s. 10000~10999 段就留给我吧 >_<）
 2. `portraits` 中的 `pid` 字段对应角色的不同表情立绘，需要保证图片文件路径存在且对应正确。
@@ -149,6 +153,6 @@ MetaMystia.Dialog.ShowResourceExPackage("YourDialogPackageName", null)
 
 ## 关于版权
 
-本仓库及其开发者不拥有 `/ResourceEx/MetaMystia/` 目录下的资源(`AkiMinoriko_0.png` `AkiSizuha_0.png` `YakumoRan_0.png` )的版权，这些资源归 [东方秋神牧场](https://www.bilibili.com/video/av115196056114538) 的创作团队 [**二色幽紫蝶**](https://space.bilibili.com/86865890) 所有。部分文案来自 [东方夜雀食堂动画版EX短篇预览，顺便开预售啦~](https://www.bilibili.com/video/av115295746265179)
+本仓库及其开发者不拥有 `/ResourceEx/MetaMystia/` 目录下的全部资源的版权，这些资源归 [东方夜雀食堂](https://store.steampowered.com/app/1584090/) 及 [东方秋神牧场](https://www.bilibili.com/video/av115196056114538) 的创作团队 [**二色幽紫蝶**](https://space.bilibili.com/86865890) 所有。部分文案来自 [东方夜雀食堂动画版EX短篇预览，顺便开预售啦~](https://www.bilibili.com/video/av115295746265179)
 
 如您希望成为新的资源包创作者，请确保您拥有所使用资源的合法版权或已获得原作者的二次创作授权，不侵害 **二色幽紫蝶** 及其他任何第三方创作者的合法权益，并严格遵循 [东方Project使用规定](https://www.bilibili.com/opus/400555526272745308)

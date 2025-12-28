@@ -105,6 +105,49 @@
             "weight": 1
           }
         ]
+      },
+      "characterSpriteSetCompact": {
+        "name": "Daiyousei",
+        "mainSprite": [
+          "assets/Daiyousei/Daiyousei_Main_0, 0.png",
+          "assets/Daiyousei/Daiyousei_Main_0, 1.png",
+          "assets/Daiyousei/Daiyousei_Main_0, 2.png",
+          "assets/Daiyousei/Daiyousei_Main_1, 0.png",
+          "assets/Daiyousei/Daiyousei_Main_1, 1.png",
+          "assets/Daiyousei/Daiyousei_Main_1, 2.png",
+          "assets/Daiyousei/Daiyousei_Main_2, 0.png",
+          "assets/Daiyousei/Daiyousei_Main_2, 1.png",
+          "assets/Daiyousei/Daiyousei_Main_2, 2.png",
+          "assets/Daiyousei/Daiyousei_Main_3, 0.png",
+          "assets/Daiyousei/Daiyousei_Main_3, 1.png",
+          "assets/Daiyousei/Daiyousei_Main_3, 2.png"
+        ],
+        "eyeSprite": [
+          "assets/Daiyousei/Daiyousei_Eyes_0, 0.png",
+          "assets/Daiyousei/Daiyousei_Eyes_0, 1.png",
+          "assets/Daiyousei/Daiyousei_Eyes_0, 2.png",
+          "assets/Daiyousei/Daiyousei_Eyes_0, 3.png",
+          "assets/Daiyousei/Daiyousei_Eyes_1, 0.png",
+          "assets/Daiyousei/Daiyousei_Eyes_1, 1.png",
+          "assets/Daiyousei/Daiyousei_Eyes_1, 2.png",
+          "assets/Daiyousei/Daiyousei_Eyes_1, 3.png",
+          "assets/Daiyousei/Daiyousei_Eyes_2, 0.png",
+          "assets/Daiyousei/Daiyousei_Eyes_2, 1.png",
+          "assets/Daiyousei/Daiyousei_Eyes_2, 2.png",
+          "assets/Daiyousei/Daiyousei_Eyes_2, 3.png",
+          "assets/Daiyousei/Daiyousei_Eyes_3, 0.png",
+          "assets/Daiyousei/Daiyousei_Eyes_3, 1.png",
+          "assets/Daiyousei/Daiyousei_Eyes_3, 2.png",
+          "assets/Daiyousei/Daiyousei_Eyes_3, 3.png",
+          "assets/Daiyousei/Daiyousei_Eyes_4, 0.png",
+          "assets/Daiyousei/Daiyousei_Eyes_4, 1.png",
+          "assets/Daiyousei/Daiyousei_Eyes_4, 2.png",
+          "assets/Daiyousei/Daiyousei_Eyes_4, 3.png",
+          "assets/Daiyousei/Daiyousei_Eyes_5, 0.png",
+          "assets/Daiyousei/Daiyousei_Eyes_5, 1.png",
+          "assets/Daiyousei/Daiyousei_Eyes_5, 2.png",
+          "assets/Daiyousei/Daiyousei_Eyes_5, 3.png"
+        ]
       }
     },
     {
@@ -218,6 +261,49 @@
             "tagId": 4,
             "weight": 1
           }
+        ]
+      },
+      "characterSpriteSetCompact": {
+        "name": "Koakuma",
+        "mainSprite": [
+          "assets/Koakuma/Koakuma_Main_0, 0.png",
+          "assets/Koakuma/Koakuma_Main_0, 1.png",
+          "assets/Koakuma/Koakuma_Main_0, 2.png",
+          "assets/Koakuma/Koakuma_Main_1, 0.png",
+          "assets/Koakuma/Koakuma_Main_1, 1.png",
+          "assets/Koakuma/Koakuma_Main_1, 2.png",
+          "assets/Koakuma/Koakuma_Main_2, 0.png",
+          "assets/Koakuma/Koakuma_Main_2, 1.png",
+          "assets/Koakuma/Koakuma_Main_2, 2.png",
+          "assets/Koakuma/Koakuma_Main_3, 0.png",
+          "assets/Koakuma/Koakuma_Main_3, 1.png",
+          "assets/Koakuma/Koakuma_Main_3, 2.png"
+        ],
+        "eyeSprite": [
+          "assets/Koakuma/Koakuma_Eyes_0, 0.png",
+          "assets/Koakuma/Koakuma_Eyes_0, 1.png",
+          "assets/Koakuma/Koakuma_Eyes_0, 2.png",
+          "assets/Koakuma/Koakuma_Eyes_0, 3.png",
+          "assets/Koakuma/Koakuma_Eyes_1, 0.png",
+          "assets/Koakuma/Koakuma_Eyes_1, 1.png",
+          "assets/Koakuma/Koakuma_Eyes_1, 2.png",
+          "assets/Koakuma/Koakuma_Eyes_1, 3.png",
+          "assets/Koakuma/Koakuma_Eyes_2, 0.png",
+          "assets/Koakuma/Koakuma_Eyes_2, 1.png",
+          "assets/Koakuma/Koakuma_Eyes_2, 2.png",
+          "assets/Koakuma/Koakuma_Eyes_2, 3.png",
+          "assets/Koakuma/Koakuma_Eyes_3, 0.png",
+          "assets/Koakuma/Koakuma_Eyes_3, 1.png",
+          "assets/Koakuma/Koakuma_Eyes_3, 2.png",
+          "assets/Koakuma/Koakuma_Eyes_3, 3.png",
+          "assets/Koakuma/Koakuma_Eyes_4, 0.png",
+          "assets/Koakuma/Koakuma_Eyes_4, 1.png",
+          "assets/Koakuma/Koakuma_Eyes_4, 2.png",
+          "assets/Koakuma/Koakuma_Eyes_4, 3.png",
+          "assets/Koakuma/Koakuma_Eyes_5, 0.png",
+          "assets/Koakuma/Koakuma_Eyes_5, 1.png",
+          "assets/Koakuma/Koakuma_Eyes_5, 2.png",
+          "assets/Koakuma/Koakuma_Eyes_5, 3.png"
         ]
       }
     },

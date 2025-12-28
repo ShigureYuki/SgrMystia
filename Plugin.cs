@@ -67,7 +67,6 @@ public class Plugin : BasePlugin
                 typeof(GuestsManagerPatch),
                 typeof(GuestGroupControllerPatch),
                 typeof(RunTimeAlbumPatch),
-                typeof(SpecialGuestPatch),
                 typeof(CharacterPortrayalPatch),
                 typeof(SpecialGuestDescriberPatch)
             };
@@ -92,7 +91,7 @@ public class Plugin : BasePlugin
         }
     }
 
-    public static void EnterMainScene()
+    public static void OnEnterMainScene()
     {
         if (!FirstEnterMain)
         {
@@ -110,6 +109,12 @@ public class Plugin : BasePlugin
         
         ResourceExManager.Initialize();
         ResourceExManager.TryInjectSpecialPortraits();
+        ResourceExManager.PreloadAllImages();
+    }
+
+    public static void OnEnterWorkScene()
+    {
+        ResourceExManager.TryInjectAllSpriteSetCompact(); // TODO: 实际上这里没用
     }
 
     class BootstrapPatch

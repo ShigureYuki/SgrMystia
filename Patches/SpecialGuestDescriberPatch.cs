@@ -16,7 +16,7 @@ public class SpecialGuestDescriberPatch : PatchBase<SpecialGuestDescriberPatch>
         Log.LogWarning($"{LOG_TAG} Describe method called. with special guest ID {detail.Id}");
         if (ResourceExManager.ExistsCharacterConfig(detail.Id))
         {
-            __instance.portrayal.sprite = Utils.GetArtWork(@"E:\Desktop\Touhou Mystia Izakaya\ResourceEx\MetaMystia\assets\Daiyousei_0.png");
+            __instance.portrayal.sprite = Utils.GetArtWork(@"E:\Desktop\Touhou Mystia Izakaya\ResourceEx\MetaMystia\assets\Daiyousei_0.png", new UnityEngine.Vector2(0.5f, 0.5f));
             __instance.portrayal.sprite = ResourceExManager.GetPortraitSprite(detail.Id, 0);
             Log.LogWarning($"{LOG_TAG} Updated portrayal sprite for special guest ID {detail.Id}");
         }

@@ -15,6 +15,8 @@ public class NightSceneManagerPatch : PatchBase<NightSceneManagerPatch>
     {
         PluginManager.CurrentGameScene = Scene.WorkScene;
         Log.LogInfo($"{LOG_TAG} CurrentGameStage switched to WorkScene");
+        Plugin.OnEnterWorkScene();
+        
         if (!MpManager.IsConnected)
         {
             return;

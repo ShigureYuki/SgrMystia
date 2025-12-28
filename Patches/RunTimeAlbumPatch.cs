@@ -2,6 +2,8 @@ using HarmonyLib;
 using GameData.RunTime.Common;
 using GameData.Core.Collections.CharacterUtility;
 using System;
+using DEYU.Utils;
+using DayScene.TimelineExtensions;
 
 namespace MetaMystia;
 
@@ -13,49 +15,29 @@ public class RunTimeAlbumPatch : PatchBase<RunTimeAlbumPatch>
     public static bool RefSpecialPixel_Prefix(ref CharacterSpriteSetCompact __result, int id, bool useDefaultSkin = false)
     {
 
-        // if (id == 9001)
-        // {
-        //     var key = "Koakuma";
-        //     CharacterSpriteSetCompact KoakumaPixel = null;
-        //     Action<CharacterSpriteSetCompact> process_ = (spriteSet) =>
-        //     {
-        //         if (spriteSet != null && spriteSet.name == "Koakuma")
-        //         {
-        //             KoakumaPixel = spriteSet;
-        //         }
-        //     };
-        //     Utils.FindAndProcessResources<CharacterSpriteSetCompact>(process_);
-        //     __result = KoakumaPixel;
-        //     return false;
-        // }
-
-        if (id != 9000)
+        if (!ResourceExManager.ExistsCharacterConfig(id))
         {
+            Log.LogWarning($"{LOG_TAG} RefSpecialPixel_Prefix: No custom CharacterConfig for id {id}, falling back to original.");
             return true;
-        } 
-        CharacterSpriteSetCompact DaiyouseiPixel = null;
-        Action<CharacterSpriteSetCompact> process = (spriteSet) =>
+        }
+
+        __result = ResourceExManager.TryGetSpriteSetCompact(id);
+        if (__result != null)
         {
-            if (spriteSet != null && spriteSet.name == "Daiyousei")
-            {
-                DaiyouseiPixel = spriteSet;
-            }
-        }; 
+            Log.LogInfo($"{LOG_TAG} RefSpecialPixel_Prefix: Found custom CharacterSpriteSetCompact for id {id}.");
+            return false;
+        }
 
-        Utils.FindAndProcessResources<CharacterSpriteSetCompact>(process);
+        ResourceExManager.TryInjectAllSpriteSetCompact();
 
-        __result = DaiyouseiPixel;
-        return false;
+        __result = ResourceExManager.TryGetSpriteSetCompact(id);
+        if (__result != null)
+        {
+            Log.LogInfo($"{LOG_TAG} RefSpecialPixel_Prefix: Found custom CharacterSpriteSetCompact for id {id}.");
+            return false;
+        }
+        
+        Log.LogWarning($"{LOG_TAG} RefSpecialPixel_Prefix: Custom CharacterSpriteSetCompact for id {id} not found, falling back to original.");
+        return true;
     }
-
-    // [HarmonyPatch(nameof(RunTimeAlbum.RefSpecialPortrayal))]
-    // [HarmonyPrefix]
-    // public static bool RefSpecialPortrayal_Prefix(this int id, bool useDefaultSkin = false, ref GameData.Profile.CharacterPortrayal __result)
-    // {
-    //     if (ResourceExManager.ExistsCharacterConfig(id))
-    //     {
-    //         __result = ResourceExManager.GetPortraitSprite(id);
-    //         return false;
-    //     }
-    // }
 }

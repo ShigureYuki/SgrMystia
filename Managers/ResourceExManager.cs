@@ -8,9 +8,13 @@ using Common.DialogUtility;
 using GameData.CoreLanguage.Collections;
 using GameData.Core.Collections.NightSceneUtility;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using GameData.Core.Collections.CharacterUtility;
 
-using MetaMiku;
 using DEYU.Utils;
+using MetaMiku;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
+using NightScene.TimelineExtestion;
 
 namespace MetaMystia;
 public class CharacterConfig
@@ -22,6 +26,7 @@ public class CharacterConfig
     public string type { get; set; }
     public List<PortraitConfig> portraits { get; set; }
     public GuestConfig guest { get; set; }
+    public CharacterSpriteSetCompactConfig characterSpriteSetCompact { get; set; }
     public string ModRoot { get; set; }
 }
 
@@ -46,6 +51,13 @@ public class WeightedTagConfig
 {
     public int tagId { get; set; }
     public int weight { get; set; }
+}
+
+public class CharacterSpriteSetCompactConfig
+{
+    public string name { get; set; }
+    public List<string> mainSprite { get; set; }
+    public List<string> eyeSprite { get; set; }
 }
 
 public class PortraitConfig
@@ -83,8 +95,8 @@ public static class ResourceExManager
     // Abstracted resource root path
     public static string ResourceRoot { get; set; } = Path.Combine(Paths.GameRootPath, "ResourceEx");
     
-    private static Dictionary<(int id, string type), CharacterConfig> _characterConfigs = new Dictionary<(int id, string type), CharacterConfig>();
-    private static Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
+    public static Dictionary<(int id, string type), CharacterConfig> _characterConfigs = new Dictionary<(int id, string type), CharacterConfig>();
+    public static Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
     private static Dictionary<string, CustomDialogList> _dialogPackages = new Dictionary<string, CustomDialogList>();
     public static readonly string DialogPackageNamePrefix = "_";
 
@@ -172,7 +184,7 @@ public static class ResourceExManager
         return null;
     }
 
-    public static Sprite GetSprite(string relativePath, string modRoot = null)
+    public static Sprite GetSprite(string relativePath, string modRoot = null, Vector2? pivot = null, int width = 0, int height = 0, int pixelOffsetX = 0, int pixelOffsetY = 0)
     {
         if (string.IsNullOrEmpty(relativePath)) 
         {
@@ -184,16 +196,24 @@ public static class ResourceExManager
             ? Path.Combine(ResourceRoot, relativePath) 
             : Path.Combine(modRoot, relativePath);
 
-        Log.LogInfo($"{LOG_TAG} Loaded sprite at {fullPath}");
-        if (_spriteCache.TryGetValue(fullPath, out var sprite))
+        Vector2 actualPivot = pivot ?? new Vector2(0.5f, 0.5f);
+        string cacheKey = $"{fullPath}_{actualPivot.x}_{actualPivot.y}_{width}_{height}_{pixelOffsetX}_{pixelOffsetY}";
+
+        if (_spriteCache.TryGetValue(cacheKey, out var sprite))
         {
             return sprite;
         }
 
-        sprite = Utils.GetArtWork(fullPath);
+        Log.LogInfo($"{LOG_TAG} Loading sprite at {fullPath}");
+        sprite = Utils.GetArtWork(fullPath, actualPivot, width, height, pixelOffsetX, pixelOffsetY);
         if (sprite != null)
         {
-            _spriteCache[fullPath] = sprite;
+            sprite.hideFlags = HideFlags.HideAndDontSave;
+            if (sprite.texture != null)
+            {
+                sprite.texture.hideFlags = HideFlags.HideAndDontSave;
+            }
+            _spriteCache[cacheKey] = sprite;
         }
         else
         {
@@ -378,6 +398,165 @@ public static class ResourceExManager
 
         NightSceneLanguage.SpecialEvaluation[config.id] = evaluationLines;
         Log.LogInfo($"{LOG_TAG} Injected Special Guest Evaluation: {config.name} ({config.id})");
+    }
+
+    private static Dictionary<int, CharacterSpriteSetCompact> _spriteSetCompacts = new Dictionary<int, CharacterSpriteSetCompact>();
+
+    public static void PreloadAllImages()
+    {
+        Log.LogInfo($"{LOG_TAG} Preloading all images...");
+        foreach (var charConfig in GetAllCharacters())
+        {
+            // Preload Portraits
+            if (charConfig.portraits != null)
+            {
+                foreach (var portrait in charConfig.portraits)
+                {
+                    if (!string.IsNullOrEmpty(portrait.path))
+                    {
+                        // Default params for portraits: pivot (0.5, 0.5), no resize
+                        GetSprite(portrait.path, charConfig.ModRoot); 
+                    }
+                }
+            }
+
+            // Preload SpriteSetCompact
+            if (charConfig.characterSpriteSetCompact != null)
+            {
+                var config = charConfig.characterSpriteSetCompact;
+                if (config.mainSprite != null)
+                {
+                    foreach (var path in config.mainSprite)
+                    {
+                        if (!string.IsNullOrEmpty(path))
+                            // Params for SpriteSetCompact: pivot (0.5, 0.0), 64x64 resize
+                            GetSprite(path, charConfig.ModRoot, new Vector2(0.5f, 0.0f), 64, 64);
+                    }
+                }
+                if (config.eyeSprite != null)
+                {
+                    foreach (var path in config.eyeSprite)
+                    {
+                        if (!string.IsNullOrEmpty(path))
+                            // Params for SpriteSetCompact: pivot (0.5, 0.0), 64x64 resize
+                            GetSprite(path, charConfig.ModRoot, new Vector2(0.5f, 0.0f), 64, 64);
+                    }
+                }
+            }
+        }
+        Log.LogInfo($"{LOG_TAG} Preloading complete. Cache size: {_spriteCache.Count}");
+    }
+
+    public static void TryInjectAllSpriteSetCompact()
+    {
+        CharacterSpriteSetCompact template = DataBaseCharacter.SpecialGuest[0].CharacterPixel;
+
+        if (template == null)
+        {
+            Log.LogWarning($"{LOG_TAG} Failed to find any CharacterSpriteSetCompact template! This is expected if called before any character assets are loaded.");
+            return;
+        }
+
+        foreach (var charConfig in GetAllCharacters())
+        {
+            if (charConfig.characterSpriteSetCompact == null) continue;
+
+            try 
+            {
+                CreateAndRegisterSpriteSet(charConfig, template);
+            }
+            catch (System.Exception e)
+            {
+                Log.LogError($"{LOG_TAG} Failed to load CharacterSpriteSetCompact for {charConfig.name}: {e.Message}");
+            }
+        }
+    }
+
+    private static void CreateAndRegisterSpriteSet(CharacterConfig charConfig, CharacterSpriteSetCompact template)
+    {
+        var newSpriteSet = ScriptableObject.CreateInstance<CharacterSpriteSetCompact>();
+        newSpriteSet.name = charConfig.characterSpriteSetCompact.name;
+
+        // Prepare arrays
+        Il2CppReferenceArray<Sprite> mainSprites = null;
+        if (template.MainSprite != null)
+        {
+            mainSprites = new Il2CppReferenceArray<Sprite>(template.MainSprite.Length);
+            for (int i = 0; i < template.MainSprite.Length; i++)
+            {
+                mainSprites[i] = template.MainSprite[i];
+            }
+        }
+
+        Il2CppReferenceArray<Sprite> eyeSprites = null;
+        if (template.EyeSprite != null)
+        {
+            eyeSprites = new Il2CppReferenceArray<Sprite>(template.EyeSprite.Length);
+            for (int i = 0; i < template.EyeSprite.Length; i++)
+            {
+                eyeSprites[i] = template.EyeSprite[i];
+            }
+        }
+
+        var config = charConfig.characterSpriteSetCompact;
+        
+        ApplySprites(mainSprites, config.mainSprite, charConfig.ModRoot);
+        ApplySprites(eyeSprites, config.eyeSprite, charConfig.ModRoot);
+
+        newSpriteSet.Initialize(
+            mainSprites,
+            template.DoNotUseEyeSprite,
+            eyeSprites,
+            template.HasPrebakedShadow,
+            template.AnimationSpeedMultiplier,
+            template.ExtraYOffset,
+            template.IsHina,
+            template.RotatePerTime,
+            template.DoNotHaveStepVFX,
+            template.MoveSpeedMultiplier,
+            template.RemovableTrims,
+            template.TrimSpritesDisplayFront,
+            template.TrimSpritesDisplayBack,
+            template.TrimFrontSpriteFrameSpeed,
+            template.TrimBackSpriteFrameSpeed
+        );
+        
+        _spriteSetCompacts[charConfig.id] = newSpriteSet;
+        Log.LogInfo($"{LOG_TAG} Loaded CharacterSpriteSetCompact for {charConfig.name} ({charConfig.id})");
+    }
+
+    private static void ApplySprites(Il2CppReferenceArray<Sprite> targetArray, List<string> spritePaths, string modRoot, int pixelOffsetX = 0, int pixelOffsetY = 0)
+    {
+        if (spritePaths == null) return;
+
+        if (spritePaths.Count != targetArray.Count)
+        {
+            Log.LogError($"{LOG_TAG} Sprite count mismatch! Expected {targetArray.Count}, got {spritePaths.Count}. Refusing to load sprites.");
+            return;
+        }
+
+        for (int i = 0; i < spritePaths.Count; i++)
+        {
+            string path = spritePaths[i];
+            if (string.IsNullOrEmpty(path)) continue;
+
+            // Use GetSprite with caching, matching the parameters used for SpriteSetCompact
+            var sprite = GetSprite(path, modRoot, new Vector2(0.5f, 0.0f), 64, 64, pixelOffsetX, pixelOffsetY);
+            
+            if (sprite != null)
+            {
+                targetArray[i] = sprite;
+            }
+        }
+    }
+
+    public static CharacterSpriteSetCompact TryGetSpriteSetCompact(int id)
+    {
+        if (_spriteSetCompacts.TryGetValue(id, out var set))
+        {
+            return set;
+        }
+        return null;
     }
 
     public static Sprite GetPortraitSprite(int characterId, int pid = 0)

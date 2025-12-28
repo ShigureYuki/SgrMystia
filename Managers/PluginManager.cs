@@ -13,6 +13,7 @@ using Cysharp.Threading.Tasks;
 using DEYU.AssetHandleUtility;
 using DEYU.Utils;
 using System.Threading.Tasks;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace MetaMystia;
 public class PluginManager : MonoBehaviour
@@ -106,7 +107,7 @@ public class PluginManager : MonoBehaviour
 
 
 
-        if (Input.GetKeyDown(KeyCode.F1))
+        if (Input.GetKeyDown(KeyCode.F1) && false)
         {
             var specialGuests = GameData.Core.Collections.CharacterUtility.DataBaseCharacter.SpecialGuest;
             if (specialGuests == null || specialGuests.Count == 0)
@@ -153,7 +154,7 @@ public class PluginManager : MonoBehaviour
                 GameData.CoreLanguage.Collections.DataBaseLanguage.SpecialGuestFoodRequest[9000] = foodRequests;
             }
         }
-        if (Input.GetKeyDown(KeyCode.F2))
+        if (Input.GetKeyDown(KeyCode.F2) && false)
         {
             if (GameData.CoreLanguage.Collections.NightSceneLanguage.SpecialEvaluation == null)
             {
@@ -176,29 +177,10 @@ public class PluginManager : MonoBehaviour
                 Log.LogWarning($"{LOG_TAG} Updated special evaluation lines for special guest ID 9000");
             }
         }
-        if (Input.GetKeyDown(KeyCode.F3))
-        {
-            PrototypingManagers.NightSceneDebugImpl.SpawnSpecialGuest(9000);
-        }
         if (Input.GetKeyDown(KeyCode.F4))
         {
-            UnityEngine.AddressableAssets.AssetReferenceAtlasedSprite assetRef = new UnityEngine.AddressableAssets.AssetReferenceAtlasedSprite("E:/Desktop/Touhou Mystia Izakaya/ResourceEx/MetaMystia/assets/Daiyousei_0.spriteatlas");
-            // UnityEngine.AddressableAssets.AssetReferenceT<Sprite> assetRef = new UnityEngine.AddressableAssets.AssetReferenceT<Sprite>("E:/Desktop/Touhou Mystia Izakaya/ResourceEx/MetaMystia/assets/Daiyousei_0.png");
-            // var uniTaskAssetArray = DEYU.AssetHandleUtility.AssetHandleHelper.LoadAssetHandleAsync(assetRef, AssetLifetime.Persistent);
-            var portrayal = ScriptableObject.CreateInstance<GameData.Profile.CharacterPortrayal>();
-            var portrayals = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<UnityEngine.AddressableAssets.AssetReferenceAtlasedSprite>(1);
-            portrayal.m_VisualAssetAtlasReference = portrayals;
+            ResourceExManager.TryInjectAllSpriteSetCompact();
         }
-
-        if (Input.GetKeyDown(KeyCode.F5))
-        {
-            Log.LogWarning($"{LOG_TAG} Toggled test flag to: " + test);
-            test = !test;
-            Log.LogWarning($"{LOG_TAG} Toggled test flag to: " + test);
-        }
-
-
-        // Common.UI.DescriberHelper$$AssignImageSpriteAsync
     }
 
     public void RunOnMainThread(Action action)

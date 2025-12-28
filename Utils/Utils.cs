@@ -4,8 +4,7 @@ using System.IO;
 using UnityEngine;
 using System;
 using Il2CppInterop.Runtime;
-
-
+using System.Numerics;
 
 namespace MetaMystia;
 
@@ -64,22 +63,37 @@ public static class Utils
         return stack.GetFrames().Any(frame => frame.GetMethod().Name.Contains(funcName));
     }
     
-    public static Sprite GetArtWork(string filePath)
+    public static Sprite GetArtWork(string filePath, UnityEngine.Vector2 pivot, int width = 0, int height = 0, int pixelOffsetX = 0, int pixelOffsetY = 0)
     {
         if (!File.Exists(filePath)) return null;
 
-        // 创建纹理时禁用 mipChain (false) 以防止像素模糊
         var texture2D = new Texture2D(2, 2, TextureFormat.RGBA32, false);
         
         byte[] fileData = File.ReadAllBytes(filePath);
         ImageConversion.LoadImage(texture2D, fileData);
 
-        // 在加载数据后设置过滤模式为 Point (邻近过滤)，并关闭重复循环
+        if (width > 0 && height > 0 && (texture2D.width != width || texture2D.height != height))
+        {
+            var newTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var colors = new Color[width * height];
+            for (int i = 0; i < colors.Length; i++) colors[i] = Color.clear;
+            newTexture.SetPixels(colors);
+
+            int x = (width - texture2D.width) / 2 + pixelOffsetX;
+            int y = (height - texture2D.height) / 2 + pixelOffsetY;
+            
+            x = Mathf.Clamp(x, 0, width - texture2D.width);
+            y = Mathf.Clamp(y, 0, height - texture2D.height);
+
+            newTexture.SetPixels(x, y, texture2D.width, texture2D.height, texture2D.GetPixels());
+            newTexture.Apply();
+            texture2D = newTexture;
+        }
+
         texture2D.filterMode = FilterMode.Point; 
         texture2D.wrapMode = TextureWrapMode.Clamp;
         
-        var sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height),
-            new Vector2(0.5f, 0.5f), 100f);
+        var sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), pivot, 48f);
             
         sprite.name = Path.GetFileNameWithoutExtension(filePath);
         return sprite;
