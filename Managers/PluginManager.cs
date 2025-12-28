@@ -2,15 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Common.UI;
-using GameData.Core.Collections.NightSceneUtility;
-using UnityEngine.Rendering;
-using HarmonyLib;
-using System.Linq;
-using Cysharp.Threading.Tasks;
-using DEYU.AssetHandleUtility;
-using DEYU.Utils;
-using System.Threading.Tasks;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppInterop.Runtime;
 using UnityEngine;
 
@@ -117,16 +108,6 @@ public partial class PluginManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.KeypadMinus))
         {
             MpManager.Stop();
-        }
-
-        if (Input.GetKeyDown(KeyCode.F1))
-        {
-            DEYU.Utils.UnityEngineExtensionStatic.StructPtr<string>[] arr = new DEYU.Utils.UnityEngineExtensionStatic.StructPtr<string>[3];
-            arr[0] = new DEYU.Utils.UnityEngineExtensionStatic.StructPtr<string>("闲聊 1");
-            arr[1] = new DEYU.Utils.UnityEngineExtensionStatic.StructPtr<string>("闲聊 2");
-            arr[2] = new DEYU.Utils.UnityEngineExtensionStatic.StructPtr<string>("闲聊 3");
-            GameData.CoreLanguage.Collections.NightSceneLanguage.SpecialConversation[9000] = arr;
-            Log.Warning($"Modified night scene conversation for ID 9000");
         }
     }
 

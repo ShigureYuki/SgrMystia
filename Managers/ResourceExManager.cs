@@ -32,6 +32,7 @@ public class GuestConfig
     public int fundRangeLower { get; set; }
     public int fundRangeUpper { get; set; }
     public List<string> evaluation { get; set; }
+    public List<string> conversation { get; set; }
     public List<FoodRequestConfig> foodRequests { get; set; }
     public List<int> hateFoodTag { get; set; }
     public List<WeightedTagConfig> likeFoodTag { get; set; }
@@ -293,13 +294,14 @@ public static partial class ResourceExManager
 
     public static void TryInjectAllSpecialGuestEvaluations()
     {
-        Log.LogInfo($"Injecting Special Guest Evaluations from ResourceEx...");
+        Log.LogInfo($"Injecting Special Guest Evaluations and Conversations from ResourceEx...");
         foreach (var charConfig in GetAllCharacters())
         {
             if (charConfig.guest != null)
             {
                 Log.LogInfo($"Injecting Special Guest Evaluation for character: {charConfig.id} ({charConfig.name})");
                 TryInjectSpecialGuestEvaluation(charConfig);
+                TryInjectSpecialGuestConversation(charConfig);
             }
         }
     }
@@ -393,6 +395,27 @@ public static partial class ResourceExManager
 
         NightSceneLanguage.SpecialEvaluation[config.id] = evaluationLines;
         Log.LogInfo($"Injected Special Guest Evaluation: {config.name} ({config.id})");
+    }
+
+    public static void TryInjectSpecialGuestConversation(CharacterConfig config)
+    {
+        if (config.guest == null || config.guest.conversation == null) return;
+
+        if (NightSceneLanguage.SpecialConversation == null)
+        {
+            Log.LogWarning($"NightSceneLanguage.SpecialConversation is null. Skipping conversation injection for {config.name}.");
+            return;
+        }
+
+        var conversationList = config.guest.conversation;
+        var arr = new DEYU.Utils.UnityEngineExtensionStatic.StructPtr<string>[conversationList.Count];
+        for (int i = 0; i < conversationList.Count; i++)
+        {
+            arr[i] = new DEYU.Utils.UnityEngineExtensionStatic.StructPtr<string>(conversationList[i]);
+        }
+
+        NightSceneLanguage.SpecialConversation[config.id] = arr;
+        Log.LogInfo($"Injected Special Guest Conversation: {config.name} ({config.id})");
     }
 
     private static Dictionary<int, CharacterSpriteSetCompact> _spriteSetCompacts = new Dictionary<int, CharacterSpriteSetCompact>();
