@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Common.UI;
 using MemoryPack;
+using SgrYuki.Utils;
 
 namespace MetaMystia;
 
@@ -11,6 +12,7 @@ public partial class HelloAction : NetAction
     public override ActionType Type => ActionType.HELLO;
     public string PeerId { get; set; } = "";
     public string Version { get; set; } = "";
+    public string GameVersion { get; set; } = "";
     public Scene CurrentGameScene { get; set; }
 
     public List<string> PeerActiveDLCLabel { get; set; } 
@@ -25,12 +27,21 @@ public partial class HelloAction : NetAction
     {
         LogActionReceived();
         MpManager.PeerId = PeerId;
+        MpManager.PeerGameVersion = GameVersion;
 
         if (Version != MyPluginInfo.PLUGIN_VERSION)
         {
-            Log.LogError($"Version mismatch! Local: {MyPluginInfo.PLUGIN_VERSION}, Remote: {Version}");
+            Log.LogError($"Mod version mismatch! Local: {MyPluginInfo.PLUGIN_VERSION}, Remote: {Version}");
             MpManager.DisconnectPeer();
-            Notify.ShowOnMainThread("版本不匹配，连接已断开");
+            Notify.ShowOnMainThread("Mod 版本不匹配，连接已断开！");
+            return;
+        }
+
+        if (GameVersion != MpManager.GameVersion)
+        {
+            Log.LogError($"Game version mismatch! Local: {MpManager.GameVersion}, Remote: {GameVersion}");
+            MpManager.DisconnectPeer();
+            Notify.ShowOnMainThread("游戏版本不匹配，连接已断开！");
             return;
         }
 
@@ -44,12 +55,30 @@ public partial class HelloAction : NetAction
             return;
         }
         
-        DLCManager.PeerActiveDLCLabel = PeerActiveDLCLabel;
-        DLCManager.PeerRecipes = PeerDLCRecipes;
-        DLCManager.PeerCookers = PeerDLCCookers;
-        DLCManager.PeerFoods = PeerDLCFoods;
-        DLCManager.PeerBeverages = PeerDLCBeverages;
-        DLCManager.PeerNormalGuests = PeerDLCNormalGuests;
-        DLCManager.PeerSpecialGuests = PeerDLCSpecialGuests;
+        DLCManager.PeerActiveDLCLabel = PeerActiveDLCLabel ?? [];
+        DLCManager.PeerRecipes = PeerDLCRecipes ?? [];
+        DLCManager.PeerCookers = PeerDLCCookers ?? [];
+        DLCManager.PeerFoods = PeerDLCFoods ?? [];
+        DLCManager.PeerBeverages = PeerDLCBeverages ?? [];
+        DLCManager.PeerNormalGuests = PeerDLCNormalGuests ?? [];
+        DLCManager.PeerSpecialGuests = PeerDLCSpecialGuests ?? [];
+    }
+
+    public static void Send()
+    {
+        SendToPeer(new NetPacket([new HelloAction { 
+            PeerId = MpManager.PlayerId,
+            PeerActiveDLCLabel = MpManager.LocalActiveDLCLabel,
+            Version = MyPluginInfo.PLUGIN_VERSION,
+            CurrentGameScene = MpManager.LocalScene,
+            GameVersion = MpManager.GameVersion,
+
+            PeerDLCBeverages = DLCManager.Beverages,
+            PeerDLCCookers = DLCManager.Cookers,
+            PeerDLCFoods = DLCManager.Foods,
+            PeerDLCNormalGuests = DLCManager.NormalGuests,
+            PeerDLCRecipes = DLCManager.Recipes,
+            PeerDLCSpecialGuests = DLCManager.SpecialGuests,
+        }]));
     }
 }

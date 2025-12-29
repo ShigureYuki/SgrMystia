@@ -245,12 +245,14 @@ public sealed class LogWrapper
     public void Message(string msg, bool withTag = true) => _inner.LogMessage($"[{GetTime()}] {TagString(withTag)}{msg}");
     public void Warning(string msg, bool withTag = true) => _inner.LogWarning($"[{GetTime()}] {TagString(withTag)}{msg}");
     public void Error(string msg, bool withTag = true) => _inner.LogError($"[{GetTime()}] {TagString(withTag)}{msg}");
+    public void Fatal(string msg, bool withTag = true) => _inner.LogFatal($"[{GetTime()}] {TagString(withTag)}{msg}");
 
     public void LogDebug(string msg, bool withTag = true) => Debug(msg, withTag);
     public void LogInfo(string msg, bool withTag = true) => Info(msg, withTag);
     public void LogMessage(string msg, bool withTag = true) => Message(msg, withTag);
     public void LogWarning(string msg, bool withTag = true) => Warning(msg, withTag);
     public void LogError(string msg, bool withTag = true) => Error(msg, withTag);
+    public void LogFatal(string msg, bool withTag = true) => Fatal(msg, withTag);
 
     public void LogStacktrace() => FunctionUtil.LogStacktrace(_inner);
 }
@@ -405,12 +407,14 @@ public static class FunctionUtil
 }
 
 
-public static class CommandScheduler
+[MetaMystia.AutoLog]
+public static partial class CommandScheduler
 {
     private sealed class Command
     {
         public Func<bool> CanExecute;
         public Action Execute;
+        public string ExecuteInfo;
         public Action OnTimeout;
         public float ExpireTime; // unscaled time
     }
@@ -419,12 +423,16 @@ public static class CommandScheduler
 
     private static readonly System.Collections.Generic.Queue<Command> _queue = new ();
 
+    private static void onTimeoutDefault(string text) => Log.LogWarning($"{text} timeout!");
+
+
     // ================================
     // Public API 
     // ================================
     public static void Enqueue(
         Func<bool> executeWhen,
         Action execute,
+        string executeInfo = "",
         float timeoutSeconds = 60f,
         Action onTimeout = null)
     {
@@ -433,10 +441,13 @@ public static class CommandScheduler
         if (execute == null)
             throw new ArgumentNullException(nameof(execute));
 
+        onTimeout ??= () => onTimeoutDefault(executeInfo);
+
         _pending.Enqueue(new Command
         {
             CanExecute = executeWhen,
             Execute = execute,
+            ExecuteInfo = executeInfo,
             OnTimeout = onTimeout,
             ExpireTime = UnityEngine.Time.unscaledTime + timeoutSeconds
         });
@@ -473,12 +484,12 @@ public static class CommandScheduler
             }
             catch (MetaMystia.NightGuestManager.GuestInvalidatedException e)
             {
-                MetaMystia.Plugin.Instance.Log.LogWarning($"ignore action for {e.Message}");
+                Log.LogWarning($"ignore action {cmd.ExecuteInfo} for {e.Message}");
                 continue;
             }
             catch (Exception e)
             {
-                MetaMystia.Plugin.Instance.Log.LogWarning($"Error checking condition: {e.Message}");
+                Log.LogWarning($"Error when checking action {cmd.ExecuteInfo}, condition: {e.Message}");
                 continue;
             }
 

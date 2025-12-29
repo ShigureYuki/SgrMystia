@@ -362,7 +362,7 @@ namespace MetaMystia
 
         private void SetCommand(string[] args)
         {
-            var availableFields = "KyoukoCollider";
+            var availableFields = "";
             if (args.Length == 0)
             {
                 Log("Usage: set <field> <value...>");
@@ -373,17 +373,6 @@ namespace MetaMystia
             string field = args[0].ToLower();
             switch (field)
             {
-                case "kyoukocollider":
-                    if (args.Length < 2)
-                    {
-                        Log("Usage: set kyoukocollider <on/off>");
-                        return;
-                    }
-                    bool enableCollider = args[1].ToLower() == "on";
-                    KyoukoManager.GetCharacterUnit().UpdateColliderStatus(enableCollider);
-                    Log($"Kyouko collider forced {(enableCollider ? "ON" : "OFF")}");
-                    break;
-
                 default:
                     Log($"Unknown field: {field}");
                     Log($"Available fields: {availableFields}");
@@ -406,16 +395,20 @@ namespace MetaMystia
             switch (subcommand)
             {
                 case "start":
-                    MpManager.Start();
-                    Log("Multiplayer started");
+                    if (MpManager.Start())
+                    {
+                        Log("Multiplayer started");
+                    }
                     break;
                 case "stop":
                     MpManager.Stop();
                     Log("Multiplayer stopped");
                     break;
                 case "restart":
-                    MpManager.Restart();
-                    Log("Multiplayer restarted");
+                    if (MpManager.Restart())
+                    {
+                        Log("Multiplayer restarted");
+                    }
                     break;
                 case "status":
                     Log(MpManager.GetStatus());

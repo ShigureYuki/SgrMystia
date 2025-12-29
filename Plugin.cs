@@ -18,6 +18,38 @@ public class Plugin : BasePlugin
     public static bool FirstEnterMain = true;
     public const bool EnableWebConsole = false;
 
+    public static Type[] ToBePatched = [
+        typeof(CharacterControllerUnitPatch),
+        typeof(CharacterInputPatch),
+        typeof(CookControllerPatch),
+        typeof(DataBaseCharacterPatch),
+        typeof(DaySceneManagerPatch),
+        typeof(DaySceneMapProfilePatch),
+        typeof(DayScenePlayerInputPatch),
+        typeof(DialogPannelPatch),
+        typeof(IzakayaConfigPannelPatch),
+        typeof(IzakayaConfigurePatch),
+        typeof(IzakayaSelectorPanelPatch),
+        typeof(MainSceneManagerPatch),
+        typeof(NightSceneManagerPatch),
+        typeof(PrepNightSceneManagerPatch),
+        typeof(RunTimeSchedulerPatch),
+        typeof(StaffSceneManagerPatch),
+        typeof(UniversalGameManagerPatch),
+        typeof(WorkSceneStoragePannelPatch),
+        typeof(GuestsManagerPatch),
+        typeof(GuestGroupControllerPatch),
+        typeof(WorkSceneServePannelPatch),
+        typeof(GameTimeManagerPatch),
+        typeof(RunTimeAlbumPatch),
+        typeof(ResultSceneManagerPatch),
+        typeof(CharacterPortrayalPatch),
+        typeof(SpecialGuestDescriberPatch)
+    ];
+
+    public static bool AllPatched => PatchedException == null;
+    public static Exception PatchedException = null;
+
     public Plugin()
     {
         Instance = this;
@@ -43,36 +75,7 @@ public class Plugin : BasePlugin
             var postHandle = AccessTools.Method(typeof(BootstrapPatch), "Handle");
             harmony.Patch(originalHandle, postfix: new HarmonyMethod(postHandle));
 
-            var patchList = new Type[]
-            {
-                typeof(CharacterControllerUnitPatch),
-                typeof(CharacterInputPatch),
-                typeof(CookControllerPatch),
-                typeof(DataBaseCharacterPatch),
-                typeof(DaySceneManagerPatch),
-                typeof(DaySceneMapProfilePatch),
-                typeof(DayScenePlayerInputPatch),
-                typeof(DialogPannelPatch),
-                typeof(IzakayaConfigPannelPatch),
-                typeof(IzakayaConfigurePatch),
-                typeof(IzakayaSelectorPanelPatch),
-                typeof(MainSceneManagerPatch),
-                typeof(NightSceneManagerPatch),
-                typeof(PrepNightSceneManagerPatch),
-                typeof(RunTimeSchedulerPatch),
-                typeof(StaffSceneManagerPatch),
-                typeof(UniversalGameManagerPatch),
-                typeof(WorkSceneStoragePannelPatch),
-                typeof(GuestsManagerPatch),
-                typeof(GuestGroupControllerPatch),
-                typeof(WorkSceneServePannelPatch),
-                typeof(GameTimeManagerPatch),
-                typeof(RunTimeAlbumPatch),
-                typeof(ResultSceneManagerPatch),
-                typeof(CharacterPortrayalPatch),
-                typeof(SpecialGuestDescriberPatch)
-            };
-            foreach (var patch in patchList)
+            foreach (var patch in ToBePatched)
             {
                 harmony.PatchAll(patch);
                 Log.LogInfo($"Applied {patch.Name}");
@@ -83,7 +86,8 @@ public class Plugin : BasePlugin
 
         }
         catch (Exception ex) {
-            Log.LogError($"FAILED to Apply Hooks! {ex.Message}");
+            Log.LogFatal($"FAILED to Apply Hooks! {ex.Message}");
+            PatchedException = ex;
         }
     }
 

@@ -42,20 +42,31 @@ public static partial class MpManager
     public static bool IsGameRoleClient => GameRole == ROLE.Client;
 
     public static Common.UI.Scene LocalScene => PluginManager.CurrentGameScene;
+    public static Common.UI.Scene PeerScene;
 
     public static System.Collections.Generic.List<string> LocalActiveDLCLabel => DLCManager.ActiveDLCLabel;
     public static System.Collections.Generic.List<string> PeerActiveDLCLabel => DLCManager.PeerActiveDLCLabel;
 
     public static bool InStory => Common.SceneDirector.Instance.playableDirector.state == UnityEngine.Playables.PlayState.Playing || Common.SceneDirector.Instance.playableDirector.state == UnityEngine.Playables.PlayState.Delayed;
-
     public static bool InputAvailable => Common.UI.UniversalGameManager.IsInputEnabled;
 
-    public static void Start(ROLE r = ROLE.Host)
+    public static string GameVersion => Common.LoadingSceneManager.VersionData;
+    public static string PeerGameVersion = "";
+    
+
+    public static bool Start(ROLE r = ROLE.Host)
     {
+        if (!Plugin.AllPatched)
+        {
+            PluginManager.Console.Log($"Cannot start multiplayer, patch failure!\n{Plugin.PatchedException.Message}\n{Plugin.PatchedException.StackTrace}");
+            Log.Fatal("Cannot start multiplayer, patch failure!");
+            return false;
+        }
+
         if (IsRunning)
         {
             Log.LogWarning("MpManager is already running");
-            return;
+            return true;
         }
 
         IsRunning = true;
@@ -78,6 +89,7 @@ public static partial class MpManager
                 Log.LogInfo("Starting MpManager as both host and client");
                 break;
         }
+        return true;
     }
 
     public static void Stop()
@@ -109,17 +121,20 @@ public static partial class MpManager
         KyoukoManager.Initialize();
     }
 
-    public static void Restart()
+    public static bool Restart()
     {
         Stop();
-        Start(Role);
+        return Start(Role);
     }
 
     public static async Task<bool> ConnectToPeerAsync(string peerIp, int port = TCP_PORT)
     {
         if (!IsRunning)
         {
-            Start(ROLE.Client);
+            if (!Start(ROLE.Client))
+            {
+                return false;
+            }
         }
 
         if (IsConnected)
@@ -149,7 +164,8 @@ public static partial class MpManager
     {
         // PeerAddress = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
         PeerAddress = ip;
-        SendHello();
+        HelloAction.Send();
+        SceneTransitAction.Send(LocalScene);
         SyncAction.Send();
         Notify.ShowOnMainThread($"联机系统：已连接！");
     }
@@ -159,6 +175,8 @@ public static partial class MpManager
     {
         PeerAddress = "<Unknown>";
         PeerId = "<Unknown>";
+        PeerGameVersion = "";
+        DLCManager.PeerActiveDLCLabel = [];
         Notify.ShowOnMainThread($"联机系统：连接已断开！");
     }
 
@@ -224,22 +242,6 @@ public static partial class MpManager
         Latency = (GetTimestampNow - t) / 2;
     }
 
-    public static void SendHello()
-    {
-        SendToPeer(new NetPacket([new HelloAction { 
-            PeerId = PlayerId,
-            PeerActiveDLCLabel = LocalActiveDLCLabel,
-            Version = MyPluginInfo.PLUGIN_VERSION,
-            CurrentGameScene = LocalScene,
-            PeerDLCBeverages = DLCManager.Beverages,
-            PeerDLCCookers = DLCManager.Cookers,
-            PeerDLCFoods = DLCManager.Foods,
-            PeerDLCNormalGuests = DLCManager.NormalGuests,
-            PeerDLCRecipes = DLCManager.Recipes,
-            PeerDLCSpecialGuests = DLCManager.SpecialGuests,
-        }]));
-    }
-
     public static string GetStatus()
     {
         StringBuilder status = new();
@@ -259,6 +261,10 @@ public static partial class MpManager
 
     public static string GetBriefStatus()
     {
+        if (!Plugin.AllPatched)
+        {
+            return "Patch failure!!! The game will not function normally! Please remove the mod or contact mod developer!";
+        }
         if (!IsRunning)
         {
             return "Multiplayer: Off";

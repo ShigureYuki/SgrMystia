@@ -10,31 +10,31 @@ namespace MetaMystia;
 public static class DLCManager
 {
     public static List<string> ActiveDLCLabel => Common.LoadingSceneManager.LoadedGameDataProfile.ActiveDLCLabel.ToManagedList();
-    public static List<string> PeerActiveDLCLabel = null;
+    public static List<string> PeerActiveDLCLabel = [];
 
-    public static GameData.Profile.ExpandableGameDataPack CoreDataPack => Common.LoadingSceneManager.LoadedGameDataProfile.coreDataPack; 
+    public static GameData.Profile.ExpandableGameDataPack CoreDataPack => Common.LoadingSceneManager.LoadedGameDataProfile.coreDataPack;
     public static Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GameData.Profile.GameDataProfile.DLCGameDataPack> DLCDataPacks => Common.LoadingSceneManager.LoadedGameDataProfile.dlcGameDataPacks;
-    
-    public static HashSet<int> CoreRecipes {get; private set;} = [];
-    public static HashSet<int> CoreCookers {get; private set;} = [];
-    public static HashSet<int> CoreFoods {get; private set;} = [];
-    public static HashSet<int> CoreBeverages {get; private set;} = [];
-    public static HashSet<int> CoreNormalGuests {get; private set;} = [];
-    public static HashSet<int> CoreSpecialGuests {get; private set;} = [];
 
-    public static HashSet<int> Recipes {get; private set;} = null;
-    public static HashSet<int> Cookers {get; private set;} = null;
-    public static HashSet<int> Foods {get; private set;} = null;
-    public static HashSet<int> Beverages {get; private set;} = null;
-    public static HashSet<int> NormalGuests {get; private set;} = null;
-    public static HashSet<int> SpecialGuests {get; private set;} = null;
+    public static HashSet<int> CoreRecipes { get; private set; } = [];
+    public static HashSet<int> CoreCookers { get; private set; } = [];
+    public static HashSet<int> CoreFoods { get; private set; } = [];
+    public static HashSet<int> CoreBeverages { get; private set; } = [];
+    public static HashSet<int> CoreNormalGuests { get; private set; } = [];
+    public static HashSet<int> CoreSpecialGuests { get; private set; } = [];
 
-    public static HashSet<int> PeerRecipes {get; set;} = null;
-    public static HashSet<int> PeerCookers {get; set;} = null;
-    public static HashSet<int> PeerFoods {get; set;} = null;
-    public static HashSet<int> PeerBeverages {get; set;} = null;
-    public static HashSet<int> PeerNormalGuests {get; set;} = null;
-    public static HashSet<int> PeerSpecialGuests {get; set;} = null;
+    public static HashSet<int> Recipes { get; private set; } = null;
+    public static HashSet<int> Cookers { get; private set; } = null;
+    public static HashSet<int> Foods { get; private set; } = null;
+    public static HashSet<int> Beverages { get; private set; } = null;
+    public static HashSet<int> NormalGuests { get; private set; } = null;
+    public static HashSet<int> SpecialGuests { get; private set; } = null;
+
+    public static HashSet<int> PeerRecipes { get; set; } = [];
+    public static HashSet<int> PeerCookers { get; set; } = [];
+    public static HashSet<int> PeerFoods { get; set; } = [];
+    public static HashSet<int> PeerBeverages { get; set; } = [];
+    public static HashSet<int> PeerNormalGuests { get; set; } = [];
+    public static HashSet<int> PeerSpecialGuests { get; set; } = [];
 
     public static bool PeerNormalGuestAvailable(int id) => CoreNormalGuests.Contains(id) || PeerNormalGuests.Contains(id);
     public static bool PeerSpecialGuestAvailable(int id) => CoreSpecialGuests.Contains(id) || PeerSpecialGuests.Contains(id);
@@ -42,20 +42,20 @@ public static class DLCManager
 
     public static void Initialize()
     {
-        Recipes = GetAllDLCRecipes();
-        Cookers = GetAllDLCCookers();
-        Foods = GetAllDLCFoods();
-        Beverages = GetAllDLCBeverages();
-        NormalGuests = GetAllDLCNormalGuests();
-        SpecialGuests = GetAllDLCSpecialGuests();
+        Recipes = GetAllDLCRecipes() ?? [];
+        Cookers = GetAllDLCCookers() ?? [];
+        Foods = GetAllDLCFoods() ?? [];
+        Beverages = GetAllDLCBeverages() ?? [];
+        NormalGuests = GetAllDLCNormalGuests() ?? [];
+        SpecialGuests = GetAllDLCSpecialGuests() ?? [];
 
         System.Array.ForEach([CoreRecipes, CoreCookers, CoreFoods, CoreBeverages, CoreNormalGuests, CoreSpecialGuests], hs => hs?.Clear());
-        foreach(var item in CoreDataPack.RecipeProfile.Asset?.Cast<GameData.Profile.RecipeProfile>().recipes) CoreRecipes.Add(item.Id);
-        foreach(var item in CoreDataPack.CookerProfile.Asset?.Cast<GameData.Profile.CookerProfile>().cookers) CoreCookers.Add(item.Id);
-        foreach(var item in CoreDataPack.FoodProfile.Asset?.Cast<GameData.Profile.SellableProfile>().sellables) CoreFoods.Add(item.Id);
-        foreach(var item in CoreDataPack.BeverageProfile.Asset?.Cast<GameData.Profile.SellableProfile>().sellables) CoreBeverages.Add(item.Id);
-        foreach(var item in CoreDataPack.NormalGuestProfile.Asset?.Cast<GameData.Profile.NormalGuestProfile>().normalGuests) CoreNormalGuests.Add(item.Id);
-        foreach(var item in CoreDataPack.SpecialGuestProfile.Asset?.Cast<GameData.Profile.SpecialGuestProfile>().specialGuests) CoreSpecialGuests.Add(item.Id);
+        foreach (var item in CoreDataPack.RecipeProfile.Asset?.Cast<GameData.Profile.RecipeProfile>().recipes) CoreRecipes.Add(item.Id);
+        foreach (var item in CoreDataPack.CookerProfile.Asset?.Cast<GameData.Profile.CookerProfile>().cookers) CoreCookers.Add(item.Id);
+        foreach (var item in CoreDataPack.FoodProfile.Asset?.Cast<GameData.Profile.SellableProfile>().sellables) CoreFoods.Add(item.Id);
+        foreach (var item in CoreDataPack.BeverageProfile.Asset?.Cast<GameData.Profile.SellableProfile>().sellables) CoreBeverages.Add(item.Id);
+        foreach (var item in CoreDataPack.NormalGuestProfile.Asset?.Cast<GameData.Profile.NormalGuestProfile>().normalGuests) CoreNormalGuests.Add(item.Id);
+        foreach (var item in CoreDataPack.SpecialGuestProfile.Asset?.Cast<GameData.Profile.SpecialGuestProfile>().specialGuests) CoreSpecialGuests.Add(item.Id);
     }
 
     private static Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<Recipe> GetRecipesFromDLC(GameData.Profile.GameDataProfile.DLCGameDataPack pack)
@@ -126,7 +126,7 @@ public static class DLCManager
             .SelectMany(pack => GetBeveragesFromDLC(pack))
             .Select(beverage => beverage.Id)];
     }
-    
+
     private static HashSet<int> GetAllDLCNormalGuests()
     {
         return [.. GetAllDLCGameDataPacks()
