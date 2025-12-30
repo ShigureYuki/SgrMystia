@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using Common.DialogUtility;
 using GameData.CoreLanguage.Collections;
@@ -7,9 +6,11 @@ using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using GameData.Core.Collections.DaySceneUtility.Collections;
 using UnityEngine;
 using GameData.Core.Collections.CharacterUtility;
+using GameData.Core.Collections.DaySceneUtility;
 
 using DEYU.Utils;
 using MetaMiku;
+using SgrYuki.Utils;
 using MetaMystia.ResourceEx.Models;
 
 namespace MetaMystia;
@@ -177,10 +178,10 @@ public static partial class ResourceExManager
 
     private static void RegisterFoodRequests(CharacterConfig config)
     {
-        DataBaseLanguagePatch.FoodRequestsToRegister[config.id] = config.guest.foodRequests.ToDictionary(req => req.tagId, req => req.request);
+        DataBaseLanguage.SpecialGuestFoodRequest.TryAdd(config.id,
+            config.guest.foodRequests.ToDictionary(req => req.tagId, req => req.request).ToIl2CppDictionary());
         Log.Info($"Injected Food Requests for Special Guest: {config.name} ({config.id})");
     }
-
 
     public static void RegisterAllSpecialGuestPairs()
     {
@@ -193,7 +194,6 @@ public static partial class ResourceExManager
 
     private static void RegisterSpecialGuestPair(CharacterConfig config)
     {
-        Log.Info($"Registering SpecialGuestPair from ResourceEx...");
         var pair = new GameData.Profile.GuestProfilePair(
             id: config.id,
             bgColor: DataBaseCharacter.UnifiedNormalGuestBGColor,
@@ -202,7 +202,14 @@ public static partial class ResourceExManager
             characterPixel: DataBaseCharacter.SpecialGuestVisual[0].CharacterPixel
         );
         // TODO: 改为 从 ResourceEx 读取配置，而不是后续 hook 修改
-        Log.Info($"Registered SpecialGuestPair for Special Guest: {config.name} ({config.id})");
+        if (DataBaseCharacter.SpecialGuestVisual.TryAdd(config.id, pair))
+        {
+            Log.Info($"Registered SpecialGuestPair for Special Guest: {config.name} ({config.id})");
+        }
+        else
+        {
+            Log.Warning($"SpecialGuestPair for Special Guest: {config.name} ({config.id}) already exists");
+        }
     }
     public static void RegisterNPCs()
     {
@@ -215,11 +222,17 @@ public static partial class ResourceExManager
 
     private static void RegisterNPC(CharacterConfig config)
     {
-        var specialGuests = GameData.Core.Collections.CharacterUtility.DataBaseCharacter.SpecialGuest;
+        var specialGuests = DataBaseCharacter.SpecialGuest;
         var specialGuest = specialGuests[config.id];
         var npc = new NPC(specialGuest);
-        GameData.Core.Collections.DaySceneUtility.DataBaseDay.allNPCs[config.label] = npc;
-        Log.Info($"Prepared Delay Load NPC for Special Guest: {config.name} ({config.id})");
+        if (DataBaseDay.allNPCs.TryAdd(config.label, npc))
+        {
+            Log.Info($"Registered NPC for Special Guest: {config.name} ({config.id})");
+        }
+        else
+        {
+            Log.Warning($"NPC with label {config.label} already exists in DataBaseDay.allNPCs");
+        }
     }
 
     public static void RegisterAllSpawnConfigs()

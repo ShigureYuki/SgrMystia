@@ -22,6 +22,7 @@ public static partial class ResourceExManager
     public static void Initialize()
     {
         LoadConfigs();
+        PreloadAllImages();
     }
 
     private static void LoadConfigs()

@@ -115,9 +115,6 @@ public class Plugin : BasePlugin
         }
         
         DLCManager.Initialize();
-        
-        ResourceExManager.RegisterSpecialPortraits();
-        ResourceExManager.PreloadAllImages();
     }
 
     class BootstrapPatch

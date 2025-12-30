@@ -149,6 +149,18 @@ public static class Extensions
         return result;
     }
 
+    public static Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue> ToIl2CppDictionary<TKey, TValue>(
+        this System.Collections.Generic.Dictionary<TKey, TValue> dict)
+    {
+        if (dict == null) return null;
+        var result = new Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue>();
+        foreach (var kvp in dict)
+        {
+            result.Add(kvp.Key, kvp.Value);
+        }
+        return result;
+    }
+
     public static System.Collections.Generic.List<T> ToManagedList<T>(
             this Il2CppSystem.Collections.Generic.List<T> il2cppList)
     {
