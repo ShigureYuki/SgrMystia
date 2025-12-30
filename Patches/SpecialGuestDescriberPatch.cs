@@ -6,7 +6,7 @@ using UnityEngine.Playables;
 using UnityEngine;
 namespace MetaMystia;
 
-
+// Hearts to ShigureYuki!
 [HarmonyPatch(typeof(Common.UI.SpecialGuestDescriber))]
 [AutoLog]
 public partial class SpecialGuestDescriberPatch

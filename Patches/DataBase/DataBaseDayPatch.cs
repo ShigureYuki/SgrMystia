@@ -10,7 +10,6 @@ namespace MetaMystia;
 [AutoLog]
 public partial class DataBaseDayPatch
 {
-    public static Dictionary<string, NPC> NPCsToRegister = new Dictionary<string, NPC>();
 
     [HarmonyPatch(nameof(DataBaseDay.Initialize))]
     [HarmonyPostfix]
