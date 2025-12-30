@@ -11,13 +11,17 @@ public partial class IzakayaCloseAction : NetAction
     public override void OnReceived()
     {
         LogActionReceived();
-        if (NightScene.GuestManagementUtility.GuestsManager.Instance != null)
+        if (NightScene.GuestManagementUtility.GuestsManager.Instance != null && MpManager.LocalScene == Common.UI.Scene.WorkScene)
         {
-            CommandScheduler.Enqueue(() => true, () =>
+            Notify.ShowOnMainThread("对方已经打烊啦！");
+            if (MpManager.IsConnectedHost)
             {
-                GuestsManagerPatch.TryCloseIzakaya_Original(NightScene.GuestManagementUtility.GuestsManager.Instance);
-                Notify.Show("对方已经打烊啦！");
-            });
+                CommandScheduler.Enqueue(() => true, () =>
+                {
+                    GuestsManagerPatch.TryCloseIzakaya_Original(NightScene.GuestManagementUtility.GuestsManager.Instance);
+                });
+            } 
+            // Do not let client call TryCloseIzakaya, some problem will happen like the client may not be able to close izakaya successfully.
         }
     }
 

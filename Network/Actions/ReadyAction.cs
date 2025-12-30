@@ -23,6 +23,7 @@ public partial class ReadyAction : NetAction
         }
         // else: 00->01: Nope
         Log.LogInfo("Kyouko is ready");
+        Notify.ShowOnMainThread($"响子已经准备好营业啦！");
     }
 
     public static void Send()

@@ -23,9 +23,14 @@ public partial class HelloAction : NetAction
     public HashSet<int> PeerDLCNormalGuests {get; set;} = null;
     public HashSet<int> PeerDLCSpecialGuests {get; set;} = null;
 
+    public override void LogActionSend(bool _onlyAction, string prefix)
+    {
+        LogActionSend(BepInEx.Logging.LogLevel.Message, false, prefix);
+    }
+
     public override void OnReceived()
     {
-        LogActionReceived();
+        LogActionReceived(BepInEx.Logging.LogLevel.Message);
         MpManager.PeerId = PeerId;
         MpManager.PeerGameVersion = GameVersion;
 

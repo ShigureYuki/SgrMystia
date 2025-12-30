@@ -93,13 +93,13 @@ public partial class GuestServeAction : NetAction
                 }
                 if (order.IsFullfilled)
                 {
-                    Log.LogWarning($"handing GUEST_SERVE: begin evaluate order for {GuestUniqId}");
+                    Log.Message($"begin evaluate order for {GuestUniqId}");
                     GuestsManager.instance.EvaluateOrder(guest, false);
                     guest.SetPatient(Math.Min(guest.CurrentPatient + PatientRecoverSecs, guest.MaxPatient));
                 }
                 else
                 {
-                    Log.LogWarning($"handing GUEST_SERVE: not Fullfilled yet for {GuestUniqId}, will not evaluate");
+                    Log.Message($"not Fullfilled yet for {GuestUniqId}, will not evaluate");
                 }
 
                 // already set in EvaluateOrder_Postfix

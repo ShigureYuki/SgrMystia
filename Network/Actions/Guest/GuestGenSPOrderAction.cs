@@ -30,7 +30,7 @@ public partial class GuestGenSPOrderAction : NetAction
 
         CommandScheduler.Enqueue(
             executeWhen: () => NightGuestManager.CheckStatusInOrThrow(GuestUniqId, [NightGuestManager.Status.PendingOrder, NightGuestManager.Status.OrderEvaluated]),
-            executeInfo: $"Gen SP order: guid {GuestUniqId}, order {Order}",
+            executeInfo: $"Gen SP order: guid {GuestUniqId}, order {Order.ToString()}",
             execute: () =>
             {
                 var guest = NightGuestManager.GetGuest(GuestUniqId);
@@ -50,7 +50,7 @@ public partial class GuestGenSPOrderAction : NetAction
                 }
                 catch (Exception ex)
                 {
-                    Log.LogWarning($"error in generating normal order for {GuestUniqId}, reason {ex.Message}, {ex.StackTrace}");
+                    Log.Error($"error in generating order for {GuestUniqId}, reason {ex.Message}, {ex.StackTrace}");
                 }
             }
          );

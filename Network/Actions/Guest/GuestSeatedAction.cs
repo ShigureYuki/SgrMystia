@@ -5,6 +5,7 @@ using SgrYuki.Utils;
 namespace MetaMystia;
 
 [MemoryPackable]
+[AutoLog]
 public partial class GuestSeatedAction : NetAction
 {
     public override ActionType Type => ActionType.GUEST_SEATED;
@@ -30,7 +31,23 @@ public partial class GuestSeatedAction : NetAction
             return;
         }
 
+        void onExecute()
+        {
+            var guestTargetDesk = GuestsManager.instance.GetInDeskGuest(DeskId);
+            if (guestTargetDesk != null)
+            {
+                Log.LogWarning($"guestTargetDesk not null, will force set previous guest out: guid {GuestUniqId}, DeskId {DeskId}, SeatId {SeatId}");
+                GuestsManager.instance.SetGuestOutDesk(guestTargetDesk);
+            }
+            var guest = NightGuestManager.GetGuest(GuestUniqId);
 
+            NightGuestManager.SetGuestDeskcodeSeat(GuestUniqId, SeatId);
+
+            GuestsManagerPatch.TrySendToSeat_Original(GuestsManager.instance, guest, FirstSpawn, DeskId, true);
+
+            NightGuestManager.SetGuestStatus(GuestUniqId, NightGuestManager.Status.Seated);
+            NightGuestManager.SetGuestDeskcode(GuestUniqId, guest.DeskCode);
+        }
         CommandScheduler.Enqueue(
             executeWhen: () =>
             {
@@ -40,23 +57,25 @@ public partial class GuestSeatedAction : NetAction
                     {
                         return true;
                     }
+                    if (!GuestsManager.instance.CheckGuestIsInDesk(DeskId))
+                    {
+                        return true;
+                    }
                     var guestTargetDesk = NightGuestManager.GetGuestUUID(GuestsManager.instance.GetInDeskGuest(DeskId));
                     return NightGuestManager.GetGuestDeskcodeSeat(guestTargetDesk) != DeskId + 1;
                 }
                 return false;
             },
             executeInfo: $"Seated: guid {GuestUniqId}, DeskId {DeskId}, SeatId {SeatId}",
-            execute: () =>
+            execute: onExecute,
+            timeoutSeconds: 30,
+            onTimeout: () =>
             {
-                var guest = NightGuestManager.GetGuest(GuestUniqId);
-
-                NightGuestManager.SetGuestDeskcodeSeat(GuestUniqId, SeatId);
-
-                GuestsManagerPatch.TrySendToSeat_Original(GuestsManager.instance, guest, FirstSpawn, DeskId, true);
-
-                NightGuestManager.SetGuestStatus(GuestUniqId, NightGuestManager.Status.Seated);
-                NightGuestManager.SetGuestDeskcode(GuestUniqId, guest.DeskCode);
-            });
+                Log.LogWarning($"Seated time-out, will force set previous guest out: guid {GuestUniqId}, DeskId {DeskId}, SeatId {SeatId}");
+                GuestsManager.instance.SetGuestOutDesk(GuestsManager.instance.GetInDeskGuest(DeskId));
+                onExecute();
+            }
+        );
     }
 
     public static void Send(string guestUniqId, int deskId, bool firstSpawn, int seatId)

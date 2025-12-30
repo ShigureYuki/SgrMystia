@@ -70,11 +70,12 @@ public abstract partial class NetAction
             {
                 WriteIndented = false,
                 IncludeFields = true,
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
             });
     }
 
-    private static void LogAction(BepInEx.Logging.LogLevel logLevel, bool OnlyAction, string logStr)
+    private static void LogAction(BepInEx.Logging.LogLevel logLevel, string logStr)
     {
         switch (logLevel)
         {
@@ -99,13 +100,13 @@ public abstract partial class NetAction
     protected void LogActionReceived(BepInEx.Logging.LogLevel logLevel, bool onlyAction = false, string prefix = "")
     {
         string logStr = $"{MpManager.RoleTag} {prefix}Received {Type}{(onlyAction ? "" : $": {ToString()}")}";
-        LogAction(logLevel, onlyAction, logStr);
+        LogAction(logLevel, logStr);
     }
 
     protected void LogActionSend(BepInEx.Logging.LogLevel logLevel, bool onlyAction = false, string prefix = "")
     {
         string logStr = $"{MpManager.RoleTag} {prefix}Send {Type}{(onlyAction ? "" : $": {ToString()}")}";
-        LogAction(logLevel, onlyAction, logStr);
+        LogAction(logLevel, logStr);
     }
 
     public virtual void LogActionReceived(bool onlyAction = false, string prefix = "")
