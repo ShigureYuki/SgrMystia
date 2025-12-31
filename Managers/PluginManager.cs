@@ -14,7 +14,7 @@ namespace MetaMystia;
 public partial class PluginManager : MonoBehaviour
 {
     public static PluginManager Instance { get; private set; }
-    private readonly string label = $"{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION} loaded";
+    public static readonly string Label = $"{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION} loaded";
     public static InGameConsole Console { get; private set; }
     private bool isTextVisible = true;
     private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
@@ -56,7 +56,7 @@ public partial class PluginManager : MonoBehaviour
         if (isTextVisible)
         {
             var info = new System.Text.StringBuilder();
-            info.AppendLine(label);
+            info.AppendLine(Label);
             info.AppendLine(MpManager.GetBriefStatus());
             GUI.Label(new Rect(10, Screen.height - 50, 600, 50), info.ToString());
         }

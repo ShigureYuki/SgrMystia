@@ -27,9 +27,9 @@ public static partial class MpManager
     public static string PeerId {get; set;}
     public static long Latency {get; private set;} = 0;
     private static System.Collections.Concurrent.ConcurrentDictionary<int, long> pingSendTimes = new();
-    public static long GetTimestampNow => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    public static long TimestampNow => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     public static long TimeOffset = 0;
-    public static long GetSynchronizedTimestampNow => GetTimestampNow - TimeOffset;
+    public static long GetSynchronizedTimestampNow => TimestampNow - TimeOffset;
     private static int _pingId = 0;
 
     public static bool IsConnectedClient => IsConnected && IsClient;
@@ -58,8 +58,8 @@ public static partial class MpManager
     {
         if (!Plugin.AllPatched)
         {
-            PluginManager.Console.Log($"Cannot start multiplayer, patch failure!\n{Plugin.PatchedException.Message}\n{Plugin.PatchedException.StackTrace}");
-            Log.Fatal("Cannot start multiplayer, patch failure!");
+            PluginManager.Console.Log($"Cannot start multiplayer, patch failure!\n{DumpDebugText()}");
+            Log.Fatal($"Cannot start multiplayer, patch failure!\n{DumpDebugText()}");
             return false;
         }
 
@@ -225,7 +225,7 @@ public static partial class MpManager
     public static void SendPing()
     {
         if (!IsConnected) return;
-        var t = GetTimestampNow;
+        var t = TimestampNow;
         int id = _pingId++;
         pingSendTimes[id] = t;
         SendToPeer(PingAction.CreatePingPacket(id));
@@ -239,7 +239,7 @@ public static partial class MpManager
     public static void UpdateLatency(int id)
     {
         if (!pingSendTimes.TryRemove(id, out long t)) return;
-        Latency = (GetTimestampNow - t) / 2;
+        Latency = (TimestampNow - t) / 2;
     }
 
     public static string GetStatus()
@@ -277,5 +277,15 @@ public static partial class MpManager
         {
             return "Multiplayer: On (Not connected)";
         }
+    }
+
+    public static string DumpDebugText()
+    {
+        StringBuilder sb = new();
+        sb.AppendLine($"{DateTimeOffset.Now}, {System.Runtime.InteropServices.RuntimeInformation.OSDescription}, {System.Runtime.InteropServices.RuntimeInformation.OSArchitecture}");
+        sb.AppendLine($"{GameVersion}, {PluginManager.Label}");
+        sb.AppendLine(GetBriefStatus());
+        sb.AppendLine($"DLC: {string.Join(", ", ActiveDLCLabel)}");
+        return sb.ToString();
     }
 }

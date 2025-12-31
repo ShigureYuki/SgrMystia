@@ -7,7 +7,7 @@ using SgrYuki.Utils;
 namespace MetaMystia;
 
 [AutoLog]
-public static class DLCManager
+public static partial class DLCManager
 {
     public static List<string> ActiveDLCLabel => Common.LoadingSceneManager.LoadedGameDataProfile.ActiveDLCLabel.ToManagedList();
     public static List<string> PeerActiveDLCLabel = [];

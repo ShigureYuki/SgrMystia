@@ -62,6 +62,10 @@ public enum ActionType : ushort
 public abstract partial class NetAction
 {
     public abstract ActionType Type { get; }
+    public long TimestampMs { get; protected set; }
+
+    protected NetAction() => TimestampMs = MpManager.TimestampNow;
+    
     public abstract void OnReceived();
     public override string ToString()
     {
