@@ -1,8 +1,6 @@
 using Common.DialogUtility;
-using DEYU.AssetHandleUtility;
+using GameData.RunTime.Common;
 using HarmonyLib;
-using Il2CppSystem.Collections.Generic;
-
 
 namespace MetaMystia;
 
@@ -11,29 +9,21 @@ namespace MetaMystia;
 [AutoLog]
 public partial class DialogPannelPatch
 {
-    
-    // [HarmonyPatch(nameof(DialogPannel.GetSpeakerName))]
-    // [HarmonyPostfix]
-    // public static void GetSpeakerName_Postfix(ref string line, DialogMeta meta, string speakerName)
-    // {
-    //     Log.LogWarning($" with meta.SpeakerID: {meta.ToString()}, line: {line}, speakerName: {speakerName}");
-    // }
-
     [HarmonyPatch(nameof(DialogPannel.GetSpeakerVisual))]
     [HarmonyPrefix]
-    public static bool GetSpeakerVisual_Prefix(IAssetHandleArray<UnityEngine.Sprite> playerPortrayalCollection, IReadOnlyDictionary<int, IAssetHandleArray<UnityEngine.Sprite>> specialNPCPortrayalCollectionDictionary, IReadOnlyDictionary<DialogMeta, IAssetHandle<UnityEngine.Sprite>> overrideDialogMetaToSprites, DialogMeta meta, ref UnityEngine.Sprite visual)
-    {        
+    public static bool GetSpeakerVisual_Prefix(DialogMeta meta, ref UnityEngine.Sprite visual)
+    {
         var id = meta.speakerIdentity.speakerId;
-        var type = meta.speakerIdentity.speakerType.ToString();
+        var type = meta.speakerIdentity.speakerType;
         var pid = meta.speakerIdentity.speakerPortrayalVariationId;
 
-        if (ResourceExManager.ExistsCharacterConfig(id, type))
-        {
-            visual = ResourceExManager.GetPortraitSprite(id, pid);
-            return false;
-        }
-        
-        return true;
-    }
+        if (type != SpeakerIdentity.Identity.Special ||
+            !ResourceExManager.TryGetSpecialGuestCustomPortrayal(id.RefSpecialPortrayal(), out var customPortrayal))
+            return true;
 
+        if (pid >= 0 && pid < customPortrayal.Length)
+            visual = customPortrayal[pid];
+
+        return false;
+    }
 }
