@@ -1,75 +1,58 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using System.Linq;
 using System.Text;
 
 namespace LogGenerator
 {
     [Generator]
-    public sealed class LogGenerator : ISourceGenerator
+    public sealed class LogGenerator : IIncrementalGenerator
     {
         private const string LogSource = "MetaMystia.Plugin.Instance.Log";
         private const string LogSourceType = "BepInEx.Logging.ManualLogSource";
         private const string TargetNamespace = "MetaMystia";
 
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             // 调试用
             // System.Diagnostics.Debugger.Launch();
-        }
 
-        public void Execute(GeneratorExecutionContext context)
-        {
-            foreach (var tree in context.Compilation.SyntaxTrees)
+            var classProvider = context.SyntaxProvider
+                .ForAttributeWithMetadataName(
+                    "MetaMystia.AutoLogAttribute",
+                    predicate: (node, _) =>
+                        node is ClassDeclarationSyntax cls &&
+                        cls.Modifiers.Any(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PartialKeyword),
+                    transform: (ctx, _) => GetClassInfo(ctx)
+                )
+                .Where(info => info is not null)
+                .Select((info, _) => info!.Value);
+
+            context.RegisterSourceOutput(classProvider, (spc, classInfo) =>
             {
-                var root = tree.GetRoot(context.CancellationToken);
-
-                foreach (var cls in root.DescendantNodes()
-                                        .OfType<ClassDeclarationSyntax>())
-                {
-                    if (!cls.Modifiers.Any(SyntaxKind.PartialKeyword))
-                        continue;
-
-                    if (!HasAutoLog(cls))
-                        continue;
-
-                    var className = cls.Identifier.Text;
-
-                    // var ns = GetNamespace(cls);
-                    var model = context.Compilation.GetSemanticModel(cls.SyntaxTree);
-                    var clsSymbol = model.GetDeclaredSymbol(cls);
-                    if (clsSymbol == null) continue;
-                    string fullClassName = clsSymbol.Name;
-                    string namespaceName = clsSymbol.ContainingNamespace.IsGlobalNamespace ? "" : clsSymbol.ContainingNamespace.ToString();
-                    
-                    var source = GeneratePartial(namespaceName, fullClassName);
-
-                    context.AddSource(
-                        $"{fullClassName}.bepinexlog.g.cs",
-                        SourceText.From(source, Encoding.UTF8)
-                    );
-                }
-            }
+                var source = GeneratePartial(classInfo.Namespace, classInfo.ClassName);
+                spc.AddSource(
+                    $"{classInfo.ClassName}.bepinexlog.g.cs",
+                    SourceText.From(source, Encoding.UTF8)
+                );
+            });
         }
 
-        private static bool HasAutoLog(ClassDeclarationSyntax cls)
+        private static ClassInfo? GetClassInfo(GeneratorAttributeSyntaxContext context)
         {
-            return cls.AttributeLists
-                      .SelectMany(a => a.Attributes)
-                      .Any(a => a.Name.ToString().EndsWith("AutoLog"));
-        }
+            var cls = (ClassDeclarationSyntax)context.TargetNode;
+            var model = context.SemanticModel;
+            var clsSymbol = model.GetDeclaredSymbol(cls);
 
-        private static string? GetNamespace(SyntaxNode node)
-        {
-            while (node != null)
-            {
-                if (node is NamespaceDeclarationSyntax ns)
-                    return ns.Name.ToString();
-                node = node.Parent;
-            }
-            return null;
+            if (clsSymbol == null)
+                return null;
+
+            var className = clsSymbol.Name;
+            var namespaceName = clsSymbol.ContainingNamespace.IsGlobalNamespace
+                ? ""
+                : clsSymbol.ContainingNamespace.ToString();
+
+            return new ClassInfo(className, namespaceName);
         }
 
         private static string GeneratePartial(string? ns, string className)
@@ -92,6 +75,12 @@ namespace LogGenerator
                 sb.AppendLine("}");
 
             return sb.ToString();
+        }
+
+        private readonly struct ClassInfo(string className, string @namespace)
+        {
+            public readonly string ClassName = className;
+            public readonly string Namespace = @namespace;
         }
     }
 }
