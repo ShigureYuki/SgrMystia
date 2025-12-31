@@ -1,8 +1,10 @@
 using HarmonyLib;
 using Common.UI;
 using GameData.Core.Collections.NightSceneUtility;
+using Il2CppSystem;
 using Il2CppSystem.Threading;
-
+using UnityEngine.Playables;
+using UnityEngine;
 namespace MetaMystia;
 
 // Hearts to ShigureYuki!
@@ -12,23 +14,36 @@ public partial class SpecialGuestDescriberPatch
 {
     [HarmonyPatch(nameof(SpecialGuestDescriber.Describe))]
     [HarmonyPrefix]
-    public static void Describe_Prefix(SpecialGuestDescriber __instance, SpecialGuest detail, ref CancellationToken cancellationToken)
+    public static void Describe_Prefix(SpecialGuest detail, ref CancellationToken cancellationToken)
     {
-        if (!ResourceExManager.TryGetSpecialGuestCustomPortrayal(detail.CharacterDefaultPortrayal, out var customPortrayal))
-            return;
-        
-        __instance.portrayal.sprite = customPortrayal[detail.CharacterDefaultPortrayal.faceInNoteBook];
-        var source = new CancellationTokenSource();
-        cancellationToken = source.Token;
-        source.Cancel();
+        var src = new CancellationTokenSource();
+        cancellationToken = src.Token;
+        src.Cancel();
+        Log.Info($"cancelled token for special guest ID {detail.Id}");
     }
-    
+
     [HarmonyPatch(nameof(SpecialGuestDescriber.Describe))]
     [HarmonyPostfix]
-    public static void Describe_Postfix(SpecialGuestDescriber __instance, SpecialGuest detail)
-    {      
-        if (!ResourceExManager.TryGetSpecialGuestCustomPortrayal(detail.CharacterDefaultPortrayal, out _))
-            return;
-        __instance.portrayal.enabled = true;
+    public static void Describe_Postfix(SpecialGuestDescriber __instance, SpecialGuest detail, CancellationToken cancellationToken)
+    {
+        var portrayal = detail.CharacterDefaultPortrayal;
+        if (ResourceExManager.TryGetSpecialGuestCustomPortrayal(portrayal, out var portrayalSprites))
+        {
+            if (portrayal.faceInNoteBook >= 0 && portrayal.faceInNoteBook < portrayalSprites.Length)
+            {
+                __instance.portrayal.sprite = portrayalSprites[portrayal.faceInNoteBook];
+                __instance.portrayal.enabled = true;
+                Log.Info($"Updated portrayal sprite for custom special guest ID {detail.Id}");
+            }
+            else
+            {
+                Log.Warning($"Custom portrayal index {portrayal.faceInNoteBook} out of range for special guest ID {detail.Id}");
+            }
+        }
+        else
+        {
+            __instance.portrayal.AssignImageSpriteAsync(portrayal.LoadNotebookVisual(UniversalGameManager.PlatformAssetLifetime, new Nullable<CancellationToken>(CancellationToken.None)), CancellationToken.None);
+            Log.Info($"default portrayal sprite for special guest ID {detail.Id}");
+        }
     }
 }
