@@ -4,7 +4,7 @@
 
 ## 安装
 
-1. 下载 [BepInEx il2cpp](https://builds.bepinex.dev/projects/bepinex_be) 并将其解压到游戏根目录
+1. 下载 [BepInEx-Unity.IL2CPP-win-x64](https://builds.bepinex.dev/projects/bepinex_be) 并将其解压到游戏根目录
 2. 下载 [MetaMystia.dll](https://github.com/MetaMikuAI/MetaMystia/releases) 并将其放入 `BepInEx/plugins` 目录
 3. 运行游戏
 
@@ -115,6 +115,16 @@ NightScene 篇已知 bug 或缺陷
 
 特别感谢 DEYU 和 kk 等的支持和帮助
 
+## 开发
+
+0. 安装 [.Net 10 SDK](https://dotnet.microsoft.com/zh-cn/download/dotnet/10.0)
+1. 拥有一份[东方夜雀食堂](https://store.steampowered.com/app/1584090)的合法拷贝
+2. 克隆本仓库
+3. 下载最新的 [BepInEx-Unity.IL2CPP-win-x64](https://builds.bepinex.dev/projects/bepinex_be) 并将其解压到游戏根目录
+4. 将游戏的安装目录复制并且填入 [MetaMystia.csproj](./MetaMystia.csproj) 的 `<GamePath>` 标签中
+5. 启动游戏一次，在进入主菜单后关闭游戏，以生成必要的文件
+6. 在支持 .Net Sln 的 IDE 中打开本仓库根目录下的 `MetaMystia.sln`
+7. 编译项目
 
 ## Star History
 
