@@ -4,8 +4,17 @@
 
 目前，ResourceEx 已支持：
 
--   自定义角色立绘
--   使用自定义角色的对话包注入
+- 稀客基本信息
+- 图鉴描述
+- 立绘贴图配置
+- 携带金钱
+- 评价语句
+- 闲聊语句
+- 食物与酒水的喜好与厌恶配置
+- 食物与酒水的点单请求
+- 出没地点配置
+- 角色小人贴图配置
+- 使用自定义角色的对话包注入
 
 配合对应的在线工具，即使不具备复杂开发环境，也可以较为轻松地制作扩展资源。
 
@@ -26,6 +35,14 @@
 -   在线体验：[https://editor.meta-mystia.izakaya.cc](https://editor.meta-mystia.izakaya.cc)
 
 ## 演示
+
+<img width="539" height="689" alt="image" src="https://github.com/user-attachments/assets/29c4d18b-2201-4ca5-8e0b-149882682493" />
+
+<img width="367" height="245" alt="image" src="https://github.com/user-attachments/assets/2534e0c8-d3fe-4342-ac3d-7cd1d550c305" />
+
+<img width="668" height="431" alt="image" src="https://github.com/user-attachments/assets/7cac9dd1-1adc-4973-bc07-caf2fda07b43" />
+
+<img width="437" height="205" alt="image" src="https://github.com/user-attachments/assets/682f7460-2d3d-4fb8-930b-647e2e70bac4" />
 
 （演示视频将在后续补充）
 
@@ -172,28 +189,17 @@
 
     - 0–999：游戏原有资源
     - 1000–5999：DLC 资源
-    - 6000–10999：MetaMystia 保留扩展段
+    - 6000-8999: 为原游戏预留的扩展段
+    - 9000–10999：MetaMystia 保留扩展段
     - 11000 及以上：创作者自定义资源
 
     请避免使用 0–10999 范围内的 ID。建议以每 1000 为一个独立创作区间，减少冲突。
 
-2. `portraits` 中的 `pid` 字段表示角色的不同表情立绘，需确保对应图片路径真实存在。
-
-3. `Character` 中 `type` 字段的可选值为 `Self`、`Special`、`Normal`、`Unknown`，目前仅支持 `Special` 类型的立绘扩展。
-
-4. `Character` 中的 `descriptions` 字段为角色描述信息，目前游戏内暂未使用，建议保留三条描述，占位可使用空字符串。
-
-5. `dialogPackages` 中引用的 `characterId`、`characterType` 与 `pid` 必须能在 **全局 ResourceEx** 或 **游戏原有资源** 中找到对应定义，否则可能导致游戏异常。
-
-6. `dialogPackages` 中的 `position` 字段可选 `Left` 或 `Right`，用于控制立绘显示位置。
-
-7. `dialogPackages` 中的 `text` 字段支持 Unity 富文本格式，具体语法可参考[官方文档](https://docs.unity.cn/cn/2021.3/Manual/StyledText.html)。
-
 ## 对话展示与触发
 
-当前 ResourceEx 仅负责**加载并注入对话数据**，并未提供完整的对话触发逻辑。
+当前 ResourceEx 仅负责**加载并注入对话数据**，尚未提供完整的对话触发逻辑。
 
-对于自行编写逻辑或调试的开发者，可通过 `WebDebugger` 的简易 `Console` 手动触发指定对话包：
+对于自行编写逻辑或调试的开发者，暂时可通过 `WebDebugger` 的简易 `Console` 手动触发指定对话包：
 
 ```csharp
 MetaMystia.Dialog.ShowResourceExPackage("YourDialogPackageName", null)
