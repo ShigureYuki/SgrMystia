@@ -5,10 +5,10 @@ using System.Linq;
 using System.Runtime.Serialization;
 using GameData.Core.Collections.NightSceneUtility;
 using LibCpp2IL;
+using MemoryPack;
 using NightScene.GuestManagementUtility;
 using SgrYuki.Utils;
 using static NightScene.GuestManagementUtility.GuestsManager;   // OrderBase
-
 namespace MetaMystia;
 
 [AutoLog]
@@ -53,24 +53,33 @@ public static partial class NightGuestManager
         OrderGenerated,
         OrderEvaluated,
     }
+
+    [MemoryPackable]
+    public partial class GuestInfo
+    {
+        public int Id { get; set; }
+        public int? VisualId { get; set; }
+        public int? Id2 { get; set; }
+        public int? VisualId2 { get; set; }
+        public bool IsSpecial { get; set; } = false;
+    }
+    
     private static ConcurrentDictionary<string, GuestGroupController> guests = new(); 
     private static ConcurrentDictionary<string, Status> guestStatus = new(); 
     private static ConcurrentDictionary<string, int> guestDesks = new(); 
     private static ConcurrentDictionary<string, int> guestDeskSeats = new(); 
-
+    private static ConcurrentDictionary<string, GuestInfo> guestInfos = new(); 
     private static ConcurrentDictionary<IntPtr, string> guestIds = new();
-    public static ConcurrentQueue<(OrderBase, string)> orders = new();
-
-    private static ConcurrentHashSet<int> specialGuestsAppeared = new();
-    public static ConcurrentQueue<int> normalGuestProfilePairIndexQueue = new(); 
-
     private static ConcurrentDictionary<string, (bool, bool)> guestOrderFullfilled = new(); 
+
+
+    public static ConcurrentQueue<(OrderBase, string)> orders = new();
+    public static ConcurrentQueue<int> normalGuestProfilePairIndexQueue = new(); 
 
     public static int WorkTimeLeft => NightScene.EventUtility.EventManager.Instance.totalCountDown;
     public static void ModifyWorkTimeLeft(int time) => NightScene.EventUtility.EventManager.Instance.totalCountDown = time;
 
 
-    
     //private static int getGuestControllerHashCode(GuestGroupController controller) => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(controller);
 
     public static void Clear()
@@ -79,9 +88,9 @@ public static partial class NightGuestManager
         guestStatus.Clear();
         guestDesks.Clear();
         guestDeskSeats.Clear();
+        guestInfos.Clear();
         guestIds.Clear();
         orders.Clear();
-        specialGuestsAppeared.Clear();
         normalGuestProfilePairIndexQueue.Clear();
         guestOrderFullfilled.Clear();
     }
@@ -140,21 +149,13 @@ public static partial class NightGuestManager
     }
 
     // Returns the real desk + 1
-    public static int GetGuestDeskcode(string uuid) {
-        return guestDesks.GetOrDefault(uuid, -1);
-    }
+    public static int GetGuestDeskcode(string uuid) => guestDesks.GetOrDefault(uuid, -1);
 
-    public static void SetGuestDeskcode(string uuid, int desk) {
-        guestDesks[uuid] = desk + 1;
-    }
+    public static void SetGuestDeskcode(string uuid, int desk) => guestDesks[uuid] = desk + 1;
 
-    public static int GetGuestDeskcodeSeat(string uuid) {
-        return guestDeskSeats.GetOrDefault(uuid, -1);
-    }
+    public static int GetGuestDeskcodeSeat(string uuid) => guestDeskSeats.GetOrDefault(uuid, -1);
 
-    public static void SetGuestDeskcodeSeat(string uuid, int seat) {
-        guestDeskSeats[uuid] = seat;
-    }
+    public static void SetGuestDeskcodeSeat(string uuid, int seat) => guestDeskSeats[uuid] = seat;
 
     public static void SetGuestOrderServedFood(string uuid)
     {
@@ -182,25 +183,13 @@ public static partial class NightGuestManager
         }
     }
 
-    public static void SetGuestOrderFullfilled(string uuid)
-    {
-        guestOrderFullfilled[uuid] = (true, true);
-    }
+    public static void SetGuestOrderFullfilled(string uuid) => guestOrderFullfilled[uuid] = (true, true);
 
-    public static void ResetGuestOrderServed(string uuid)
-    {
-        _ = guestOrderFullfilled.TryRemove(uuid, out _);
-    }
+    public static void ResetGuestOrderServed(string uuid) => _ = guestOrderFullfilled.TryRemove(uuid, out _);
 
-    public static bool GetGuestOrderServedFood(string uuid)
-    {
-        return guestOrderFullfilled.GetOrDefault(uuid, (false, false)).Item1;
-    }
+    public static bool GetGuestOrderServedFood(string uuid) => guestOrderFullfilled.GetOrDefault(uuid, (false, false)).Item1;
 
-    public static bool GetGuestOrderServedBeverage(string uuid)
-    {
-        return guestOrderFullfilled.GetOrDefault(uuid, (false, false)).Item2;
-    }
+    public static bool GetGuestOrderServedBeverage(string uuid) => guestOrderFullfilled.GetOrDefault(uuid, (false, false)).Item2;
 
     public static bool GetGuestOrderFullfilled(string uuid)
     {
@@ -212,35 +201,46 @@ public static partial class NightGuestManager
         return false;
     }
 
+    public static void StoreGuestInfo(GuestInfo guest, string uuid) => guestInfos[uuid] = guest;
+    public static GuestInfo GetGuestInfo(string uuid) => guestInfos.GetOrDefault(uuid, null);
 
+    public static GuestGroupController SpawnGuestGroup(GuestInfo guestInfo, string UUID)
+    {
+        return guestInfo.IsSpecial ? SpawnSpecialGuestGroup(guestInfo.Id, UUID) : SpawnNormalGuestGroup(guestInfo, UUID);
+    }
 
-    public static NormalGuestsController SpawnNormalGuestGroup(int id, string UUID, int? idVisual, int? id2 = null, int? id2Visual = null)
+    private static NormalGuestsController SpawnNormalGuestGroup(GuestInfo guestInfo, string UUID)
     {
         var guests = new Il2CppSystem.Collections.Generic.List<NormalGuest>();
-        var guest1 = GameData.Core.Collections.CharacterUtility.DataBaseCharacter.RefNGuest(id);
-        normalGuestProfilePairIndexQueue.Enqueue(idVisual.Value);
+        var guest1 = GameData.Core.Collections.CharacterUtility.DataBaseCharacter.RefNGuest(guestInfo.Id);
+        normalGuestProfilePairIndexQueue.Enqueue(guestInfo.VisualId.Value);
         guests.Add(guest1);
 
-        if (id2 != null)
+        if (guestInfo.Id2 != null)
         {
-            var guest2 = GameData.Core.Collections.CharacterUtility.DataBaseCharacter.RefNGuest(id2.Value);
-            normalGuestProfilePairIndexQueue.Enqueue(id2Visual.Value);
+            var guest2 = GameData.Core.Collections.CharacterUtility.DataBaseCharacter.RefNGuest(guestInfo.Id2.Value);
+            normalGuestProfilePairIndexQueue.Enqueue(guestInfo.VisualId2.Value);
             guests.Add(guest2);
         }
 
         var controller = GuestsManagerPatch.SpawnNormalGuestGroup_WithArg_Original(
                 GuestsManager.instance, guests.ToIEnumerable(), new Il2CppSystem.Nullable<UnityEngine.Vector3>(), GuestGroupController.LeaveType.Move, -1, true);
-
+        if (IsGuestNull(controller))
+        {
+            Log.Error($"{UUID} is null after executing SpawnNormalGuestGroup_WithArg_Original!");
+        }
+        StoreGuestInfo(guestInfo, UUID);
         StoreGuest(controller, UUID);
         SetGuestStatus(UUID, Status.Generated);
         return controller;
     }
 
-    public static SpecialGuestsController SpawnSpecialGuestGroup(int id, string UUID)
+    private static SpecialGuestsController SpawnSpecialGuestGroup(int id, string UUID)
     {
         var controller = GuestsManagerPatch.SpawnSpecialGuestGroup_Original(
                 GuestsManager.instance, id, SpecialGuestsController.GuestSpawnType.Normal, new Il2CppSystem.Nullable<UnityEngine.Vector3>());
 
+        StoreGuestInfo(new GuestInfo { Id = id, IsSpecial = true }, UUID);
         StoreGuest(controller, UUID);
         SetGuestStatus(UUID, Status.Generated);
         return controller;
@@ -255,6 +255,14 @@ public static partial class NightGuestManager
         var characterInMotion = __instance.guestInstances.Length;
         __instance.OnMoveToSeatCallback?.Invoke(desk.tablePosition, __instance);
 
+        var uuid = GetGuestUUID(__instance);
+
+        if (IsGuestNull(__instance))
+        {
+            Log.Error($"MoveToDesk {uuid}, guest or its component is null! will skip set path");
+            if (deskSeat != -1) seatDir.RemoveAt(deskSeat);
+            return;
+        }
         for (var i = 0; i < __instance.guestInstances.Length; i++)
         {
             var item = __instance.guestInstances[i];
@@ -271,6 +279,8 @@ public static partial class NightGuestManager
             
             var colliderCollections = __instance.tileManager.GetCollider(seatDir[deskSeat], new Il2CppSystem.Collections.Generic.IReadOnlyList<UnityEngine.Vector3Int>(__instance.tileManager.PasserBorder.Pointer));
 
+            Log.Info($"setting path for {uuid}, desk {deskCode}, seat {deskSeat}");
+            
             item?.SetPath(
                 seatDir[deskSeat], 
                 colliderCollections,
@@ -282,6 +292,17 @@ public static partial class NightGuestManager
             seatDir.RemoveAt(deskSeat);
         }
     }
+
+    public static bool IsGuestNotNull(string uuid) => IsGuestNotNull(GetGuest(uuid));
+    public static bool IsGuestNotNull(GuestGroupController guest)
+    {
+        if (guest == null) return false;
+        if (guest.guestInstances == null) return false;
+        if (guest.guestInstances.Any((component) => component == null)) return false;
+        return true;
+    }
+    public static bool IsGuestNull(string uuid) => !IsGuestNotNull(uuid);
+    public static bool IsGuestNull(GuestGroupController guest) => !IsGuestNotNull(guest);
 
     public static bool CheckStatus(string uuid, Status targetStatus) => GetGuestStatus(uuid) == targetStatus;
 

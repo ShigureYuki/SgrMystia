@@ -41,7 +41,7 @@ public partial class GuestServeAction : NetAction
         const int PatientRecoverSecs = 60;
 
         CommandScheduler.Enqueue(
-            executeWhen: () => NightGuestManager.CheckStatusOrThrow(GuestUniqId, NightGuestManager.Status.OrderGenerated),
+            executeWhen: () => NightGuestManager.CheckStatus(GuestUniqId, NightGuestManager.Status.OrderGenerated) && !MpManager.InStory,
             executeInfo: $"Serve: guid {GuestUniqId}, type {FoodType}, foodid {Food?.FoodId}, beverage {BeverageId}",
             execute: () =>
             {

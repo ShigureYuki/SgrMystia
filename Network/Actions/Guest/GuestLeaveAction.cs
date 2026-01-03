@@ -41,7 +41,7 @@ public partial class GuestLeaveAction : NetAction
 
 
         CommandScheduler.Enqueue(
-            executeWhen: () => NightGuestManager.CheckStatusGreaterOrThrow(GuestUniqId, NightGuestManager.Status.Generated),
+            executeWhen: () => NightGuestManager.CheckStatusGreaterOrThrow(GuestUniqId, NightGuestManager.Status.Generated) && !MpManager.InStory,
             executeInfo: $"Leave: guid {GuestUniqId}, type {LType}",
             execute: () =>
             {
@@ -61,6 +61,7 @@ public partial class GuestLeaveAction : NetAction
                     Log.LogError($"guest is null! Action : {ToString()}");
                     return;
                 }
+                var deskcode = guest.DeskCode;
                 switch (LType)
                 {
                     case LeaveType.PayAndLeave:
@@ -85,6 +86,8 @@ public partial class GuestLeaveAction : NetAction
                         GuestsManagerPatch.PlayerRepell_Original(GuestsManager.instance, guest.DeskCode);
                         break;
                 }
+                // Just in case the LeaveFromDesk method fail
+                GuestsManager.instance.occupiedDesks.Remove(deskcode);
             }
          );
     }

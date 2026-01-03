@@ -139,20 +139,27 @@ public partial class GuestsManagerPatch
     [HarmonyPrefix]    
     public static bool SpawnNormalGuestGroup_WithArg_Prefix(GuestsManager __instance, 
         Il2CppSystem.Collections.Generic.IEnumerable<NormalGuest> normalGuests, 
-        Il2CppSystem.Nullable<UnityEngine.Vector3> overrideSpawnPosition, 
+        ref Il2CppSystem.Nullable<UnityEngine.Vector3> overrideSpawnPosition, 
         GuestGroupController.LeaveType leaveType, 
         int targetDeskCode, 
         bool shouldFade, 
         ref NormalGuestsController __result)
     {   
-        Log.LogInfo($"SpawnNormalGuestGroup_WithArg_Prefix called");
+        Log.LogInfo($"SpawnNormalGuestGroup_WithArg_Prefix called, overrideSpawnPosition {(overrideSpawnPosition.hasValue? overrideSpawnPosition.Value.ToString() : "null")}");
         overrideSpawnPosition ??= new Il2CppSystem.Nullable<UnityEngine.Vector3>();
-        if (MpManager.IsConnectedClient && MpManager.LocalScene == Common.UI.Scene.WorkScene && !MpManager.InStory)
+        if (MpManager.IsConnected)
         {
-            return false;
+            if (MpManager.IsClient && MpManager.LocalScene == Common.UI.Scene.WorkScene && !MpManager.InStory)
+            {
+                return false;
+            } 
+            else if (MpManager.IsHost)
+            {
+                __result = SpawnNormalGuestGroup_WithArg_Original(__instance, normalGuests, overrideSpawnPosition, leaveType, targetDeskCode, shouldFade);
+                return false;
+            }
         }
-        __result = SpawnNormalGuestGroup_WithArg_Original(__instance, normalGuests, overrideSpawnPosition, leaveType, targetDeskCode, shouldFade);
-        return false;
+        return true;
     }
 
     [HarmonyPatch(nameof(GuestsManager.SpawnSpecialGuestGroup))]
@@ -214,7 +221,7 @@ public partial class GuestsManagerPatch
 
     [HarmonyPatch(nameof(GuestsManager.TrySendToSeat))]
     [HarmonyReversePatch]    
-    public static NormalGuestsController TrySendToSeat_Original(object __instance, GuestGroupController toTry, bool firstSpawn, int targetDeskCode, bool shouldOrder)
+    public static bool TrySendToSeat_Original(object __instance, GuestGroupController toTry, bool firstSpawn, int targetDeskCode, bool shouldOrder)
     {
         throw new System.NotImplementedException();
     }
@@ -262,22 +269,22 @@ public partial class GuestsManagerPatch
     [HarmonyPrefix]    
     public static bool LeaveFromDesk_Prefix(GuestsManager __instance, GuestGroupController toLeave)
     {
-        Log.LogInfo($"LeaveFromDesk_Prefix called");
         if (MpManager.IsConnected && MpManager.LocalScene == Common.UI.Scene.WorkScene && !MpManager.InStory)
         {
+            var uuid = NightGuestManager.GetGuestUUID(toLeave);
+            Log.LogInfo($"LeaveFromDesk_Prefix called, {uuid} leaving");
+
             if (MpManager.IsClient)
             {
-                if (toLeave == null || toLeave.guestInstances == null)
+                if (NightGuestManager.IsGuestNull(toLeave))
                 {
-                    Log.LogError($"toleave null {toLeave != null}, toLeave.guestInstances {toLeave?.guestInstances != null}, will stop executing LeaveFromDesk");
-                    // FIXME: sometimes client not able to close izakaya, error with this function.
+                    Log.LogError($"{uuid} toLeave or its component is null, will stop executing LeaveFromDesk");
                     return false;
                 }
-                return NightGuestManager.CheckStatus(NightGuestManager.GetGuestUUID(toLeave), NightGuestManager.Status.Left);
+                return NightGuestManager.CheckStatus(uuid, NightGuestManager.Status.Left);
             }
             else
             {
-                var uuid = NightGuestManager.GetGuestUUID(toLeave);
                 if (NightGuestManager.CheckStatus(uuid, NightGuestManager.Status.Left))
                 {
                     return true;
@@ -502,19 +509,21 @@ public partial class GuestsManagerPatch
     [HarmonyPrefix]    
     public static bool GenerateOrderSession_Prefix(GuestsManager __instance, GuestGroupController guestGroup, bool doContinue)
     {
-        // Log.LogInfo($"GenerateOrderSession called");
+        if (MpManager.IsConnectedClient)
+        {
+            Log.LogInfo($"GenerateOrderSession prefix for {NightGuestManager.GetGuestUUID(guestGroup)}"); 
+        }
         if (MpManager.IsConnectedClient && MpManager.LocalScene == Common.UI.Scene.WorkScene && !MpManager.InStory)
         {
             var uuid = NightGuestManager.GetGuestUUID(guestGroup);
-            Log.LogDebug($"GenerateOrderSession prevented for {uuid}");
+            Log.LogInfo($"GenerateOrderSession prevented for {uuid}");
             if (NightGuestManager.CheckStatusIn(uuid, [NightGuestManager.Status.Seated, NightGuestManager.Status.OrderEvaluated]))
             {
                 NightGuestManager.SetGuestStatus(uuid, NightGuestManager.Status.PendingOrder);
             } 
             else
             {
-                var nowStatus = NightGuestManager.GetGuestStatusForLog(uuid);
-                if (nowStatus != NightGuestManager.Status.OrderGenerated)
+                if (!NightGuestManager.CheckStatus(uuid, NightGuestManager.Status.OrderGenerated))
                 {
                     Log.Warning($"GenerateOrderSession, failed to set status for {uuid}, status now {NightGuestManager.GetGuestStatusForLog(uuid)}");
                 }
@@ -528,6 +537,10 @@ public partial class GuestsManagerPatch
     [HarmonyPostfix]    
     public static void GenerateOrderSession_Postfix(GuestsManager __instance, GuestGroupController guestGroup)
     {
+        if (MpManager.IsConnectedClient)
+        {
+            Log.LogInfo($"GenerateOrderSession postfix for {NightGuestManager.GetGuestUUID(guestGroup)}"); 
+        }
         if (MpManager.IsConnectedHost && MpManager.LocalScene == Common.UI.Scene.WorkScene && !MpManager.InStory)
         {
             const int PatientSecs = 30;

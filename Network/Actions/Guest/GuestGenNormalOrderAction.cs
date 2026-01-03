@@ -30,8 +30,8 @@ public partial class GuestGenNormalOrderAction : NetAction
         }
 
         CommandScheduler.Enqueue(
-            executeWhen: () => NightGuestManager.CheckStatusInOrThrow(GuestUniqId, [NightGuestManager.Status.PendingOrder, NightGuestManager.Status.OrderEvaluated]),
-            executeInfo: $"Gen normal order: guid {GuestUniqId}, order {Order.ToString()}",
+            executeWhen: () => NightGuestManager.CheckStatusIn(GuestUniqId, [NightGuestManager.Status.PendingOrder, NightGuestManager.Status.OrderEvaluated]) && !MpManager.InStory,
+            executeInfo: $"Gen normal order: guid {GuestUniqId}, order food {Order.RequestFoodIdOrTag}, bev {Order.RequestFoodIdOrTag}",
             execute: () =>
             {
                 var guest = NightGuestManager.GetGuest(GuestUniqId);

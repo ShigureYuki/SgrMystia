@@ -1,5 +1,6 @@
 using MemoryPack;
 using SgrYuki.Utils;
+using static MetaMystia.NightGuestManager;
 
 namespace MetaMystia;
 
@@ -9,13 +10,8 @@ public partial class GuestSpawnAction : NetAction
 {
     public override ActionType Type => ActionType.GUEST_SPAWN;
 
-    public int GuestId { get; set; }
-    public int? Guest1Visualid { get; set; }
-    public int? GuestId2 { get; set; }
-    public int? Guest2Visualid { get; set; }
-
-    public bool IsSpecial { get; set; }
-
+    [MemoryPackAllowSerialize]
+    public GuestInfo GuestInfo;
     public string UUID { get; set; }
 
     public override void LogActionSend(bool onlyAction, string prefix)
@@ -32,19 +28,12 @@ public partial class GuestSpawnAction : NetAction
         }
 
         CommandScheduler.Enqueue(
-            executeWhen: () => true,
-            executeInfo: $"Spawned: guid {UUID}, special {IsSpecial}",
+            executeWhen: () => !MpManager.InStory,
+            executeInfo: $"Spawned: guid {UUID}, special {GuestInfo.IsSpecial}",
             execute: () =>
             {
-                NightGuestManager.SetGuestStatus(UUID, NightGuestManager.Status.PendingGenerate);
-                if (IsSpecial)
-                {
-                    _ = NightGuestManager.SpawnSpecialGuestGroup(GuestId, UUID);
-                }
-                else
-                {
-                    _ = NightGuestManager.SpawnNormalGuestGroup(GuestId, UUID, Guest1Visualid, GuestId2, Guest2Visualid);
-                }
+                SetGuestStatus(UUID, Status.PendingGenerate);
+                SpawnGuestGroup(GuestInfo, UUID);
             });
     }
 
@@ -52,12 +41,14 @@ public partial class GuestSpawnAction : NetAction
     {
         NetPacket packet = new([new GuestSpawnAction
         {
-            GuestId = guest,
-            IsSpecial = isSpecial,
             UUID = uuid,
-            Guest1Visualid = guest1Visualid,
-            Guest2Visualid = guest2Visualid,
-            GuestId2 = guest2
+            GuestInfo = new GuestInfo {
+                Id = guest,
+                VisualId = guest1Visualid,
+                Id2 = guest2,
+                VisualId2 = guest2Visualid,
+                IsSpecial = isSpecial
+            }
         }]);
         SendToPeer(packet);
     }
