@@ -715,7 +715,7 @@
       "name": "八意永琳",
       "label": "_YagokoroEirin",
       "descriptions": [
-        "隐居在竹林深处的谜之存在，似乎总是背着一张很大的弓，总是表现出在思考着什么的样子。",
+        "隐居在竹林深处的谜之存在，浑身散发着高贵但平和的气质，总是表现出在思考着什么的样子。",
         "实际上是个很善良很温和的人啊。明明是“月之头脑”这么大的来头来着……完全感受不到架子呢，不过举手投足之间的高贵风范依然引人侧目就是了。",
         "永远亭，月亮的子民，不死身……永琳小姐原来身上承担了这样多的责任吗？明明看起来只是一个技术超群的医师的说。可能所谓的“大人物”就是“承担着大责任的人物”吧？使命什么的……对于鸟脑袋来说比天上的月亮还让人摸不清楚啊。\n"
       ],
@@ -947,6 +947,245 @@
           "assets/_YagokoroEirin/_YagokoroEirin_Eyes_5, 1.png",
           "assets/_YagokoroEirin/_YagokoroEirin_Eyes_5, 2.png",
           "assets/_YagokoroEirin/_YagokoroEirin_Eyes_5, 3.png"
+        ]
+      }
+    },
+    {
+      "id": 9004,
+      "name": "神绮",
+      "label": "_Shinki",
+      "descriptions": [
+        "魔界的造物者，某种意义上是所有魔界居民的母亲。性格温柔，深受魔界居民的景仰，对于魔界的管理基本采用了放任模式。虽然是个了不起的人物，但似乎有着天然呆的一面？",
+        "",
+        ""
+      ],
+      "type": "Special",
+      "portraits": [
+        {
+          "pid": 0,
+          "path": "assets/_Shinki_0.png"
+        },
+        {
+          "pid": 1,
+          "path": "assets/_Shinki_1.png"
+        },
+        {
+          "pid": 2,
+          "path": "assets/_Shinki_2.png"
+        },
+        {
+          "pid": 3,
+          "path": "assets/_Shinki_3.png"
+        }
+      ],
+      "guest": {
+        "fundRangeLower": 3000,
+        "fundRangeUpper": 3500,
+        "evaluation": [
+          "狗吃的都比这个好吧！",
+          "所谓的幻想乡大厨也不过如此。",
+          "嗯，中规中矩，我就勉为其难给个及格分吧。",
+          "真不错啊，虽然不是魔界风味，但也是我喜欢的味道呢。",
+          "太太太太太好吃了吧，必须推荐给魔界的大家！",
+          "区区麻雀，连本魔神都敢宰，是想体验一下神罚吗？",
+          "我的魔界支付说它要炸了……",
+          "呜啊，你这家伙，等着痛失魔界市场吧！",
+          "人间界的待客之道真是让我大开眼界，我们恐怕要后会无期了。"
+        ],
+        "conversation": [
+          "对我来说，“创造”是一件神圣的事，为作品注入灵魂，看着它从无到有，真是美妙啊。",
+          "啊，又有新的灵感了！",
+          "要是梦子酱和爱丽丝酱也在就好了……",
+          "很久以前，有一位僧侣被封印到了我所在的魔界。后来发生了什么？这是秘密。"
+        ],
+        "foodRequests": [
+          {
+            "tagId": 3,
+            "request": "平时梦子酱准备的料理都充满了家乡的味道呢"
+          },
+          {
+            "tagId": 4,
+            "request": "本魔神的用餐当然要高级感满满！"
+          },
+          {
+            "tagId": 5,
+            "request": "传说，曾有一位外界的高僧被封印在魔界......"
+          },
+          {
+            "tagId": 13,
+            "request": "爱丽丝，露易兹......我引以为傲的作品们都充满了西方色彩呢。"
+          },
+          {
+            "tagId": 17,
+            "request": "我的发圈看上去像樱桃一样甜，可惜不能吃"
+          },
+          {
+            "tagId": 27,
+            "request": "我所在的魔界也被称作不可思议之国哦！"
+          },
+          {
+            "tagId": 29,
+            "request": "甜美梦幻的童话世界，说的就是魔界呢"
+          }
+        ],
+        "bevRequests": [],
+        "hateFoodTag": [
+          -21,
+          6,
+          18,
+          2000,
+          24
+        ],
+        "likeFoodTag": [
+          {
+            "tagId": 3,
+            "weight": 1
+          },
+          {
+            "tagId": 4,
+            "weight": 1
+          },
+          {
+            "tagId": 5,
+            "weight": 1
+          },
+          {
+            "tagId": 13,
+            "weight": 1
+          },
+          {
+            "tagId": 17,
+            "weight": 1
+          },
+          {
+            "tagId": 27,
+            "weight": 1
+          },
+          {
+            "tagId": 29,
+            "weight": 1
+          }
+        ],
+        "likeBevTag": [
+          {
+            "tagId": -1,
+            "weight": 1
+          },
+          {
+            "tagId": 11,
+            "weight": 1
+          },
+          {
+            "tagId": 12,
+            "weight": 1
+          },
+          {
+            "tagId": 13,
+            "weight": 1
+          },
+          {
+            "tagId": 17,
+            "weight": 1
+          }
+        ],
+        "spawn": [
+          {
+            "izakayaId": 1003,
+            "relativeProb": 0.2,
+            "onlySpawnAfterUnlocking": false,
+            "onlySpawnWhenPlaceBeRecorded": false
+          },
+          {
+            "izakayaId": 1004,
+            "relativeProb": 0.2,
+            "onlySpawnAfterUnlocking": false,
+            "onlySpawnWhenPlaceBeRecorded": false
+          },
+          {
+            "izakayaId": 1005,
+            "relativeProb": 0.2,
+            "onlySpawnAfterUnlocking": false,
+            "onlySpawnWhenPlaceBeRecorded": false
+          },
+          {
+            "izakayaId": 5003,
+            "relativeProb": 0.35,
+            "onlySpawnAfterUnlocking": false,
+            "onlySpawnWhenPlaceBeRecorded": false
+          },
+          {
+            "izakayaId": 5004,
+            "relativeProb": 0.35,
+            "onlySpawnAfterUnlocking": false,
+            "onlySpawnWhenPlaceBeRecorded": false
+          },
+          {
+            "izakayaId": 5005,
+            "relativeProb": 0.35,
+            "onlySpawnAfterUnlocking": false,
+            "onlySpawnWhenPlaceBeRecorded": false
+          },
+          {
+            "izakayaId": 3001,
+            "relativeProb": 0.1,
+            "onlySpawnAfterUnlocking": false,
+            "onlySpawnWhenPlaceBeRecorded": false
+          },
+          {
+            "izakayaId": 3002,
+            "relativeProb": 0.1,
+            "onlySpawnAfterUnlocking": false,
+            "onlySpawnWhenPlaceBeRecorded": false
+          },
+          {
+            "izakayaId": 3003,
+            "relativeProb": 0.1,
+            "onlySpawnAfterUnlocking": false,
+            "onlySpawnWhenPlaceBeRecorded": false
+          }
+        ]
+      },
+      "characterSpriteSetCompact": {
+        "name": "_Shinki",
+        "mainSprite": [
+          "assets/_Shinki/_Shinki_Main_0, 0.png",
+          "assets/_Shinki/_Shinki_Main_0, 1.png",
+          "assets/_Shinki/_Shinki_Main_0, 2.png",
+          "assets/_Shinki/_Shinki_Main_1, 0.png",
+          "assets/_Shinki/_Shinki_Main_1, 1.png",
+          "assets/_Shinki/_Shinki_Main_1, 2.png",
+          "assets/_Shinki/_Shinki_Main_2, 0.png",
+          "assets/_Shinki/_Shinki_Main_2, 1.png",
+          "assets/_Shinki/_Shinki_Main_2, 2.png",
+          "assets/_Shinki/_Shinki_Main_3, 0.png",
+          "assets/_Shinki/_Shinki_Main_3, 1.png",
+          "assets/_Shinki/_Shinki_Main_3, 2.png"
+        ],
+        "eyeSprite": [
+          "assets/_Shinki/_Shinki_Eyes_0, 0.png",
+          "assets/_Shinki/_Shinki_Eyes_0, 1.png",
+          "assets/_Shinki/_Shinki_Eyes_0, 2.png",
+          "assets/_Shinki/_Shinki_Eyes_0, 3.png",
+          "assets/_Shinki/_Shinki_Eyes_1, 0.png",
+          "assets/_Shinki/_Shinki_Eyes_1, 1.png",
+          "assets/_Shinki/_Shinki_Eyes_1, 2.png",
+          "assets/_Shinki/_Shinki_Eyes_1, 3.png",
+          "assets/_Shinki/_Shinki_Eyes_2, 0.png",
+          "assets/_Shinki/_Shinki_Eyes_2, 1.png",
+          "assets/_Shinki/_Shinki_Eyes_2, 2.png",
+          "assets/_Shinki/_Shinki_Eyes_2, 3.png",
+          "assets/_Shinki/_Shinki_Eyes_3, 0.png",
+          "assets/_Shinki/_Shinki_Eyes_3, 1.png",
+          "assets/_Shinki/_Shinki_Eyes_3, 2.png",
+          "assets/_Shinki/_Shinki_Eyes_3, 3.png",
+          "assets/_Shinki/_Shinki_Eyes_4, 0.png",
+          "assets/_Shinki/_Shinki_Eyes_4, 1.png",
+          "assets/_Shinki/_Shinki_Eyes_4, 2.png",
+          "assets/_Shinki/_Shinki_Eyes_4, 3.png",
+          "assets/_Shinki/_Shinki_Eyes_5, 0.png",
+          "assets/_Shinki/_Shinki_Eyes_5, 1.png",
+          "assets/_Shinki/_Shinki_Eyes_5, 2.png",
+          "assets/_Shinki/_Shinki_Eyes_5, 3.png"
         ]
       }
     },

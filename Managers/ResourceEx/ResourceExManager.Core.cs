@@ -3,11 +3,12 @@ using System.IO;
 using System.Text.Json;
 using BepInEx;
 using Common.DialogUtility;
-using UnityEngine;
-using MetaMiku;
+using GameData.Profile;
+
 using MetaMystia.ResourceEx.Models;
 
 namespace MetaMystia;
+
 
 [AutoLog]
 public static partial class ResourceExManager
@@ -16,7 +17,8 @@ public static partial class ResourceExManager
     public static string ResourceRoot { get; set; } = Path.Combine(Paths.GameRootPath, "ResourceEx");
     
     public static Dictionary<(int id, string type), CharacterConfig> _characterConfigs = new Dictionary<(int id, string type), CharacterConfig>();
-    private static Dictionary<string, CustomDialogList> _dialogPackages = new Dictionary<string, CustomDialogList>();
+    private static Dictionary<string, CustomDialogList> _dialogPackageConfigs = new Dictionary<string, CustomDialogList>();
+    private static Dictionary<string, DialogPackage> _builtDialogPackages = new Dictionary<string, DialogPackage>();
     public static readonly string DialogPackageNamePrefix = "_";
 
     public static void Initialize()
@@ -83,7 +85,7 @@ public static partial class ResourceExManager
 
                             dialogList.AddDialog(d.characterId, speakerType, d.pid, position, d.text);
                         }
-                        _dialogPackages[pkgConfig.name] = dialogList;
+                        _dialogPackageConfigs[pkgConfig.name] = dialogList;
                         Log.LogInfo($"[{modName}] Loaded dialog package: {pkgConfig.name}");
                     }
                 }
@@ -116,10 +118,19 @@ public static partial class ResourceExManager
 
     public static CustomDialogList GetDialogPackage(string name)
     {
-        if (_dialogPackages.TryGetValue(name, out var pkg))
+        if (_dialogPackageConfigs.TryGetValue(name, out var pkg))
         {
             return pkg;
         }
         return null;
     }
+
+    // public static void BuildAllDialogPackages()
+    // {
+    //     foreach (var kvp in _dialogPackageConfigs)
+    //     {
+    //         _builtDialogPackages[kvp.Key] = Dialog.BuildDialogPackage(kvp.Value);
+    //         Log.Info($"Built dialog package: {kvp.Key}");
+    //     }
+    // }
 }

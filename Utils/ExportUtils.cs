@@ -5,6 +5,7 @@ using System.IO;
 using UnityEngine;
 using Il2CppInterop.Runtime;
 using System;
+using Il2CppSystem.Runtime.InteropServices.ComTypes;
 
 namespace MetaMystia;
 
@@ -80,6 +81,34 @@ public static partial class ExportUtils
         }
     }
 
+    public static void ExportAllSpriteCompact()
+    {
+        string exportDir = "E:/Desktop/TMI/SpriteCompacts";
+        if (!Directory.Exists(exportDir))
+            Directory.CreateDirectory(exportDir);
+
+        Utils.FindAndProcessResources<CharacterSpriteSetCompact>(spriteSet =>
+        {
+            if (spriteSet == null || spriteSet.mainSprite == null)
+                return;
+
+            foreach (var eye in spriteSet.eyeSprite)
+            {
+                var filename = $"{eye.name}.png";
+                var filepath = Path.Combine(exportDir, spriteSet.name, filename);
+                Log.Warning($"Exporting eye sprite: {filepath}");
+                TrySaveSprite(eye, filepath);
+            }
+            foreach (var main in spriteSet.mainSprite)
+            {
+                var filename = $"{main.name}.png";
+                var filepath = Path.Combine(exportDir, spriteSet.name, filename);
+                Log.Warning($"Exporting main sprite: {filepath}");
+                TrySaveSprite(main, filepath);
+            }
+            Log.Warning($"Exported sprite set: {spriteSet.name}");
+        });
+    }
     public static void TrySaveSprite(Sprite sprite, string filepath)
     {
         Texture2D readableTexture = null;
@@ -146,6 +175,11 @@ public static partial class ExportUtils
             finalTexture.Apply();
 
             byte[] pngData = ImageConversion.EncodeToPNG(finalTexture);
+            var directory = Path.GetDirectoryName(filepath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
             File.WriteAllBytes(filepath, pngData);
         }
         finally

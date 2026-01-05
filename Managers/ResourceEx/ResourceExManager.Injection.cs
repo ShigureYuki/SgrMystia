@@ -8,6 +8,7 @@ using GameData.Core.Collections.DaySceneUtility.Collections;
 using UnityEngine;
 using GameData.Core.Collections.CharacterUtility;
 using GameData.Core.Collections.DaySceneUtility;
+using UnityEngine.InputSystem.Utilities;
 
 using DEYU.Utils;
 using GameData.Profile;
@@ -18,7 +19,7 @@ using MetaMystia.ResourceEx.Models;
 namespace MetaMystia;
 
 /*
-Register of Injection:
+Register or Injection:
 
 Before MainScene:
     SpecialGuestGroup(SpawnInfo) -> GameData.Core.Collections.DataBaseCore
@@ -43,7 +44,7 @@ public static partial class ResourceExManager
 {
     public static void RegisterSpecialPortraits()
     {
-        Log.Info($"Injecting Special Portraits from ResourceEx...");
+        Log.Info($"Registering Special Portraits from ResourceEx...");
         
         foreach (var charConfig in GetAllCharacterConfigs().Where(c => c.portraits != null && c.portraits.Count > 0))
         {
@@ -66,11 +67,11 @@ public static partial class ResourceExManager
             if (identity == SpeakerIdentity.Identity.Special)
             {
                 DataBaseLanguage.SpecialGuest.ForceAddOrUpdateValueTuple(charConfig.id, val);
-                Log.Info($"Injected Special character: {charConfig.name} ({charConfig.id})");
+                Log.Info($"Registered Special character: {charConfig.name} ({charConfig.id})");
             }
             else if (identity == SpeakerIdentity.Identity.Normal)
             {
-                Log.Info($"Normal character detected but injection not yet implemented: {charConfig.name} ({charConfig.id})");
+                Log.Info($"Normal character detected but registration not yet implemented: {charConfig.name} ({charConfig.id})");
             }
             else if (identity == SpeakerIdentity.Identity.Self)
             {
@@ -85,7 +86,7 @@ public static partial class ResourceExManager
 
     public static void RegisterAllSpecialGuests()
     {
-        Log.Info($"Injecting Special Guests from ResourceEx...");
+        Log.Info($"Registering Special Guests from ResourceEx...");
         GetAllCharacterConfigs()
             .Where(c => c.guest != null)
             .ToList()
@@ -120,7 +121,7 @@ public static partial class ResourceExManager
             hateTags,
             likeFoodTag,
             likeBevTag,
-            template.Reaction, template.Destination, template.CommisionAreaLabel,
+            template.Reaction, template.destination, template.CommisionAreaLabel,
             template.characterKizunaLevel1Welcome, template.characterKizunaLevel2Welcome, template.characterKizunaLevel3Welcome, template.characterKizunaLevel4Welcome, template.characterKizunaLevel5Welcome,
             template.characterKizunaLevel1ChatData, template.characterKizunaLevel2ChatData, template.characterKizunaLevel3ChatData, template.characterKizunaLevel4ChatData, template.characterKizunaLevel5ChatData,
             template.characterKizunaLevel2InviteSucceed, template.characterKizunaLevel2InviteFailed, template.characterKizunaLevel3InviteSucceed, template.characterKizunaLevel3InviteFailed, template.characterKizunaLevel4InviteSucceed, template.characterKizunaLevel4InviteFailed, template.characterKizunaLevel5InviteSucceed,
@@ -132,12 +133,12 @@ public static partial class ResourceExManager
 
         specialGuest.stringId = config.label;
         specialGuests[config.id] = specialGuest;
-        Log.Info($"Injected Special Guest: {config.name} ({config.id})");
+        Log.Info($"Registered Special Guest: {config.name} ({config.id})");
     }
 
     public static void RegisterAllEvaluations()
     {
-        Log.Info($"Injecting Special Guest Evaluations and Conversations from ResourceEx...");
+        Log.Info($"Registering Special Guest Evaluations from ResourceEx...");
         GetAllCharacterConfigs()
             .Where(c => c.guest != null && c.guest.evaluation != null)
             .ToList()
@@ -152,7 +153,7 @@ public static partial class ResourceExManager
 
     public static void RegisterAllConversations()
     {
-        Log.Info($"Injecting Special Guest Evaluations and Conversations from ResourceEx...");
+        Log.Info($"Registering Special Guest Evaluations and Conversations from ResourceEx...");
         GetAllCharacterConfigs()
             .Where(c => c.guest != null && c.guest.conversation != null)
             .ToList()
@@ -165,13 +166,13 @@ public static partial class ResourceExManager
         NightSceneLanguage.SpecialConversation[config.id] = config.guest.conversation
             .Select(c => new UnityEngineExtensionStatic.StructPtr<string>(c))
             .ToArray();
-        Log.Info($"Injected Special Guest Conversation: {config.name} ({config.id})");
+        Log.Info($"Registered Special Guest Conversation: {config.name} ({config.id})");
     }
 
 
     public static void RegisterAllFoodRequests()
     {
-        Log.Info($"Injecting Food Requests from ResourceEx...");
+        Log.Info($"Registering Food Requests from ResourceEx...");
         GetAllCharacterConfigs()
             .Where(c => c.guest != null && c.guest.foodRequests != null)
             .ToList()
@@ -182,12 +183,12 @@ public static partial class ResourceExManager
     {
         DataBaseLanguage.SpecialGuestFoodRequest.TryAdd(config.id,
             config.guest.foodRequests.ToDictionary(req => req.tagId, req => req.request).ToIl2CppDictionary());
-        Log.Info($"Injected Food Requests for Special Guest: {config.name} ({config.id})");
+        Log.Info($"Registered Food Requests for Special Guest: {config.name} ({config.id})");
     }
     
     public static void RegisterAllBevRequests()
     {
-        Log.Info($"Injecting Food Requests from ResourceEx...");
+        Log.Info($"Registering Beverage Requests from ResourceEx...");
         GetAllCharacterConfigs()
             .Where(c => c.guest != null && c.guest.bevRequests != null)
             .ToList()
@@ -198,14 +199,14 @@ public static partial class ResourceExManager
     {
         DataBaseLanguage.SpecialGuestBevRequest.TryAdd(config.id,
             config.guest.bevRequests.ToDictionary(req => req.tagId, req => req.request).ToIl2CppDictionary());
-        Log.Info($"Injected Beverage Requests for Special Guest: {config.name} ({config.id})");
+        Log.Info($"Registering Beverage Requests for Special Guest: {config.name} ({config.id})");
     }
 
     public static void RegisterAllSpecialGuestPairs()
     {
         Log.Info($"Registering Special Guest Pairs from ResourceEx...");
         GetAllCharacterConfigs()
-            .Where(c => c.guest != null)
+            .Where(c => c.characterSpriteSetCompact != null)
             .ToList()
             .ForEach(RegisterSpecialGuestPair);
     }
@@ -334,6 +335,7 @@ public static partial class ResourceExManager
         var specialGuests = DataBaseCharacter.SpecialGuest;
         var specialGuest = specialGuests[config.id];
         var npc = new NPC(specialGuest);
+
         if (DataBaseDay.allNPCs.TryAdd(config.label, npc))
         {
             Log.Info($"Registered NPC for Special Guest: {config.name} ({config.id})");
@@ -346,7 +348,7 @@ public static partial class ResourceExManager
 
     public static void RegisterAllSpawnConfigs()
     {
-        Log.Info($"Injecting Spawn Configs from ResourceEx...");
+        Log.Info($"Registering Spawn Configs from ResourceEx...");
 
         var spawnGroups = GetAllCharacterConfigs()
             .Where(c => c.guest != null && c.guest.spawn != null)
@@ -378,7 +380,7 @@ public static partial class ResourceExManager
                 .Concat(newGroups)
                 .ToArray();
 
-            newGroups.ForEach(g => Log.Info($"Injected Spawn Config for GroupId {g.GroupId} in Izakaya {izakayaId}"));
+            newGroups.ForEach(g => Log.Info($"Registered Spawn Config for GroupId {g.GroupId} in Izakaya {izakayaId}"));
         }
     }
 }
