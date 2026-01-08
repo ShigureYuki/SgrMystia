@@ -19,7 +19,7 @@ public static partial class ResourceExManager
     public static Dictionary<(int id, string type), CharacterConfig> _characterConfigs = new Dictionary<(int id, string type), CharacterConfig>();
     private static Dictionary<string, CustomDialogList> _dialogPackageConfigs = new Dictionary<string, CustomDialogList>();
     private static Dictionary<string, DialogPackage> _builtDialogPackages = new Dictionary<string, DialogPackage>();
-    public static readonly string DialogPackageNamePrefix = "_";
+    public static readonly string DialogPackageNamePrefix = "";
 
     public static void Initialize()
     {
@@ -124,13 +124,4 @@ public static partial class ResourceExManager
         }
         return null;
     }
-
-    // public static void BuildAllDialogPackages()
-    // {
-    //     foreach (var kvp in _dialogPackageConfigs)
-    //     {
-    //         _builtDialogPackages[kvp.Key] = Dialog.BuildDialogPackage(kvp.Value);
-    //         Log.Info($"Built dialog package: {kvp.Key}");
-    //     }
-    // }
 }

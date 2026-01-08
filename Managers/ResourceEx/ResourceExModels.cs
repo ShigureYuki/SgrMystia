@@ -82,3 +82,14 @@ public class DialogPackageConfig
     public string name { get; set; }
     public List<DialogConfig> dialogList { get; set; }
 }
+
+public class RecipeConfig
+{
+    public int id { get; set; }
+    public int foodId { get; set; }
+    public string cookerType { get; set; }
+    public float cookTime { get; set; }
+    public List<int> ingredients { get; set; }
+    
+    // public string name { get; set; }
+}

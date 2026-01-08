@@ -1,7 +1,6 @@
 ﻿using System;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
-using GameData.Core.Collections.CharacterUtility;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using MetaMystia.Debugger;

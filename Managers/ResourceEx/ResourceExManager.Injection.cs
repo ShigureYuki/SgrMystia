@@ -114,6 +114,11 @@ public static partial class ResourceExManager
 
         var template = specialGuests[0];
 
+
+        var templateDialog = _builtDialogPackages["Kizuna__Daiyousei_LV1_Welcome_001"];
+        var templateDialogArray = new Il2CppReferenceArray<DialogPackage>(1);
+        templateDialogArray[0] = templateDialog;
+
         var specialGuest = new SpecialGuest(
             config.id,
             config.label,
@@ -122,7 +127,8 @@ public static partial class ResourceExManager
             likeFoodTag,
             likeBevTag,
             template.Reaction, template.destination, template.CommisionAreaLabel,
-            template.characterKizunaLevel1Welcome, template.characterKizunaLevel2Welcome, template.characterKizunaLevel3Welcome, template.characterKizunaLevel4Welcome, template.characterKizunaLevel5Welcome,
+            templateDialogArray, templateDialogArray, templateDialogArray, templateDialogArray, templateDialogArray,
+            // template.characterKizunaLevel1Welcome, template.characterKizunaLevel2Welcome, template.characterKizunaLevel3Welcome, template.characterKizunaLevel4Welcome, template.characterKizunaLevel5Welcome,
             template.characterKizunaLevel1ChatData, template.characterKizunaLevel2ChatData, template.characterKizunaLevel3ChatData, template.characterKizunaLevel4ChatData, template.characterKizunaLevel5ChatData,
             template.characterKizunaLevel2InviteSucceed, template.characterKizunaLevel2InviteFailed, template.characterKizunaLevel3InviteSucceed, template.characterKizunaLevel3InviteFailed, template.characterKizunaLevel4InviteSucceed, template.characterKizunaLevel4InviteFailed, template.characterKizunaLevel5InviteSucceed,
             template.characterKizunaLevel3RequestIngerdient, template.characterKizunaLevel4RequestIngerdient, template.characterKizunaLevel5RequestIngerdient,
@@ -384,3 +390,56 @@ public static partial class ResourceExManager
         }
     }
 }
+
+
+
+
+/* 字段猜测
+GameData.Core.Collections.CharacterUtility.DataBaseCharacter.SpecialGuest
+
+public SpecialGuest(int id, 
+	string stringId, // 字符串 id，label
+	Vector2Int fundRange, // 资金范围
+	int[] hateFoodTag, // 讨厌的食物标签
+	SpecialGuest.WeightedTag[] likeFoodTag, // 喜欢的食物标签权重 
+	SpecialGuest.WeightedTag[] likeBevTag,  // 喜欢的饮品标签权重
+	SpecialGuest.Prespective reaction, // ？
+	NPC.Destination destination,  // ？
+	string commisionAreaLabel,  // 委托采集对应地图标签，例如 (0)Wriggle 是 BeastForest，(3)Akyuu 是 HumanVillage，似乎对尚未实现自定义地图的 mod 无用
+	DialogPackage[] characterKizunaLevel1Welcome,
+	DialogPackage[] characterKizunaLevel2Welcome,
+	DialogPackage[] characterKizunaLevel3Welcome,
+	DialogPackage[] characterKizunaLevel4Welcome,
+	DialogPackage[] characterKizunaLevel5Welcome,
+	string[] characterKizunaLevel1ChatData,
+	string[] characterKizunaLevel2ChatData,
+	string[] characterKizunaLevel3ChatData,
+	string[] characterKizunaLevel4ChatData,
+	string[] characterKizunaLevel5ChatData,
+	DialogPackage[] characterKizunaLevel2InviteSucceed, 
+	DialogPackage[] characterKizunaLevel2InviteFailed, 
+	DialogPackage[] characterKizunaLevel3InviteSucceed, 
+	DialogPackage[] characterKizunaLevel3InviteFailed, 
+	DialogPackage[] characterKizunaLevel4InviteSucceed, 
+	DialogPackage[] characterKizunaLevel4InviteFailed, 
+	DialogPackage[] characterKizunaLevel5InviteSucceed, 
+	DialogPackage[] characterKizunaLevel3RequestIngerdient, 
+	DialogPackage[] characterKizunaLevel4RequestIngerdient, 
+	DialogPackage[] characterKizunaLevel5RequestIngerdient, 
+	DialogPackage[] characterKizunaLevel4RequestBeverage, 
+	DialogPackage[] characterKizunaLevel5RequestBeverage, 
+	DialogPackage[] characterKizunaLevel5Commision, 
+	DialogPackage[] characterKizunaLevel5CommisionFinish, 
+	bool hideInAlbum, 
+	bool isParticular, 
+	bool isCollabCharacter, 
+	SpecialGuest.WorkSceneSpawnType spawnType, 
+	string[] unifiedSpawnExclusion, 
+	string unifiedSpawnWhereAfterEventOrMission, 
+	float unifiedSpawnProb, 
+	AssetReferenceT<SpecialGuestExtraDialogData> specialGuestExtraDialogData, 
+	bool doNotShowInNightByDefault, 
+	bool doNotShowInChallenge, 
+	GuestFoodEasterEggData guestFoodEasterEggData);
+
+*/

@@ -1,58 +1,34 @@
 using Common.DialogUtility;
 using Common.UI;
 using GameData.Profile;
+using System.Collections.Generic;
 
 namespace MetaMystia;
 
 [AutoLog]
 public static partial class Dialog
 {
-    public static DialogPackage ExampleDialog = null;
+    public static DialogPackage ExampleDialog { get; private set; }
 
-    public static void BuildAndShow(
-        CustomDialogList dialogList,
-        System.Action onFinishCallback = null)
+    // TODO: support other Dialog MetaAction
+    public static DialogPackage BuildDialogPackage(CustomDialogList dialogList)
     {
-        // MetaMiku 注:
-        // 这里通过抓取游戏原有的 OnTransitionToNight 对话包作为模板来生成新的对话包
-        // 构造对话包是对游戏原有逻辑的简化版，适用于简单的对话展示需求
-        // 其中对话的文本内容需要通过 overrideReplaceTextCallback 来替换
-        // 使用方法可以参考后面的函数
-        // TODO: 【重要】如果显示某个对话时又触发新的对话，可能导致回调混乱
-
         if (dialogList == null)
         {
-            UniversalGameManager.OpenDialogMenu(
-                null,
-                onFinishCallback: onFinishCallback,
-                overrideReplaceTextCallback: null,
-                previousPanelVisualMode: 0
-            );
-            return;
+            Log.LogWarning($"BuildDialogPackage called with null dialogList.");
+            return null;
         }
 
-
-        if (ExampleDialog == null)
-        {
-            DumpExampleDialog();
-            if (ExampleDialog == null)
-            {
-                Log.LogError($"ExampleDialog template is not loaded. Cannot build dialog.");
-                return;
-            }
-        }
-        var newDialogPackage = UnityEngine.Object.Instantiate(ExampleDialog);
+        var newDialogPackage = UnityEngine.ScriptableObject.CreateInstance<DialogPackage>();
         var length = dialogList.Count;
         var newMeta = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<DialogMeta>(length);
         for (int i = 0; i < length; i++)
         {
             var dialog = dialogList[i];
-
-            var meta = new DialogMeta();
             
-            meta = ExampleDialog.dialogMeta[0];
+            var meta = new DialogMeta();
 
-            var si = meta.speakerIdentity;
+            var si = new SpeakerIdentity();
             si.speakerType = dialog.speakerType;
             si.speakerId = dialog.characterId;
             si.speakerPortrayalVariationId = dialog.speakerPortrayalVariationId;
@@ -60,14 +36,40 @@ public static partial class Dialog
             
             meta.dialogId = i;
             meta.speakerPosition = dialog.position;
+
+            meta.dialogAction = new DialogAction[0];
+            meta.isSpeakInForeground = true;
+            meta.isDark = false;
+            meta.useNameInText = true;
+            meta.useOverrideSprite = false;
+            meta.m_OverrideSpriteAsset = null;
+
             newMeta[i] = meta;
         }
         newDialogPackage.dialogMeta = newMeta;
         newDialogPackage.name = dialogList.packageName;
 
+        return newDialogPackage;
+    }
+
+    public static void BuildAndShow(
+        CustomDialogList dialogList,
+        System.Action onFinishCallback = null)
+    {
+        var newDialogPackage = BuildDialogPackage(dialogList);
+        if (newDialogPackage == null)
+        {
+            UniversalGameManager.OpenDialogMenu(
+                null,
+                onFinishCallback: onFinishCallback
+            );
+            return;
+        }
+
+
         System.Action<Il2CppSystem.Collections.Generic.Dictionary<int, string>> overrideReplaceTextCallback = (replaceDict) =>
         {
-            for (int i = 0; i < length; i++)
+            for (int i = 0; i < dialogList.Count; i++)
             {
                 replaceDict[i] = dialogList[i].message;
             }
@@ -80,6 +82,26 @@ public static partial class Dialog
             previousPanelVisualMode: 0
         );
     }
+
+    public static void DumpExampleDialog()
+    {
+        Utils.FindAndProcessResources<DialogPackage>(dialogPackage =>
+        {
+            var packageName = dialogPackage.name;
+            if (packageName == "OnTransitionToNight")
+            {
+                ExampleDialog = dialogPackage;
+                Log.LogInfo($"Stored ExampleDialog(OnTransitionToNight) package.");
+            }
+            Log.LogDebug($"id={dialogPackage.name}, package={packageName}");
+        });
+
+        if (ExampleDialog == null)
+        {
+            Log.LogWarning($"ExampleDialog(OnTransitionToNight) package not found among loaded assets.");
+        }
+    }
+
     public static void ShowReadyDialog(bool isReady, System.Action onFinishCallback = null) 
     {
         if (isReady)
@@ -205,24 +227,7 @@ public static partial class Dialog
             Log.LogWarning($"Dialog package {packageName} not found in ResourceExManager.");
         }
     }
-    public static void DumpExampleDialog()
-    {
-        Utils.FindAndProcessResources<DialogPackage>(dialogPackage =>
-        {
-            var packageName = dialogPackage.name;
-            if (packageName == "OnTransitionToNight")
-            {
-                ExampleDialog = dialogPackage;
-                Log.LogInfo($"Stored ExampleDialog(OnTransitionToNight) package.");
-            }
-            Log.LogDebug($"id={dialogPackage.name}, package={packageName}");
-        });
 
-        if (ExampleDialog == null)
-        {
-            Log.LogWarning($"ExampleDialog(OnTransitionToNight) package not found among loaded assets.");
-        }
-    }
 };
 
 public class CustomDialog
@@ -244,12 +249,12 @@ public class CustomDialog
 
 public class CustomDialogList
 {
-    public System.Collections.Generic.List<CustomDialog> dialogs;
+    public List<CustomDialog> dialogs;
     public string packageName = "MetaMystia_CustomDialogPackage";
 
     public CustomDialogList()
     {
-        dialogs = new System.Collections.Generic.List<CustomDialog>();
+        dialogs = new List<CustomDialog>();
     }
 
     public void AddDialog(int characterId, SpeakerIdentity.Identity speakerType, int speakerPortrayalVariationId, Position position, string message)
@@ -272,4 +277,15 @@ public class CustomDialogList
         get { return dialogs[index]; }
     }
 
+    public System.Action<Il2CppSystem.Collections.Generic.Dictionary<int, string>> GetOverrideReplaceTextCallback()
+    {
+        System.Action<Il2CppSystem.Collections.Generic.Dictionary<int, string>> overrideReplaceTextCallback = (replaceDict) =>
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                replaceDict[i] = this[i].message;
+            }
+        };
+        return overrideReplaceTextCallback;
+    }
 }

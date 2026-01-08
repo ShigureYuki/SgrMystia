@@ -2,11 +2,16 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Common.UI;
-using GameData.Core.Collections.DaySceneUtility.Collections;
 using HarmonyLib;
-using Iced.Intel;
 using Il2CppInterop.Runtime;
 using UnityEngine;
+using GameData.Profile.SchedulerNodeCollection;
+using GameData.Core.Collections.DaySceneUtility.Collections;
+using GameData.Profile;
+using GameData.Core.Collections;
+using System.Linq;
+using Il2CppSystem.Runtime.InteropServices.ComTypes;
+using GameData.CoreLanguage;
 
 namespace MetaMystia;
 
@@ -117,6 +122,107 @@ public partial class PluginManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.KeypadMinus))
             {
                 MpManager.Stop();
+            }
+
+            if (Input.GetKeyDown(KeyCode.F1))
+            {
+                ResourceExManager.BuildTestRecipe();
+            }
+            if (Input.GetKeyDown(KeyCode.F2))
+            {
+                if (!GameData.RunTime.Common.RunTimeStorage.Recipes.Contains(9000))
+                {
+                    GameData.RunTime.Common.RunTimeStorage.Recipes.Add(9000);
+                    Log.Warning($"Added test recipe to RunTimeStorage.Recipes");
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.F3))
+            {
+                // string preNode = "Main_1_BeastForest_008-Event";
+                // DataBaseScheduler.allNodes[preNode].postEvents.AddItem(preNode);
+
+                // 注册 trigger 
+                var trigger = new SchedulerNode.Trigger();
+                trigger.triggerType = SchedulerNode.Trigger.TriggerType.KizunaCheckPoint;
+                trigger.triggerId = "_Daiyousei";
+
+                var eventNode = ScriptableObject.CreateInstance<EventNode>();
+                eventNode.name = "MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_001_Event";
+                eventNode.label = "MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_001_Event";
+                eventNode.debugLabel = "大妖精测试";
+                eventNode.scheduledEvent = new SchedulerNode.ScheduledEvent()
+                {
+                    trigger = trigger
+                };
+                
+                eventNode.rewards = new EventNode.Reward[]
+                {
+                    new EventNode.Reward()
+                    {
+                        rewardId = "_Daiyousei",
+                        rewardType = EventNode.Reward.RewardType.GiveItem,
+                        objectType = EventNode.Reward.ObjectType.Recipe,
+                        rewardIntArray = new int[] { 9000 }
+                    }
+                };
+                eventNode.missionType = SchedulerNode.SchedulerType.Kitsuna;
+                eventNode.postMissionsAfterPerformance.AddItem("MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_002_Mission");
+                var _ = DataBaseScheduler.allNodes.TryAdd("MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_001_Event", eventNode);
+                Log.Warning($"Added test event node for Daiyousei bond level up. Success: {_}");
+
+                var missionNode = ScriptableObject.CreateInstance<MissionNode>();
+                missionNode.name = "MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_002_Mission";
+                missionNode.label = "MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_002_Mission";
+                missionNode.missionFailedAction = MissionNode.MissionFailedAction.None;
+                missionNode.sender = "_Daiyousei";
+                missionNode.reciever = "_Daiyousei";
+                missionNode.rewards = new MissionNode.Reward[]
+                {
+                    new MissionNode.Reward()
+                    {
+                        rewardType = MissionNode.Reward.RewardType.GiveItem,
+                        objectType = MissionNode.Reward.ObjectType.Recipe,
+                        rewardIntArray = new int[] { 9000 }
+                    }
+                };
+                missionNode.finishCondition = new MissionNode.FinishCondition[]
+                {
+                    new MissionNode.FinishCondition()
+                    {
+                        conditionType = MissionNode.FinishCondition.ConditionType.ServeInWork,
+                        sellableType = Sellable.SellableType.Food,
+                        label = "_Daiyousei",
+                        amount = 9000,
+                        // product = new Product(
+                        //     productType: Product.ProductType.Food,
+                        //     productId: 9000,
+                        //     productAmount: 1,
+                        //     productLabel: "Test Food"
+                        // )
+                    }
+                };
+                missionNode.missionType = SchedulerNode.SchedulerType.Kitsuna;
+
+                DataBaseScheduler.allNodes.TryAdd("MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_002_Mission", missionNode);
+
+
+                Log.Warning($"Adding test event and mission for Daiyousei bond level up.");
+
+                GameData.CoreLanguage.Collections.DataBaseLanguage.Missions.TryAdd(
+                    "MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_002_Mission", 
+                    new LanguageBase("【title】请大妖精尝尝 TestFood 吧", "【description】请大妖精尝尝 TestFood 吧")
+                );
+            }
+            if (Input.GetKeyDown(KeyCode.F4))
+            {
+                var scheduledEvents = GameData.RunTime.Common.RunTimeScheduler.scheduledEvents;
+                scheduledEvents[-1].Add("MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_001_Event");
+                Log.Warning($"Injected event into RunTimeScheduler cache for trigger -1");
+            }
+            if (Input.GetKeyDown(KeyCode.F5))
+            {
+                // 强制触发任务 - 成功 -> missionNode 构造测试成功
+                GameData.RunTime.Common.RunTimeScheduler.StartMission("MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_002_Mission");
             }
         }
     }
