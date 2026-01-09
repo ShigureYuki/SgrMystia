@@ -13,5 +13,6 @@ public partial class DataBaseCorePatch
     {
         Log.LogInfo("DataBaseCore.Initialize Postfix called.");
         ResourceExManager.RegisterAllSpawnConfigs();
+        ResourceEx.IngredientEx.RegisterAllObjects();
     }
 }

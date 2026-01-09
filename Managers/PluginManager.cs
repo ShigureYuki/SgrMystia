@@ -224,6 +224,11 @@ public partial class PluginManager : MonoBehaviour
                 // 强制触发任务 - 成功 -> missionNode 构造测试成功
                 GameData.RunTime.Common.RunTimeScheduler.StartMission("MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_002_Mission");
             }
+
+            if (Input.GetKeyDown(KeyCode.F8))
+            {
+                ExportUtils.DumpDataBase("1");
+            }
         }
     }
 

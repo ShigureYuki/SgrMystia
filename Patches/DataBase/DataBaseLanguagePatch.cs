@@ -17,5 +17,6 @@ public partial class DataBaseLanguagePatch
         ResourceExManager.RegisterAllFoodRequests();
         ResourceExManager.RegisterAllBevRequests();
         ResourceExManager.RegisterSpecialPortraits();
+        ResourceEx.IngredientEx.RegisterAllLanguages();
     }
 }

@@ -19,6 +19,9 @@ public static partial class ResourceExManager
     public static Dictionary<(int id, string type), CharacterConfig> _characterConfigs = new Dictionary<(int id, string type), CharacterConfig>();
     private static Dictionary<string, CustomDialogList> _dialogPackageConfigs = new Dictionary<string, CustomDialogList>();
     private static Dictionary<string, DialogPackage> _builtDialogPackages = new Dictionary<string, DialogPackage>();
+
+    public static Dictionary<int, IngredientConfig> IngredientConfigs = new Dictionary<int, IngredientConfig>();
+
     public static readonly string DialogPackageNamePrefix = "";
 
     public static void Initialize()
@@ -87,6 +90,16 @@ public static partial class ResourceExManager
                         }
                         _dialogPackageConfigs[pkgConfig.name] = dialogList;
                         Log.LogInfo($"[{modName}] Loaded dialog package: {pkgConfig.name}");
+                    }
+                }
+                
+                if (config?.ingredients != null)
+                {
+                    foreach (var ingredientConfig in config.ingredients)
+                    {
+                        ingredientConfig.ModRoot = modDir;
+                        IngredientConfigs[ingredientConfig.id] = ingredientConfig;
+                        Log.LogInfo($"[{modName}] Loaded config for ingredient {ingredientConfig.id}");
                     }
                 }
             }

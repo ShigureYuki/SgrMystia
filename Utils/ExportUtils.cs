@@ -3,6 +3,7 @@ using BepInEx;
 using System.IO;
 using UnityEngine;
 using System.Linq;
+using Il2CppSystem.Configuration;
 
 namespace MetaMystia;
 
@@ -215,7 +216,7 @@ public static partial class ExportUtils
             }
         }
     }
-    public static string DumpDataBase()
+    public static string DumpDataBase(string exportDir = null)
     {
         var sb = new System.Text.StringBuilder();
         sb.AppendLine("{");
@@ -233,10 +234,6 @@ public static partial class ExportUtils
             sb.AppendLine($"      \"baseCookTime\": {recipe.BaseCookTime},");
             sb.AppendLine($"      \"cookerType\": \"{recipe.CookerType}\"");
             sb.Append("    }");
-            if (kvp.Key < recipes.Count - 1)
-                sb.AppendLine(",");
-            else
-                sb.AppendLine();
         }
         sb.AppendLine("  ]");
 
@@ -251,16 +248,37 @@ public static partial class ExportUtils
             sb.AppendLine($"      \"id\": {food.Id},");
             sb.AppendLine($"      \"briefName\": \"{food.Text.BriefName}\",");
             sb.AppendLine($"      \"briefDescription\": \"{food.Text.BriefDescription}\",");
-            sb.AppendLine($"      \"Level\": {food.Level},");
-            sb.AppendLine($"      \"Tags\": [\"{string.Join("\", \"", food.Tags)}\"]");
+            sb.AppendLine($"      \"Level\": {food.Level}");
             sb.Append("    }");
-            if (kvp.Key < foods.Count - 1)
-                sb.AppendLine(",");
-            else
-                sb.AppendLine();
         }
+        sb.AppendLine("  ],");
+
+        var ingredients = GameData.Core.Collections.DataBaseCore.Ingredients;
+        sb.AppendLine("  \"ingredients\": [");
+        foreach (var kvp in ingredients)
+        {
+            var ingredient = kvp.Value;
+            sb.AppendLine("    {");
+            sb.AppendLine($"      \"id\": {ingredient.Id},");
+            sb.AppendLine($"      \"name\": \"{ingredient.Text.BriefName}\",");
+            sb.AppendLine($"      \"description\": \"{ingredient.Text.BriefDescription}\",");
+            sb.AppendLine($"      \"Level\": \"{ingredient.Level}\",");
+            sb.AppendLine($"      \"Prefix\": \"{ingredient.Prefix}\",");
+            sb.AppendLine($"      \"IsFish\": \"{ingredient.IsFish}\",");
+            sb.AppendLine($"      \"IsMeat\": \"{ingredient.IsMeat}\",");
+            sb.AppendLine($"      \"IsVeg\": \"{ingredient.IsVeg}\",");
+            sb.AppendLine($"      \"BaseValue\": \"{ingredient.BaseValue}\",");
+            sb.AppendLine($"      \"tags\": [\"{string.Join("\", \"", ingredient.Tags)}\"]");
+            sb.Append("    }");
+        }
+        sb.AppendLine("  ]");
+
 
         sb.AppendLine("}");
+        Log.Warning("Dumped database.");
+        Log.Warning(sb.ToString());
+
+
         return sb.ToString();
     }
 }

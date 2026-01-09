@@ -1600,5 +1600,46 @@
         }
       ]
     }
+  ],
+  "ingredients": [
+    {
+      "id": 11000,
+      "name": "金箔",
+      "description": "有昂贵tag，可以让灵梦吃到昂贵的饭团了。",
+      "level": 4,
+      "prefix": 0,
+      "isFish": false,
+      "isMeat": false,
+      "isVeg": false,
+      "baseValue": 64,
+      "tags": [-3, 4, 20],
+      "spritePath": "assets/Ingredient/11000.png"
+    },
+    {
+      "id": 11001,
+      "name": "椰子",
+      "description": "热带水果，椰子的果实。",
+      "level": 2,
+      "prefix": 0,
+      "isFish": false,
+      "isMeat": false,
+      "isVeg": false,
+      "baseValue": 8,
+      "tags": [17, 31],
+      "spritePath": "assets/Ingredient/11001.png"
+    },
+    {
+      "id": 11002,
+      "name": "仙人掌",
+      "description": "啊啊啊啊啊宝宝你是一只一只骆驼",
+      "level": 2,
+      "prefix": 0,
+      "isFish": false,
+      "isMeat": false,
+      "isVeg": true,
+      "baseValue": 4,
+      "tags": [2],
+      "spritePath": "assets/Ingredient/11002.png"
+    }
   ]
 }

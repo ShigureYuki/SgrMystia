@@ -115,9 +115,9 @@ public static partial class ResourceExManager
         var template = specialGuests[0];
 
 
-        var templateDialog = _builtDialogPackages["Kizuna__Daiyousei_LV1_Welcome_001"];
-        var templateDialogArray = new Il2CppReferenceArray<DialogPackage>(1);
-        templateDialogArray[0] = templateDialog;
+        // var templateDialog = _builtDialogPackages["Kizuna__Daiyousei_LV1_Welcome_001"];
+        // var templateDialogArray = new Il2CppReferenceArray<DialogPackage>(1);
+        // templateDialogArray[0] = templateDialog;
 
         var specialGuest = new SpecialGuest(
             config.id,
@@ -127,8 +127,8 @@ public static partial class ResourceExManager
             likeFoodTag,
             likeBevTag,
             template.Reaction, template.destination, template.CommisionAreaLabel,
-            templateDialogArray, templateDialogArray, templateDialogArray, templateDialogArray, templateDialogArray,
-            // template.characterKizunaLevel1Welcome, template.characterKizunaLevel2Welcome, template.characterKizunaLevel3Welcome, template.characterKizunaLevel4Welcome, template.characterKizunaLevel5Welcome,
+            // templateDialogArray, templateDialogArray, templateDialogArray, templateDialogArray, templateDialogArray,
+            template.characterKizunaLevel1Welcome, template.characterKizunaLevel2Welcome, template.characterKizunaLevel3Welcome, template.characterKizunaLevel4Welcome, template.characterKizunaLevel5Welcome,
             template.characterKizunaLevel1ChatData, template.characterKizunaLevel2ChatData, template.characterKizunaLevel3ChatData, template.characterKizunaLevel4ChatData, template.characterKizunaLevel5ChatData,
             template.characterKizunaLevel2InviteSucceed, template.characterKizunaLevel2InviteFailed, template.characterKizunaLevel3InviteSucceed, template.characterKizunaLevel3InviteFailed, template.characterKizunaLevel4InviteSucceed, template.characterKizunaLevel4InviteFailed, template.characterKizunaLevel5InviteSucceed,
             template.characterKizunaLevel3RequestIngerdient, template.characterKizunaLevel4RequestIngerdient, template.characterKizunaLevel5RequestIngerdient,

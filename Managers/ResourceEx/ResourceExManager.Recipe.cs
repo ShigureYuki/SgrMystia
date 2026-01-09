@@ -12,16 +12,6 @@ public static partial class ResourceExManager
 {
     public static void BuildTestRecipe()
     {
-        // var r = new Recipe(
-        //     config.id,
-        //     config.foodId,
-        //     Cooker.CookerType.CuttingBoard, // todo
-        //     config.cookTime,
-        //     config.ingredients.ToArray()
-        // );
-        // DataBaseCore.Recipes.TryAdd(r.Id, r);
-        // Log.Warning($"Built and Registered recipe: {r.Id}");
-
         Sprite sprite = Utils.GetArtWork("E:/Desktop/Test.jpg", new Vector2(0.5f, 0.5f)); // todo
         List<int> tags = new List<int> { 1, 2 };
         List<int> banTags = new List<int> { 3 };

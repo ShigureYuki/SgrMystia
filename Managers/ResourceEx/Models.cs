@@ -66,6 +66,7 @@ public class ResourceConfig
 {
     public List<CharacterConfig> characters { get; set; }
     public List<DialogPackageConfig> dialogPackages { get; set; }
+    public List<IngredientConfig> ingredients { get; set; }
 }
 
 public class DialogConfig
@@ -81,6 +82,23 @@ public class DialogPackageConfig
 {
     public string name { get; set; }
     public List<DialogConfig> dialogList { get; set; }
+}
+
+public class IngredientConfig
+{
+    public int id { get; set; }
+    public string name { get; set; }
+    public string description { get; set; }
+    public int level { get; set; }
+    public int prefix { get; set; }
+    public bool isFish { get; set; }
+    public bool isMeat { get; set; }
+    public bool isVeg { get; set; }
+    public int baseValue { get; set; }
+    public List<int> tags { get; set; }
+
+    public string spritePath { get; set; }
+    public string ModRoot { get; set; }
 }
 
 public class RecipeConfig
