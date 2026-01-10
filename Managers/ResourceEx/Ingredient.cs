@@ -22,7 +22,7 @@ public static partial class ResourceExManager
             GetSprite(config.spritePath, config.ModRoot)
         );
         DataBaseLanguage.Ingredients[config.id] = lang; // Ingredients 是 private 的，不能用 TryAdd
-        Log.Warning($"Registered language for ingredient {config.id}: {config.name}");
+        Log.Info($"Registered language for ingredient {config.id}: {config.name}");
     }
 
     private static void RegisterAllIngredients()
@@ -40,6 +40,6 @@ public static partial class ResourceExManager
             tags: config.tags.ToArray()
         );
         var success = DataBaseCore.Ingredients.TryAdd(ingredient.Id, ingredient);
-        Log.Warning($"Registered ingredient object {config.id}: {config.name}, success={success}");
+        Log.Info($"Registered ingredient object {config.id}: {config.name}, success={success}");
     }
 }

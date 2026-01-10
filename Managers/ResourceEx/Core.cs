@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Text.Json;
 using BepInEx;
 using Common.DialogUtility;
@@ -86,94 +87,129 @@ public static partial class ResourceExManager
             return;
         }
 
-        var modDirs = Directory.GetDirectories(ResourceRoot);
-        foreach (var modDir in modDirs)
+        var zipFiles = Directory.GetFiles(ResourceRoot, "*.zip");
+        foreach (var zipPath in zipFiles)
         {
-            string modName = Path.GetFileName(modDir);
-            string jsonPath = Path.Combine(modDir, "ResourceEx.json");
-
-            if (!File.Exists(jsonPath))
-            {
-                continue;
-            }
-
-            Log.LogInfo($"Loading mod: {modName} from {jsonPath}");
+            string modName = Path.GetFileNameWithoutExtension(zipPath);
+            Log.LogInfo($"Loading mod pack: {modName} from {zipPath}");
+            
             try
             {
-                string jsonString = File.ReadAllText(jsonPath);
-                var options = new JsonSerializerOptions
+                using (ZipArchive archive = ZipFile.OpenRead(zipPath))
                 {
-                    ReadCommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true,
-                    PropertyNameCaseInsensitive = true
-                };
-                options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+                    ZipArchiveEntry configEntry = null;
+                    string internalPrefix = "";
 
-                var config = JsonSerializer.Deserialize<ResourceConfig>(jsonString, options);
-                
-                if (config?.characters != null)
-                {
-                    foreach (var charConfig in config.characters)
+                    // Find ResourceEx.json
+                    foreach (var entry in archive.Entries)
                     {
-                        charConfig.ModRoot = modDir;
-                        _characterConfigs[(charConfig.id, charConfig.type)] = charConfig;
-                        Log.LogInfo($"[{modName}] Loaded config for character {charConfig.name} ({charConfig.id}, {charConfig.type})");
-                    }
-                }
-
-                if (config?.dialogPackages != null)
-                {
-                    foreach (var pkgConfig in config.dialogPackages)
-                    {
-                        var dialogList = new CustomDialogList();
-                        dialogList.packageName = DialogPackageNamePrefix + pkgConfig.name;
-                        foreach (var d in pkgConfig.dialogList)
+                        if (entry.FullName.EndsWith("ResourceEx.json", System.StringComparison.OrdinalIgnoreCase))
                         {
-                            var speakerType = SpeakerIdentity.Identity.Unknown;
-                            if (!string.IsNullOrEmpty(d.characterType) && System.Enum.TryParse<SpeakerIdentity.Identity>(d.characterType, true, out var st))
+                            // Prefer shorter path (root level)
+                            if (configEntry == null || entry.FullName.Length < configEntry.FullName.Length)
                             {
-                                speakerType = st;
+                                configEntry = entry;
                             }
-
-                            var position = Position.Left;
-                            if (System.Enum.TryParse<Position>(d.position, out var pos))
-                            {
-                                position = pos;
-                            }
-
-                            dialogList.AddDialog(d.characterId, speakerType, d.pid, position, d.text);
                         }
-                        _dialogPackageConfigs[pkgConfig.name] = dialogList;
-                        Log.LogInfo($"[{modName}] Loaded dialog package: {pkgConfig.name}");
                     }
-                }
-                
-                if (config?.ingredients != null)
-                {
-                    foreach (var ingredientConfig in config.ingredients)
-                    {
-                        ingredientConfig.ModRoot = modDir;
-                        IngredientConfigs[ingredientConfig.id] = ingredientConfig;
-                        Log.LogInfo($"[{modName}] Loaded config for ingredient {ingredientConfig.id}");
-                    }
-                }
 
-                if (config?.foods != null)
-                {
-                    foreach (var foodConfig in config.foods)
+                    if (configEntry == null)
                     {
-                        foodConfig.ModRoot = modDir;
-                        FoodConfigs[foodConfig.id] = foodConfig;
-                        Log.LogInfo($"[{modName}] Loaded config for food {foodConfig.name} ({foodConfig.id})");
+                        Log.LogWarning($"[{modName}] ResourceEx.json not found in zip.");
+                        continue;
                     }
-                }
 
-                if (config?.recipes != null)
-                {
-                    foreach (var recipeConfig in config.recipes)
+                    string entryName = configEntry.FullName;
+                    if (entryName.EndsWith("ResourceEx.json", System.StringComparison.OrdinalIgnoreCase))
                     {
-                        RecipeConfigs[recipeConfig.id] = recipeConfig;
-                        Log.LogInfo($"[{modName}] Loaded config for recipe {recipeConfig.id}");
+                        internalPrefix = entryName.Substring(0, entryName.Length - "ResourceEx.json".Length);
+                    }
+                    
+                    Log.LogInfo($"[{modName}] Found config at {configEntry.FullName}, Prefix: '{internalPrefix}'");
+
+                    string jsonString;
+                    using (var stream = configEntry.Open())
+                    using (var reader = new StreamReader(stream))
+                    {
+                        jsonString = reader.ReadToEnd();
+                    }
+
+                    var options = new JsonSerializerOptions
+                    {
+                        ReadCommentHandling = JsonCommentHandling.Skip,
+                        AllowTrailingCommas = true,
+                        PropertyNameCaseInsensitive = true
+                    };
+                    options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+
+                    var config = JsonSerializer.Deserialize<ResourceConfig>(jsonString, options);
+
+                    string modRootInfo = $"{zipPath}|{internalPrefix}";
+                    
+                    if (config?.characters != null)
+                    {
+                        foreach (var charConfig in config.characters)
+                        {
+                            charConfig.ModRoot = modRootInfo;
+                            _characterConfigs[(charConfig.id, charConfig.type)] = charConfig;
+                            Log.LogInfo($"[{modName}] Loaded config for character {charConfig.name} ({charConfig.id}, {charConfig.type})");
+                        }
+                    }
+
+                    if (config?.dialogPackages != null)
+                    {
+                        foreach (var pkgConfig in config.dialogPackages)
+                        {
+                            var dialogList = new CustomDialogList();
+                            dialogList.packageName = DialogPackageNamePrefix + pkgConfig.name;
+                            foreach (var d in pkgConfig.dialogList)
+                            {
+                                var speakerType = SpeakerIdentity.Identity.Unknown;
+                                if (!string.IsNullOrEmpty(d.characterType) && System.Enum.TryParse<SpeakerIdentity.Identity>(d.characterType, true, out var st))
+                                {
+                                    speakerType = st;
+                                }
+
+                                var position = Position.Left;
+                                if (System.Enum.TryParse<Position>(d.position, out var pos))
+                                {
+                                    position = pos;
+                                }
+
+                                dialogList.AddDialog(d.characterId, speakerType, d.pid, position, d.text);
+                            }
+                            _dialogPackageConfigs[pkgConfig.name] = dialogList;
+                            Log.LogInfo($"[{modName}] Loaded dialog package: {pkgConfig.name}");
+                        }
+                    }
+                    
+                    if (config?.ingredients != null)
+                    {
+                        foreach (var ingredientConfig in config.ingredients)
+                        {
+                            ingredientConfig.ModRoot = modRootInfo;
+                            IngredientConfigs[ingredientConfig.id] = ingredientConfig;
+                            Log.LogInfo($"[{modName}] Loaded config for ingredient {ingredientConfig.id}");
+                        }
+                    }
+
+                    if (config?.foods != null)
+                    {
+                        foreach (var foodConfig in config.foods)
+                        {
+                            foodConfig.ModRoot = modRootInfo;
+                            FoodConfigs[foodConfig.id] = foodConfig;
+                            Log.LogInfo($"[{modName}] Loaded config for food {foodConfig.name} ({foodConfig.id})");
+                        }
+                    }
+
+                    if (config?.recipes != null)
+                    {
+                        foreach (var recipeConfig in config.recipes)
+                        {
+                            RecipeConfigs[recipeConfig.id] = recipeConfig;
+                            Log.LogInfo($"[{modName}] Loaded config for recipe {recipeConfig.id}");
+                        }
                     }
                 }
             }

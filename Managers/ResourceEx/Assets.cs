@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using UnityEngine;
 
 namespace MetaMystia;
@@ -15,14 +16,29 @@ public static partial class ResourceExManager
             return null;
         }
 
-        string fullPath = string.IsNullOrEmpty(modRoot) 
-            ? Path.Combine(ResourceRoot, relativePath) 
-            : Path.Combine(modRoot, relativePath);
+        string zipPath = "";
+        string internalPrefix = "";
+        string locationKey = "";
+
+        if (!string.IsNullOrEmpty(modRoot) && modRoot.Contains("|"))
+        {
+            var parts = modRoot.Split('|');
+            zipPath = parts[0];
+            if (parts.Length > 1) internalPrefix = parts[1];
+            // Normalize path separators for zip entry lookup
+            locationKey = $"{zipPath}|{internalPrefix}{relativePath}";
+        }
+        else
+        {
+            string root = string.IsNullOrEmpty(modRoot) ? ResourceRoot : modRoot;
+            locationKey = Path.Combine(root, relativePath);
+        }
 
         Vector2 actualPivot = pivot ?? new Vector2(0.5f, 0.5f);
-        string cacheKey = $"{fullPath}_{actualPivot.x}_{actualPivot.y}_{width}_{height}_{pixelOffsetX}_{pixelOffsetY}";
+        string cacheKey = $"{locationKey}_{actualPivot.x}_{actualPivot.y}_{width}_{height}_{pixelOffsetX}_{pixelOffsetY}";
 
-        if (useCache && _spriteCache.TryGetValue(cacheKey, out var sprite))
+        Sprite sprite = null;
+        if (useCache && _spriteCache.TryGetValue(cacheKey, out sprite))
         {
             if (sprite != null && sprite.texture != null)
             {
@@ -31,8 +47,62 @@ public static partial class ResourceExManager
             _spriteCache.Remove(cacheKey);
         }
 
-        Log.LogInfo($"Loading sprite at {fullPath}");
-        sprite = Utils.GetArtWork(fullPath, actualPivot, width, height, pixelOffsetX, pixelOffsetY);
+        Log.LogInfo($"Loading sprite at {locationKey}");
+        
+        if (!string.IsNullOrEmpty(zipPath))
+        {
+            try
+            {
+                if (File.Exists(zipPath))
+                {
+                    using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+                    {
+                        string entryName = (internalPrefix + relativePath).Replace("\\", "/");
+                        var entry = archive.GetEntry(entryName);
+                        
+                        if (entry == null)
+                        {
+                            foreach(var e in archive.Entries)
+                            {
+                                if (e.FullName.Equals(entryName, System.StringComparison.OrdinalIgnoreCase))
+                                {
+                                    entry = e;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (entry != null)
+                        {
+                            using (var stream = entry.Open())
+                            using (var ms = new MemoryStream())
+                            {
+                                stream.CopyTo(ms);
+                                sprite = Utils.GetArtWorkFromBytes(ms.ToArray(), actualPivot, width, height, pixelOffsetX, pixelOffsetY);
+                                if (sprite != null) sprite.name = Path.GetFileNameWithoutExtension(relativePath);
+                            }
+                        }
+                        else
+                        {
+                            Log.LogWarning($"Entry {entryName} not found in zip {zipPath}");
+                        }
+                    }
+                }
+                else
+                {
+                     Log.LogWarning($"Zip file not found: {zipPath}");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Log.LogError($"Failed to load from zip: {ex.Message}");
+            }
+        }
+        else
+        {
+            sprite = Utils.GetArtWork(locationKey, actualPivot, width, height, pixelOffsetX, pixelOffsetY);
+        }
+        
         if (sprite != null)
         {
             sprite.hideFlags = HideFlags.HideAndDontSave;
@@ -44,7 +114,7 @@ public static partial class ResourceExManager
         }
         else
         {
-            Log.LogWarning($"Failed to load sprite at {fullPath}");
+            Log.LogWarning($"Failed to load sprite at {locationKey}");
         }
         return sprite;
     }

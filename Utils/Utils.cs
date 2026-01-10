@@ -60,10 +60,19 @@ public static partial class Utils
     public static Sprite GetArtWork(string filePath, Vector2 pivot, int width = 0, int height = 0, int pixelOffsetX = 0, int pixelOffsetY = 0)
     {
         if (!File.Exists(filePath)) return null;
+        byte[] fileData = File.ReadAllBytes(filePath);
+        var sprite = GetArtWorkFromBytes(fileData, pivot, width, height, pixelOffsetX, pixelOffsetY);
+        if (sprite != null)
+        {
+            sprite.name = Path.GetFileNameWithoutExtension(filePath);
+        }
+        return sprite;
+    }
 
+    public static Sprite GetArtWorkFromBytes(byte[] fileData, Vector2 pivot, int width = 0, int height = 0, int pixelOffsetX = 0, int pixelOffsetY = 0)
+    {
         var texture2D = new Texture2D(2, 2, TextureFormat.RGBA32, false);
         
-        byte[] fileData = File.ReadAllBytes(filePath);
         ImageConversion.LoadImage(texture2D, fileData);
 
         if (width > 0 && height > 0 && (texture2D.width != width || texture2D.height != height))
@@ -89,7 +98,6 @@ public static partial class Utils
         
         var sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), pivot, 48f);
             
-        sprite.name = Path.GetFileNameWithoutExtension(filePath);
         return sprite;
     }
     public static void FindAndProcessResources<T>(Action<T> action) where T : UnityEngine.Object
