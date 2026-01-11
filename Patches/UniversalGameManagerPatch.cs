@@ -15,6 +15,12 @@ public partial class UniversalGameManagerPatch
     {
         Log.Warning($"OpenDialogMenu_Prefix called for dialogPackage: {dialogPackage?.name} onFinishCallback: {onFinishCallback != null} overrideReplaceTextCallback: {overrideReplaceTextCallback != null} previousPanelVisualMode: {previousPanelVisualMode}");
 
+        if (dialogPackage == null)
+        {
+            // dialogPackage 为空时，直接调用原方法，将 onFinishCallback 传递下去
+            return true;
+        }
+
         if (dialogPackage.dialogContext == null)
         {
             if (Dialog.ExampleDialog == null)
