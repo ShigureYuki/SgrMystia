@@ -14,7 +14,7 @@ public partial class CookAction : NetAction
     public override void OnReceived()
     {
         Log.LogInfo($"Received COOK: CookerIndex={GridIndex}, FoodId={Food.FoodId}, Modifiers=[{string.Join(",", Food.ModifierIds)}]");
-        if (MpManager.InStory)
+        if (MpManager.InStory || MpManager.LocalScene != Common.UI.Scene.WorkScene)
         {
             Log.LogInfo("current in story, will skip receive");
         }

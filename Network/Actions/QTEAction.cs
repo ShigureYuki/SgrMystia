@@ -12,7 +12,7 @@ public partial class QTEAction : NetAction
     public override void OnReceived()
     {
         LogActionReceived();
-        if (MpManager.InStory)
+        if (MpManager.InStory || MpManager.LocalScene != Common.UI.Scene.WorkScene)
         {
             Log.LogInfo("current in story, will skip receive");
         }

@@ -44,7 +44,7 @@ public partial class GuestSeatedAction : NetAction
                     return true;
                 }
                 var guestTargetDesk = NightGuestManager.GetGuestUUID(GuestsManager.instance.GetInDeskGuest(DeskId));
-                return NightGuestManager.GetGuestDeskcodeSeat(guestTargetDesk) != DeskId + 1;
+                return NightGuestManager.GetGuestDeskcode(guestTargetDesk) != DeskId + 1;
             }
             return false;
         }

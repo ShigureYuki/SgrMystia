@@ -39,7 +39,7 @@ public partial class SyncAction : NetAction
         {
             return;
         }
-        if (MpManager.InStory)
+        if (MpManager.InStory || (MpManager.LocalScene != Common.UI.Scene.DayScene && MpManager.LocalScene != Common.UI.Scene.WorkScene))
         {
             Log.Info("skipping send");
             return;
