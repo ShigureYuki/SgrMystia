@@ -12,9 +12,10 @@ public partial class StoreFoodAction : NetAction
     public override void OnReceived()
     {
         LogActionReceived(true);
-        if (MpManager.InStory)
+        if (MpManager.InStory || MpManager.LocalScene != Common.UI.Scene.WorkScene)
         {
             Log.LogInfo("current in story, will skip receive");
+            return;
         }
         PluginManager.Instance.RunOnMainThread(() =>
         {

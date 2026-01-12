@@ -17,6 +17,7 @@ public partial class CookAction : NetAction
         if (MpManager.InStory || MpManager.LocalScene != Common.UI.Scene.WorkScene)
         {
             Log.LogInfo("current in story, will skip receive");
+            return;
         }
         PluginManager.Instance.RunOnMainThread(() =>
         {
