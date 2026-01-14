@@ -349,15 +349,34 @@ public partial class InGameConsole
         switch (subcommand)
         {
             case "start":
+                const string UsageHelp = "Usage: /mp start server or /mp start client";
                 if (args.Length < 2)
                 {
-                    LogToConsole("Usage: /mp start server or /mp start client");
+                    LogToConsole(UsageHelp);
                     break;
                 }
-                bool start_server = args[1].Equals("server");
-                if (MpManager.Start(start_server ? MpManager.ROLE.Host : MpManager.ROLE.Client))
+                if (MpManager.IsRunning)
                 {
-                    LogToConsole("Multiplayer started");
+                    LogToConsole($"Multiplayer already started as {MpManager.RoleName}");
+                    break;
+                }
+                if ("server".Equals(args[1].ToLower()))
+                {
+                    if (MpManager.Start(MpManager.ROLE.Host))
+                    {
+                        LogToConsole("Multiplayer started as Host");
+                    }
+                }
+                else if ("client".Equals(args[1].ToLower()))
+                {
+                    if (MpManager.Start(MpManager.ROLE.Client))
+                    {
+                        LogToConsole("Multiplayer started as Client");
+                    }
+                }
+                else
+                {
+                    LogToConsole(UsageHelp);
                 }
                 break;
             case "stop":
@@ -372,6 +391,7 @@ public partial class InGameConsole
                 break;
             case "status":
                 LogToConsole(MpManager.GetStatus());
+                LogToConsole(MpManager.DumpDebugText());
                 break;
             case "id":
                 if (args.Length < 2)

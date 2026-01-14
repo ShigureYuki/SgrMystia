@@ -36,6 +36,7 @@ public static partial class MpManager
     public static bool IsHost => Role == ROLE.Host;
     public static bool IsClient => Role == ROLE.Client;
     public static string RoleTag => IsHost ? "[S]" : "[C]";
+    public static string RoleName => IsHost ? "Host" : "Client";
 
     public static bool IsGameRoleHost => GameRole == ROLE.Host;
     public static bool IsGameRoleClient => GameRole == ROLE.Client;
