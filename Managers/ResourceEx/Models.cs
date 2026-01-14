@@ -66,8 +66,18 @@ public class PortraitConfig
     public string path { get; set; }
 }
 
+public class PackInfoConfig
+{
+    public string name { get; set; }
+    public string label { get; set; }
+    public List<string> authors { get; set; }
+    public string description { get; set; }
+    public string version { get; set; }
+}
+
 public class ResourceConfig
 {
+    public PackInfoConfig packInfo { get; set; }
     public List<CharacterConfig> characters { get; set; }
     public List<DialogPackageConfig> dialogPackages { get; set; }
     public List<IngredientConfig> ingredients { get; set; }
