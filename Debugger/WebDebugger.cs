@@ -26,7 +26,12 @@ namespace MetaMystia.Debugger
 
         public void Start()
         {
-            if (_isRunning) return;
+            if (_isRunning)
+            {
+                OpenInBrowser();
+                return;
+            }
+            
             try
             {
                 _token = GenerateToken();
@@ -34,13 +39,24 @@ namespace MetaMystia.Debugger
                 _isRunning = true;
                 string url = $"http://localhost:21101/?token={_token}";
                 _log.LogInfo($"Web Debugger started on {url}");
-                Application.OpenURL(url);
+                OpenInBrowser();
                 Task.Run(ListenLoop);
             }
             catch (Exception ex)
             {
                 _log.LogError($"Failed to start Web Debugger: {ex}");
             }
+        }
+
+        public void OpenInBrowser()
+        {
+            if (string.IsNullOrEmpty(_token))
+            {
+                _log.LogWarning("Web Debugger token is not generated yet.");
+                return;
+            }
+            string url = $"http://localhost:21101/?token={_token}";
+            Application.OpenURL(url);
         }
 
         private string GenerateToken()

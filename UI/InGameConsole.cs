@@ -292,6 +292,9 @@ public partial class InGameConsole
                     LogToConsole(MpManager.DumpDebugText());
                     Log.Message(MpManager.DumpDebugText());
                     break;
+                case "webdebug":
+                    OpenWebDebugger(args);
+                    break;
                 default:
                     LogToConsole("Unknown command: " + command);
                     HelpCommand();
@@ -304,7 +307,7 @@ public partial class InGameConsole
 
     private void HelpCommand()
     {
-        LogToConsole("Available commands: /help, /clear, /get, /mp, /call, /debug");
+        LogToConsole("Available commands: /help, /clear, /get, /mp, /call, /debug, /webdebug");
     }
 
     private void GetCommand(string[] args)
@@ -569,6 +572,24 @@ public partial class InGameConsole
                 LogToConsole($"Available methods: {availableFields}");
                 break;
         }
+    }
+    private void OpenWebDebugger(string[] args)
+    {
+        if (args.Length < 2 || args[0].ToLower() != "start")
+        {
+            LogToConsole("Usage: /webdebug start <key>");
+            return;
+        }
+
+        if (args[1] != "我已知晓风险并同意启动Web调试器")
+        {
+            LogToConsole("Invalid key.");
+            return;
+        }
+
+        Plugin.Debugger ??= new Debugger.WebDebugger();
+        Plugin.Debugger?.Start();
+        LogToConsole("WebDebugger started.");
     }
 }
 
