@@ -76,9 +76,8 @@ public static partial class WorkSceneManager
     private static ConcurrentDictionary<string, GuestInfo> guestInfos = new(); 
     private static ConcurrentDictionary<IntPtr, string> guestIds = new();
     private static ConcurrentDictionary<string, (bool, bool)> guestOrderFulfilled = new(); 
+    private static ConcurrentDictionary<string, ConcurrentQueue<(OrderBase, string)>> guestOrders = new();
 
-
-    public static ConcurrentQueue<(OrderBase, string)> orders = new();
     public static ConcurrentQueue<int> normalGuestProfilePairIndexQueue = new(); 
 
 
@@ -160,7 +159,7 @@ public static partial class WorkSceneManager
         guestIds.Clear();
         guestOrderFulfilled.Clear();
 
-        orders.Clear();
+        guestOrders.Clear();
         normalGuestProfilePairIndexQueue.Clear();
         ClearGuestCommandSchedulerQueue();
     }
@@ -231,6 +230,17 @@ public static partial class WorkSceneManager
     public static int GetGuestDeskcodeSeat(string uuid) => guestDeskSeats.GetOrDefault(uuid, -1);
 
     public static void SetGuestDeskcodeSeat(string uuid, int seat) => guestDeskSeats[uuid] = seat;
+
+    public static void EnqueueGuestOrder(string uuid, OrderBase order, string orderMessage)
+    {
+        guestOrders.GetOrAdd(uuid, new ConcurrentQueue<(OrderBase, string)>()).Enqueue((order, orderMessage));
+    }
+
+    public static bool DequeueGuestOrder(string uuid, out (OrderBase, string) orderTuple)
+    {
+        return guestOrders.GetOrDefault(uuid, new ConcurrentQueue<(OrderBase, string)>()).TryDequeue(out orderTuple);
+    }
+
 
     public static void SetGuestOrderServedFood(string uuid)
     {

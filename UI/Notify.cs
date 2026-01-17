@@ -7,7 +7,7 @@ namespace MetaMystia;
 [AutoLog]
 public static partial class Notify
 {
-    public readonly static List<Scene> NotAvailableScenes = [Scene.IzakayaPrepScene, Scene.LoadScene, Scene.MainScene];
+    public readonly static List<Scene> NotAvailableScenes = [Scene.IzakayaPrepScene, Scene.LoadScene, Scene.MainScene, Scene.EmptyScene];
     public static bool CanNotify(Scene scene) => !NotAvailableScenes.Any((s) => s == scene);
     public static bool CanNotify() => CanNotify(MpManager.LocalScene);
 
@@ -32,6 +32,6 @@ public static partial class Notify
 
     public static void ShowOnNextAvailableScene(string text)
     {
-        SgrYuki.Utils.CommandScheduler.Enqueue(CanNotify, () => Show(text));
+        SgrYuki.Utils.CommandScheduler.Enqueue(CanNotify, () => Show(text), timeoutSeconds: 300);
     }
 }

@@ -37,7 +37,7 @@ public partial class GuestGenSPOrderAction : NetAction
                 var guest = WorkSceneManager.GetGuest(GuestUUID);
                 var array = guest.GetAllGuests().TryCast<Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GuestBase>>();
                 var SPOrder = Order.ToSpecialOrder(array[0].Pointer);
-                WorkSceneManager.orders.Enqueue((SPOrder, Message));
+                WorkSceneManager.EnqueueGuestOrder(GuestUUID, SPOrder, Message);
 
                 try
                 {

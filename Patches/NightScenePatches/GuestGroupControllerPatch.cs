@@ -18,19 +18,25 @@ public partial class GuestGroupControllerPatch
     [HarmonyPrefix]
     public static bool GenerateOrderPrefix(GuestGroupController __instance, bool isFreeOrder, ref string orderGenerationMessage, ref GuestsManager.OrderBase generatedOrder, ref bool __result)
     {
-        // Log.LogInfo($"GenerateOrderPrefix called");
+        Log.Debug($"GenerateOrderPrefix called");
         if (MpManager.IsConnectedClient && MpManager.LocalScene == Common.UI.Scene.WorkScene && !MpManager.InStory)
         {
-            if (WorkSceneManager.orders.TryDequeue(out var item))
+            var uuid = __instance.GetGuestUUID();
+            if (uuid == null)
+            {
+                Log.Error($"pointer {__instance.Pointer} uuid is null!");
+                return true;
+            }
+            if (WorkSceneManager.DequeueGuestOrder(uuid, out var item))
             {
                 (generatedOrder, orderGenerationMessage) = item;
 
-                Log.LogInfo($"generating order from peer: {orderGenerationMessage} ");
+                Log.Info($"generating order for {uuid}: {orderGenerationMessage} ");
                 __result = true;
             }
             else
             {
-                Log.LogError($"dequeue failed! ");
+                Log.Error($"{uuid} dequeue failed! ");
                 return true;
             }
             return false;

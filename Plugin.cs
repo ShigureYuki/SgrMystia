@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
@@ -107,6 +108,24 @@ public class Plugin : BasePlugin
             NetAction.RegisterAllFormatter();
 
             ResourceExManager.Initialize();
+
+            CommandScheduler.RunInBackGround(() =>
+            {
+                try
+                {
+                    var currentVer = MyPluginInfo.PLUGIN_VERSION;
+                    var latest = GitHubReleaseHelper.GetPluginLatestTag();
+                    Log.LogMessage($"您的mod版本为 {currentVer}, 最新版为 {latest}");
+                    if (!currentVer.Equals(latest))
+                    {
+                        Notify.ShowOnNextAvailableScene($"您的mod版本为 {currentVer}, 最新版为 {latest}, 建议更新到最新版！");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.LogError($"cannot get plugin version, {ex.Message}, {ex.StackTrace}");
+                }
+            });
 
         }
         catch (Exception ex) {

@@ -21,6 +21,11 @@ public partial class CookAction : NetAction
         }
         PluginManager.Instance.RunOnMainThread(() =>
         {
+            if (!DLCManager.RecipeAvailable(RecipeId))
+            {
+                Log.Error($"RecipeId {RecipeId} not available!");
+                return;
+            }
             var recipe = RecipeId.RefRecipe();
             if (recipe == null)
             {

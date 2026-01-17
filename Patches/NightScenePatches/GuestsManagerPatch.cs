@@ -455,9 +455,9 @@ public partial class GuestsManagerPatch
 
     [HarmonyPatch(nameof(GuestsManager.Eval))]
     [HarmonyPrefix]
-    public static bool Eval_Prefix(GuestsManager __instance, int firstMood, int moon, float delay, int amount, bool shouldAddCombo)
+    public static bool Eval_Prefix(GuestsManager __instance, int firstMood, int moon, float delay, int amount, bool shouldAddCombo, GuestGroupController toEvaluate)
     {
-        Log.LogInfo($"Eval_Prefix called firstMood {firstMood}, moon {moon}, delay {delay}, amount {amount}, shouldAddCombo {shouldAddCombo}\n");
+        Log.Info($"Eval_Prefix for {(MpManager.IsConnected ? toEvaluate.GetGuestUUID() : "not_connected")}, firstMood {firstMood}, moon {moon}, delay {delay}, amount {amount}, shouldAddCombo {shouldAddCombo}");
         return true;
     }
 

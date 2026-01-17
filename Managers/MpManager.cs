@@ -94,7 +94,7 @@ public static partial class MpManager
         PeerId = "<Unknown>";
         Role = r;
         GameRole = Role;
-
+        Log.Info(DumpDebugText());
         switch (r) 
         {
             case ROLE.Host:

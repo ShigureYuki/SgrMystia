@@ -19,6 +19,7 @@ public partial class InGameConsole
         {
             if (_isOpen != value)
             {
+                Log.Info($"console {(value ? "opened" : "closed")}");
                 _isOpen = value;
                 UpdateGameInputState();
             }

@@ -38,7 +38,7 @@ public partial class GuestGenNormalOrderAction : NetAction
             var guest = WorkSceneManager.GetGuest(GuestUUID);
             var array = guest.GetAllGuests().TryCast<Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GuestBase>>();
             var normalOrder = Order.ToNormalOrder(array[0]);
-            WorkSceneManager.orders.Enqueue((normalOrder, Message));
+            WorkSceneManager.EnqueueGuestOrder(GuestUUID, normalOrder, Message);
 
             try
             {

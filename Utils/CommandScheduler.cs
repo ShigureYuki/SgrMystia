@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using BepInEx;
 using LibCpp2IL;
 
@@ -91,6 +92,26 @@ public static partial class CommandScheduler
     }
 
     public static void EnqueueWithNoCondition(Action execute) => Enqueue(() => true, execute);
+
+    public static void RunInBackGround(Action execute)
+    {
+        void act()
+        {
+            try
+            {
+                execute.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"cannot execute in background, {ex.Message}, {ex.StackTrace}");
+            }
+        }
+        var t = new Thread(act)
+        {
+            IsBackground = true
+        };
+        t.Start();
+    }
 
     // ================================
     // KeyQueue
