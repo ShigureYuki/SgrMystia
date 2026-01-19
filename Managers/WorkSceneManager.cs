@@ -369,7 +369,7 @@ public static partial class WorkSceneManager
             
             var colliderCollections = __instance.tileManager.GetCollider(seatDir[deskSeat], new Il2CppSystem.Collections.Generic.IReadOnlyList<UnityEngine.Vector3Int>(__instance.tileManager.PasserBorder.Pointer));
 
-            Log.Info($"setting path for {uuid}, desk {deskCode}, seat {deskSeat}");
+            Log.Debug($"setting path for {uuid}, desk {deskCode}, seat {deskSeat}");
             
             item?.SetPath(
                 seatDir[deskSeat], 

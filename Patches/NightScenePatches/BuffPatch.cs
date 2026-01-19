@@ -15,14 +15,14 @@ public partial class QTERewardManagerPatch
     [HarmonyPrefix]
     public static void OnQTESucceeded_Prefix(QTERewardManager __instance, int index, bool mustSuccess)
     {
-        Log.Info($"OnQTESucceeded Prefix, index {index}, mustSuccess {mustSuccess}");
+        Log.Debug($"OnQTESucceeded Prefix, index {index}, mustSuccess {mustSuccess}");
     }
 
     [HarmonyPatch(nameof(QTERewardManager.OnQTESucceeded))]
     [HarmonyPostfix]
     public static void OnQTESucceeded_Postfix(QTERewardManager __instance, int index, bool mustSuccess)
     {
-        Log.Info($"OnQTESucceeded postfix, index {index}, mustSuccess {mustSuccess}");
+        Log.Debug($"OnQTESucceeded postfix, index {index}, mustSuccess {mustSuccess}");
     }
 }
 

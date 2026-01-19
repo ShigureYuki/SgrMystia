@@ -92,7 +92,7 @@ public static partial class GitHubReleaseHelper
             var props = nic.GetIPProperties();
             if (props.UnicastAddresses.Any(u => u.Address.AddressFamily == AddressFamily.InterNetwork))
             {
-                Log.Message($"{Log.GetCallerName()} {nic.GetPhysicalAddress()}");
+                Log.Message($"GetActiveMacAddress: {nic.GetPhysicalAddress()}");
                 return nic.GetPhysicalAddress().ToString().Trim();
             }
         }
