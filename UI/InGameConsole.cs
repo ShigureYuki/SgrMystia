@@ -588,8 +588,8 @@ public partial class InGameConsole
             return;
         }
 
-        Plugin.Debugger ??= new Debugger.WebDebugger();
-        Plugin.Debugger?.Start();
+        PluginManager.Debugger ??= new Debugger.WebDebugger();
+        PluginManager.Debugger?.Start();
         LogToConsole("WebDebugger started.");
     }
 }

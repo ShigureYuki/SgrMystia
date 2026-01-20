@@ -21,6 +21,7 @@ public partial class PluginManager : MonoBehaviour
     public static PluginManager Instance { get; private set; }
     public static readonly string Label = $"{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION} loaded";
     public static InGameConsole Console { get; private set; }
+    public static Debugger.WebDebugger Debugger = null;
     private bool isTextVisible = true;
     private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
     private readonly List<(Action action, Func<bool> condition)> _conditionalActions = new List<(Action, Func<bool>)>();
@@ -106,8 +107,8 @@ public partial class PluginManager : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.F11))
             {
-                Plugin.Debugger??= new Debugger.WebDebugger();
-                Plugin.Debugger?.Start();
+                Debugger ??= new Debugger.WebDebugger();
+                Debugger?.Start();
             }
 
             if (Input.GetKeyDown(KeyCode.RightBracket) || Input.GetKeyDown(KeyCode.KeypadDivide))

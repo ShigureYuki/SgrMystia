@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Threading;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
-using MetaMystia.Debugger;
 using SgrYuki.Utils;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -14,11 +12,8 @@ namespace MetaMystia;
 public class Plugin : BasePlugin
 {
     public static Plugin Instance;
-    public static WebDebugger Debugger = null;
-
     public Action<Scene, LoadSceneMode> LoadAction;
     public static bool FirstEnterMain = true;
-    public const bool EnableWebConsole = false;
 
     public static Type[] ToBePatched = [
         // SceneManager Patches
@@ -79,7 +74,7 @@ public class Plugin : BasePlugin
 
     public override void Load()
     {
-        System.Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
         Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
 
         try {
@@ -117,7 +112,7 @@ public class Plugin : BasePlugin
                 {
                     var currentVer = MpManager.ModVersion;
                     var latest = await MetricsReporter.GetPluginLatestTagAsync();
-                    _ = MetricsReporter.ReportEvent("Client", "Run", currentVer);
+                    if (!PluginManager.DEBUG) _ = MetricsReporter.ReportEvent("Client", "Run", currentVer);
                     Log.LogMessage($"您的mod版本为 {currentVer}, 最新版为 {latest}");
                     if (!currentVer.Equals(latest))
                     {
@@ -147,12 +142,6 @@ public class Plugin : BasePlugin
         FirstEnterMain = false;
         Instance.Log.LogInfo("First time entering Main Scene.");
         
-        if (Debugger == null && EnableWebConsole)
-        {
-            Debugger = new WebDebugger();
-            Debugger.Start();
-        }
-        
         DLCManager.Initialize();
     }
 
@@ -162,15 +151,15 @@ public class Plugin : BasePlugin
         static void Handle()
         {
             if (PluginManager.Instance == null) {
-                Plugin.Instance.Log.LogMessage("Bootstrapping Trainer...");
+                Instance.Log.LogMessage("Bootstrapping Trainer...");
                 try {
                     PluginManager.Create("PluginManager");
                     if (PluginManager.Instance != null) {
-                        Plugin.Instance.Log.LogMessage("Trainer Bootstrapped!");
+                        Instance.Log.LogMessage("Trainer Bootstrapped!");
                     }
                 }
                 catch (Exception e) {
-                    Plugin.Instance.Log.LogMessage($"ERROR Bootstrapping Trainer: {e.Message}");
+                    Instance.Log.LogMessage($"ERROR Bootstrapping Trainer: {e.Message}");
                 }
             }
         }
