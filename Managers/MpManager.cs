@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using SgrYuki.Utils;
 
 namespace MetaMystia;
 
@@ -221,6 +222,11 @@ public static partial class MpManager
         HelloAction.Send();
         SceneTransitAction.Send(LocalScene);
         SyncAction.Send();
+        CommandScheduler.Enqueue(
+            executeWhen: () => KyoukoManager.GetCharacterComponent() != null,
+            execute: () => KyoukoManager.GetCharacterComponent()?.UpdateIcon(false),
+            timeoutSeconds: 120
+        );
         Notify.ShowOnMainThread($"联机系统：已连接！");
     }
     
@@ -231,6 +237,11 @@ public static partial class MpManager
         PeerId = "<Unknown>";
         PeerGameVersion = "";
         DLCManager.ClearPeer();
+        CommandScheduler.Enqueue(
+            executeWhen: () => KyoukoManager.GetCharacterComponent() != null,
+            execute: () => KyoukoManager.GetCharacterComponent()?.UpdateIcon(true),
+            timeoutSeconds: 120
+        );
         Notify.ShowOnMainThread($"联机系统：连接已断开！");
     }
 

@@ -17,6 +17,14 @@ public partial class DaySceneManagerPatch
         MpManager.OnSceneTransit(Scene.DayScene);
         MpManager.Initialize();
         ResourceExManager.OnDaySceneAwake();
+        if (MpManager.IsConnected)
+        {
+            CommandScheduler.Enqueue(
+                executeWhen: () => KyoukoManager.GetCharacterComponent() != null,
+                execute: () => KyoukoManager.GetCharacterComponent()?.UpdateIcon(false),
+                timeoutSeconds: 120
+            );
+        }
     }
 
 
