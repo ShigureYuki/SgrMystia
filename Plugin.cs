@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
@@ -113,6 +112,7 @@ public class Plugin : BasePlugin
 
             MetricsReporter.OnPluginInitialized();
 
+            if (PluginManager.DetachConsoleAfterLoad) ConsoleManager.DetachConsole();
         }
         catch (Exception ex)
         {

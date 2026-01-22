@@ -296,6 +296,10 @@ public partial class InGameConsole
                 case "webdebug":
                     OpenWebDebugger(args);
                     break;
+                case "enable_bepin_console":
+                    BepInEx.ConsoleManager.CreateConsole();
+                    LogToConsole("BepinEX console enabled");
+                    break;
                 default:
                     LogToConsole("Unknown command: " + command);
                     HelpCommand();
@@ -308,7 +312,7 @@ public partial class InGameConsole
 
     private void HelpCommand()
     {
-        LogToConsole("Available commands: /help, /clear, /get, /mp, /call, /debug, /webdebug, /update");
+        LogToConsole("Available commands: /help, /clear, /get, /mp, /call, /debug, /webdebug, /enable_bepin_console");
     }
 
     private void GetCommand(string[] args)

@@ -26,6 +26,7 @@ public partial class PluginManager : MonoBehaviour
     private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
     private readonly List<(Action action, Func<bool> condition)> _conditionalActions = new List<(Action, Func<bool>)>();
     public const bool DEBUG = false;
+    public const bool DetachConsoleAfterLoad = true;
 
     public PluginManager(IntPtr ptr) : base(ptr)
     {
@@ -88,7 +89,7 @@ public partial class PluginManager : MonoBehaviour
         {
             Log.LogInfo($"\n");
         }
-        if (Input.GetKeyDown(KeyCode.Backslash)) 
+        if (Input.GetKeyDown(KeyCode.Backslash))
         {
             isTextVisible = !isTextVisible;
             Log.LogMessage($"Toggled text visibility: " + isTextVisible);
@@ -97,13 +98,15 @@ public partial class PluginManager : MonoBehaviour
 
         if (DEBUG)
         {
+            if (Input.GetKeyDown(KeyCode.F7)) BepInEx.ConsoleManager.DetachConsole();
+            if (Input.GetKeyDown(KeyCode.F8)) BepInEx.ConsoleManager.CreateConsole();
             if (Input.GetKeyDown(KeyCode.F9))
             {
-                WorkSceneManager.CloseIzakayaIfPossible(); 
+                WorkSceneManager.CloseIzakayaIfPossible();
             }
             if (Input.GetKeyDown(KeyCode.F10))
             {
-                WorkSceneManager.ModifyWorkTimeLeft(3); 
+                WorkSceneManager.ModifyWorkTimeLeft(3);
             }
             if (Input.GetKeyDown(KeyCode.F11))
             {
@@ -142,7 +145,7 @@ public partial class PluginManager : MonoBehaviour
                 {
                     trigger = trigger
                 };
-                
+
                 eventNode.rewards = new EventNode.Reward[]
                 {
                     new EventNode.Reward()
@@ -197,7 +200,7 @@ public partial class PluginManager : MonoBehaviour
                 Log.Warning($"Adding test event and mission for Daiyousei bond level up.");
 
                 GameData.CoreLanguage.Collections.DataBaseLanguage.Missions.TryAdd(
-                    "MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_002_Mission", 
+                    "MetaMystia_Kizuna__Daiyousei_LV1_Upgrade_002_Mission",
                     new LanguageBase("【title】请大妖精尝尝 TestFood 吧", "【description】请大妖精尝尝 TestFood 吧")
                 );
             }
