@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using BepInEx;
@@ -19,8 +20,8 @@ public static partial class UpdateManager
     private const string DllOldFilePattern = @"^MetaMystia-v([\d.]+)\.dll\.old$";
     private const string DllVersionPattern = @"^MetaMystia-v([\d.]+)\.dll$";
 
-    private static readonly System.Text.RegularExpressions.Regex DllOldFileRegex = new(DllOldFilePattern, System.Text.RegularExpressions.RegexOptions.Compiled);
-    private static readonly System.Text.RegularExpressions.Regex DllVersionRegex = new(DllVersionPattern, System.Text.RegularExpressions.RegexOptions.Compiled);
+    private static readonly Regex DllOldFileRegex = new(DllOldFilePattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex DllVersionRegex = new(DllVersionPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly SemaphoreSlim _updateLock = new(1, 1);
 
@@ -74,9 +75,7 @@ public static partial class UpdateManager
                         if (!asset.TryGetProperty("name", out var nameElement))
                             return null;
                         var name = nameElement.GetString();
-                        if (string.IsNullOrEmpty(name) ||
-                            !name.StartsWith("MetaMystia-v", StringComparison.OrdinalIgnoreCase) ||
-                            !name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                        if (string.IsNullOrEmpty(name) || !DllVersionRegex.IsMatch(name))
                             return null;
                         if (!asset.TryGetProperty("browser_download_url", out var downloadUrlElement))
                             return null;
@@ -226,10 +225,7 @@ public static partial class UpdateManager
                     Log.Warning($"Skipping file with unexpected name format: {fileName}");
             }
 
-            if (oldFiles.Length > 0)
-            {
-                Log.Info($"Cleaned up {oldFiles.Length} old dll file(s)");
-            }
+            if (oldFiles.Length > 0) Log.Info($"Cleaned up {oldFiles.Length} old dll file(s)");
         }
         catch (Exception ex)
         {
@@ -541,10 +537,7 @@ public static partial class UpdateManager
 
     public static string ExecuteTestCommand(string[] args)
     {
-        if (args.Length < 1)
-        {
-            return "用法: /test-update <新版本>";
-        }
+        if (args.Length < 1) return "用法: /test-update <新版本>";
 
         var currentVersion = GetCurrentDllVersion();
         var newVersion = args[0];
