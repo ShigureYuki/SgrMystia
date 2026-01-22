@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using GameData.RunTime.Common;
 using HarmonyLib;
 
 namespace MetaMystia;
@@ -15,7 +14,7 @@ public partial class IzakayaSelectorPanelPatch
     [HarmonyPatch(nameof(Common.UI.IzakayaSelectorPanel_New.OnGuideMapInitialize))]
     [HarmonyPrefix]
     public static void OnGuideMapInitialize_Prefix(Common.UI.IzakayaSelectorPanel_New __instance)
-    {   
+    {
         instanceRef = __instance;
         Log.LogInfo($"OnGuideMapInitialize called");
     }
@@ -49,7 +48,7 @@ public partial class IzakayaSelectorPanelPatch
         //                          -> 是 -> 发送 CONFIRM 包
         //                                -> 展示「确认」对话
         //                                -> 对话回调中调用 _OnGuideMapInitialize_b__21_0 以结束
-        
+
         Log.LogInfo($"_OnGuideMapInitialize_b__21_0 called");
 
         if (!MpManager.IsConnected)
@@ -74,30 +73,33 @@ public partial class IzakayaSelectorPanelPatch
         //     Level3 = 3,
         //     Null = 0
         // }
-        
+
         var izakayaMapLabel = __instance.m_CurrentSelectedSpot.PrimaryName;
         var izakayaLevel = (int)__instance.m_CurrentSelectedIzakayaLevel;
         Log.LogWarning($"Selected Spot: {izakayaMapLabel}, Level: {izakayaLevel}");
 
+        var mySelect = $"{Utils.GetMapLabelNameCN(izakayaMapLabel)} {Utils.GetMapLevelNameCN(izakayaLevel)}";
         if (KyoukoManager.IzakayaMapLabel == "" || KyoukoManager.IzakayaLevel == 0)
         {
             Log.LogWarning($"Kyouko has not selected an Izakaya yet -> send SELECT and skip");
             SelectAction.Send(izakayaMapLabel, izakayaLevel);
-            Notify.ShowOnMainThread($"你选择了 {izakayaMapLabel} 作为开店地点");
+            Notify.ShowOnMainThread($"你选择了 {mySelect} 作为开店地点");
             return false;
         }
 
         if (izakayaMapLabel != KyoukoManager.IzakayaMapLabel || izakayaLevel != KyoukoManager.IzakayaLevel)
         {
+            var peerSelect = $"{Utils.GetMapLabelNameCN(KyoukoManager.IzakayaMapLabel)} {Utils.GetMapLevelNameCN(KyoukoManager.IzakayaLevel)}";
             Log.LogWarning($"Selected Izakaya does not match Kyouko's selection -> show rejection dialog");
-            Notify.ShowOnMainThread($"你选择了 {izakayaMapLabel} 作为开店地点，对方选择了 {KyoukoManager.IzakayaMapLabel}，你俩得选一样的");
+            Notify.ShowOnMainThread($"你选择了 {mySelect} 作为开店地点，对方选择了 {peerSelect}，你俩得选一样的");
             return false;
         }
 
         Log.LogWarning($"Selected Izakaya matches Kyouko's selection -> send CONFIRM and show confirmation dialog");
         ConfirmAction.Send(izakayaMapLabel, izakayaLevel);
-        
-        System.Action closePanelCallback = () => {
+
+        System.Action closePanelCallback = () =>
+        {
             cachedSpots.TryGetValue(izakayaMapLabel, out var spot);
             instanceRef.m_CurrentSelectedSpot = spot;
             instanceRef.m_CurrentSelectedIzakayaLevel = (Common.UI.IzakayaLevel)izakayaLevel;
