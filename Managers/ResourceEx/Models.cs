@@ -1,8 +1,12 @@
 using System.Collections.Generic;
 
 using GameData.Profile;
-using GameData.Profile.SchedulerNodeCollection;
-using GameData.Core.Collections;
+
+using static GameData.Core.Collections.Sellable;
+using static GameData.Core.Collections.DaySceneUtility.Collections.Product;
+using static GameData.Profile.SchedulerNode;
+using static GameData.Profile.SchedulerNode.Trigger;
+using static GameData.Profile.SchedulerNodeCollection.MissionNode.FinishCondition;
 
 namespace MetaMystia.ResourceEx.Models;
 
@@ -16,7 +20,16 @@ public class CharacterConfig
     public List<PortraitConfig> portraits { get; set; }
     public GuestConfig guest { get; set; }
     public CharacterSpriteSetCompactConfig characterSpriteSetCompact { get; set; }
+    public KizunaEventConfig kizuna { get; set; }
     public string ModRoot { get; set; }
+}
+
+public class KizunaEventConfig
+{
+    public string lv1UpgradePrerequisiteEvent { get; set; }
+    public string lv2UpgradePrerequisiteEvent { get; set; }
+    public string lv3UpgradePrerequisiteEvent { get; set; }
+    public string lv4UpgradePrerequisiteEvent { get; set; }
 }
 
 public class GuestConfig
@@ -84,6 +97,7 @@ public class ResourceConfig
     public List<RecipeConfig> recipes { get; set; }
     public List<FoodConfig> foods { get; set; }
     public List<MissionNodeConfig> missionNodes { get; set; }
+    public List<EventNodeConfig> eventNodes { get; set; }
 }
 
 public class DialogConfig
@@ -151,20 +165,42 @@ public class MissionNodeConfig
     public string reciever { get; set; } // ignore typo
     public List<MissionRewardConfig> rewards { get; set; }
     public List<MissionFinishConditionConfig> finishConditions { get; set; }
+    public List<string> postMissionsAfterPerformance { get; set; }
+    public List<string> postEvents { get; set; }
 }
 
 public class MissionRewardConfig
 {
-    public SchedulerNode.Reward.RewardType rewardType { get; set; }
+    public Reward.RewardType rewardType { get; set; }
     public string rewardId { get; set; }
-    public SchedulerNode.Reward.ObjectType? objectType { get; set; }
+    public Reward.ObjectType? objectType { get; set; }
     public List<int> rewardIntArray { get; set; }
 }
 
 public class MissionFinishConditionConfig
 {
-    public MissionNode.FinishCondition.ConditionType conditionType { get; set; }
+    public ConditionType conditionType { get; set; }
     public int? amount { get; set; }
-    public Sellable.SellableType? sellableType { get; set; }
+    public SellableType? sellableType { get; set; }
     public string label { get; set; }
+    public ProductType? productType { get; set; }
+    public int? productId { get; set; }
+    public int? productAmount { get; set; }
+}
+
+public class EventNodeConfig
+{
+    public string label { get; set; }
+    public string debugLabel { get; set; }
+    public TriggerConfig trigger { get; set; }
+    public string triggerId { get; set; }
+    public List<MissionRewardConfig> rewards { get; set; }
+    public List<string> postMissionsAfterPerformance { get; set; }
+    public List<string> postEvents { get; set; }
+}
+
+public class TriggerConfig
+{
+    public TriggerType triggerType { get; set; }
+    public string triggerId { get; set; }
 }

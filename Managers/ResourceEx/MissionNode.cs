@@ -1,11 +1,15 @@
 using UnityEngine;
 using System.Linq;
-using GameData.Profile.SchedulerNodeCollection;
+
 using GameData.Profile;
+using GameData.Profile.SchedulerNodeCollection;
 using GameData.Core.Collections;
 using GameData.CoreLanguage;
 using GameData.CoreLanguage.Collections;
 
+using static GameData.Core.Collections.Sellable;
+using static GameData.Profile.SchedulerNodeCollection.MissionNode;
+using static GameData.Core.Collections.DaySceneUtility.Collections.Product;
 
 using MetaMystia.ResourceEx.Models;
 
@@ -18,7 +22,7 @@ public static partial class ResourceExManager
     private static void RegisterMissionNodeLanguage(MissionNodeConfig config)
     {
         DataBaseLanguage.Missions.TryAdd(
-            config.label, 
+            config.label,
             new LanguageBase(config.title, config.description)
         );
     }
@@ -27,12 +31,12 @@ public static partial class ResourceExManager
     private static void RegisterAllMissionNodes() => MissionNodeConfigs.ToList().ForEach(RegisterMissionNode);
     private static void RegisterMissionNode(MissionNodeConfig config)
     {
-        Log.Info($"Registering MissionNode {config.title}({config.debugLabel})");  
+        Log.Info($"Registering MissionNode {config.title}({config.debugLabel})");
         var missionNode = ScriptableObject.CreateInstance<MissionNode>();
         missionNode.name = config.label;
         missionNode.label = config.label;
-        
-        missionNode.missionFailedAction = MissionNode.MissionFailedAction.None;
+
+        missionNode.missionFailedAction = MissionFailedAction.None;
 
         missionNode.missionType = config.missionType;
         switch (config.missionType)
@@ -43,7 +47,7 @@ public static partial class ResourceExManager
                 {
                     missionNode.rewards[i] = BuildMissionReward(config.rewards[i]);
                 }
-                missionNode.finishCondition = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<MissionNode.FinishCondition>(config.finishConditions.Count);
+                missionNode.finishCondition = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<FinishCondition>(config.finishConditions.Count);
                 for (int i = 0; i < config.finishConditions.Count; i++)
                 {
                     missionNode.finishCondition[i] = BuildMissionFinishCondition(config.finishConditions[i]);
@@ -55,7 +59,21 @@ public static partial class ResourceExManager
         }
 
         missionNode.sender = config.sender;
+        missionNode.hasSender = !string.IsNullOrEmpty(config.sender);
         missionNode.reciever = config.reciever; // ignore typo
+        missionNode.hasReciever = !string.IsNullOrEmpty(config.reciever); // ignore typo
+
+        missionNode.postMissionsAfterPerformance = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(config.postMissionsAfterPerformance.Count);
+        for (int i = 0; i < config.postMissionsAfterPerformance.Count; i++)
+        {
+            missionNode.postMissionsAfterPerformance[i] = config.postMissionsAfterPerformance[i];
+        }
+
+        missionNode.postEvents = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(config.postEvents.Count);
+        for (int i = 0; i < config.postEvents.Count; i++)
+        {
+            missionNode.postEvents[i] = config.postEvents[i];
+        }
 
         var success = DataBaseScheduler.allNodes.TryAdd(missionNode.label, missionNode);
         Log.Info($"Registered MissionNode {config.title}({config.label}): Success: {success}");
@@ -86,22 +104,29 @@ public static partial class ResourceExManager
         }
         return reward;
     }
-    private static MissionNode.FinishCondition BuildMissionFinishCondition(MissionFinishConditionConfig config)
+    private static FinishCondition BuildMissionFinishCondition(MissionFinishConditionConfig config)
     {
-        var condition = new MissionNode.FinishCondition();
+        var condition = new FinishCondition();
         condition.conditionType = config.conditionType;
-        if (config.amount.HasValue)
+        switch (config.conditionType)
         {
-            condition.amount = config.amount.Value;
+            case FinishCondition.ConditionType.ServeInWork:
+                condition.amount = config.amount.HasValue ? config.amount.Value : 0;
+                condition.sellableType = config.sellableType.HasValue ? config.sellableType.Value : SellableType.Food;
+                condition.label = config.label != null ? config.label : "";
+                break;
+            case FinishCondition.ConditionType.SubmitItem:
+                var product = condition.product;
+                product.productType = config.productType ?? ProductType.Food;
+                product.productId = config.productId ?? 0;
+                product.productAmount = config.productAmount ?? 0;
+                condition.product = product;
+                Log.Warning($"SubmitItem finish condition: productType={condition.product.productType}, productId={condition.product.productId}, productAmount={condition.product.productAmount}");
+                break;
+            default:
+                break;
         }
-        if (config.sellableType.HasValue)
-        {
-            condition.sellableType = config.sellableType.Value;
-        }
-        if (config.label != null)
-        {
-            condition.label = config.label;
-        }
+
         return condition;
     }
 }

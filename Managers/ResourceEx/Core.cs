@@ -17,7 +17,7 @@ public static partial class ResourceExManager
 {
     // Abstracted resource root path
     public static string ResourceRoot { get; set; } = Path.Combine(Paths.GameRootPath, "ResourceEx");
-    
+
     private static Dictionary<(int id, string type), CharacterConfig> _characterConfigs = new Dictionary<(int id, string type), CharacterConfig>();
     private static Dictionary<string, CustomDialogList> _dialogPackageConfigs = new Dictionary<string, CustomDialogList>();
     private static Dictionary<string, DialogPackage> _builtDialogPackages = new Dictionary<string, DialogPackage>();
@@ -26,6 +26,7 @@ public static partial class ResourceExManager
     private static Dictionary<int, FoodConfig> FoodConfigs = new Dictionary<int, FoodConfig>();
     private static Dictionary<int, RecipeConfig> RecipeConfigs = new Dictionary<int, RecipeConfig>();
     private static List<MissionNodeConfig> MissionNodeConfigs = new List<MissionNodeConfig>();
+    private static List<EventNodeConfig> EventNodeConfigs = new List<EventNodeConfig>();
 
     private static readonly string DialogPackageNamePrefix = "";
 
@@ -70,6 +71,7 @@ public static partial class ResourceExManager
     public static void OnDataBaseSchedulerInitialized()
     {
         RegisterAllMissionNodes();
+        RegisterAllEventNodes();
     }
     public static void OnNightSceneLanguageInitialized()
     {
@@ -85,6 +87,7 @@ public static partial class ResourceExManager
     public static void OnDaySceneAwake()
     {
         InitializeAllDaySpawnConfigs();
+        ActivateAllKizunaEventNodes();
     }
 
     private class PackCandidate
@@ -118,7 +121,7 @@ public static partial class ResourceExManager
         {
             string modName = Path.GetFileNameWithoutExtension(zipPath);
             Log.LogInfo($"Scanning mod pack: {modName} from {zipPath}");
-            
+
             try
             {
                 using (ZipArchive archive = ZipFile.OpenRead(zipPath))
@@ -150,7 +153,7 @@ public static partial class ResourceExManager
                     {
                         internalPrefix = entryName.Substring(0, entryName.Length - "ResourceEx.json".Length);
                     }
-                    
+
                     // Log.LogInfo($"[{modName}] Found config at {configEntry.FullName}, Prefix: '{internalPrefix}'");
 
                     string jsonString;
@@ -170,7 +173,8 @@ public static partial class ResourceExManager
 
                     var config = JsonSerializer.Deserialize<ResourceConfig>(jsonString, options);
 
-                    candidates.Add(new PackCandidate {
+                    candidates.Add(new PackCandidate
+                    {
                         ZipPath = zipPath,
                         ModName = modName,
                         Config = config,
@@ -207,16 +211,16 @@ public static partial class ResourceExManager
 
                 return winner.Candidate;
             });
-        
+
         finalPacks.AddRange(resolvedPacks);
 
         foreach (var pack in finalPacks)
         {
             if (pack.Config?.packInfo != null)
             {
-                 var info = pack.Config.packInfo;
-                 string authors = info.authors != null ? string.Join(", ", info.authors) : "Unknown";
-                 Log.LogMessage($"Loaded Resource Pack: {info.name} [{info.label}] v{info.version} by {authors}");
+                var info = pack.Config.packInfo;
+                string authors = info.authors != null ? string.Join(", ", info.authors) : "Unknown";
+                Log.LogMessage($"Loaded Resource Pack: {info.name} [{info.label}] v{info.version} by {authors}");
             }
             else
             {
@@ -232,7 +236,7 @@ public static partial class ResourceExManager
         var config = pack.Config;
         string modName = pack.ModName;
         string modRootInfo = $"{pack.ZipPath}|{pack.InternalPrefix}";
-        
+
         if (config?.characters != null)
         {
             foreach (var charConfig in config.characters)
@@ -269,7 +273,7 @@ public static partial class ResourceExManager
                 Log.LogInfo($"[{modName}] Loaded dialog package: {pkgConfig.name}");
             }
         }
-        
+
         if (config?.ingredients != null)
         {
             foreach (var ingredientConfig in config.ingredients)
@@ -308,9 +312,19 @@ public static partial class ResourceExManager
                 Log.LogInfo($"[{modName}] Loaded config for mission node {missionNodeConfig.title}");
             }
         }
+
+        if (config?.eventNodes != null)
+        {
+            foreach (var eventNodeConfig in config.eventNodes)
+            {
+                // eventNodeConfig.ModRoot = modRootInfo;
+                EventNodeConfigs.Add(eventNodeConfig);
+                Log.LogInfo($"[{modName}] Loaded config for event node {eventNodeConfig.debugLabel}");
+            }
+        }
     }
-    
-    
+
+
 
 
 }
