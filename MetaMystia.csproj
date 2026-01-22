@@ -20,7 +20,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
-  
+
   <Target Name="RenameBuildOutput" AfterTargets="Build">
     <PropertyGroup>
       <RenamedAssembly>$(AssemblyName)-v$(Version)</RenamedAssembly>
@@ -70,7 +70,7 @@
     <EmbeddedResource Remove="MystiaReverse\**" />
     <None Remove="MystiaReverse\**" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Remove="DebugImpl\**" />
     <EmbeddedResource Remove="DebugImpl\**" />
@@ -223,7 +223,7 @@
     </Reference>
     <Reference Include="MemoryPack.Core">
       <HintPath>$(NuGetPackageRoot)memorypack\1.21.4\lib\netstandard2.0\MemoryPack.Core.dll</HintPath>
-      <Private>False</Private> 
+      <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>$(GamePath)\BepInEx\interop\Newtonsoft.Json.dll</HintPath>
