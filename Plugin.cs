@@ -1,5 +1,6 @@
 ﻿using System;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
@@ -13,6 +14,8 @@ namespace MetaMystia;
 public class Plugin : BasePlugin
 {
     public static Plugin Instance;
+    public static ConfigEntry<bool> ConfigDebug;
+    public static ConfigEntry<bool> ConfigDetachConsoleAfterLoad;
     public Action<Scene, LoadSceneMode> LoadAction;
     public static bool FirstEnterMain = true;
 
@@ -73,8 +76,16 @@ public class Plugin : BasePlugin
         Instance = this;
     }
 
+    private void InitConfigs()
+    {
+        ConfigDebug = Config.Bind("General", "Debug", false, "Enable debug features and hotkeys\n启用调试功能和热键");
+        ConfigDetachConsoleAfterLoad = Config.Bind("General", "DetachConsoleAfterLoad", true, "Detach the console window after the plugin finishes loading\n插件加载完成后分离控制台窗口");
+    }
+
     public override void Load()
     {
+        InitConfigs();
+
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
 

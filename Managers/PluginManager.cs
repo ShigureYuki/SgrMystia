@@ -25,8 +25,8 @@ public partial class PluginManager : MonoBehaviour
     private bool isTextVisible = true;
     private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
     private readonly List<(Action action, Func<bool> condition)> _conditionalActions = new List<(Action, Func<bool>)>();
-    public const bool DEBUG = false;
-    public const bool DetachConsoleAfterLoad = true;
+    public static bool DEBUG => Plugin.ConfigDebug.Value;
+    public static bool DetachConsoleAfterLoad => Plugin.ConfigDetachConsoleAfterLoad.Value;
 
     public PluginManager(IntPtr ptr) : base(ptr)
     {
