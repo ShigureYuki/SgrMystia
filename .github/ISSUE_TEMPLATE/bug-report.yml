@@ -3,7 +3,7 @@ name: "🐛 Bug 报告 / Bug Report"
 description: "报告一个错误或问题 / Report a bug or issue"
 title: "[BUG] "
 labels: ["bug"]
-assignees: ""
+assignees: ["MetaMikuAI", "ShigureYuki"]
 body:
   - type: markdown
     attributes:
