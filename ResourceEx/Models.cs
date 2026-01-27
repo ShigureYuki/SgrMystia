@@ -23,7 +23,7 @@ public class CharacterConfig
     public GuestConfig guest { get; set; }
     public CharacterSpriteSetCompactConfig characterSpriteSetCompact { get; set; }
     public KizunaEventConfig kizuna { get; set; }
-    public string ModRoot { get; set; }
+    public string PackageRoot { get; set; }
 }
 
 public class KizunaEventConfig
@@ -132,7 +132,7 @@ public class IngredientConfig
     public List<int> tags { get; set; }
 
     public string spritePath { get; set; }
-    public string ModRoot { get; set; }
+    public string PackageRoot { get; set; }
 }
 
 public class BeverageConfig
@@ -145,7 +145,7 @@ public class BeverageConfig
     public List<int> tags { get; set; }
 
     public string spritePath { get; set; }
-    public string ModRoot { get; set; }
+    public string PackageRoot { get; set; }
 }
 
 public class RecipeConfig
@@ -167,7 +167,7 @@ public class FoodConfig
     public List<int> tags { get; set; }
     public List<int> banTags { get; set; }
     public string spritePath { get; set; }
-    public string ModRoot { get; set; }
+    public string PackageRoot { get; set; }
 }
 
 public class MissionNodeConfig

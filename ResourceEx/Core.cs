@@ -8,6 +8,7 @@ using Common.DialogUtility;
 using GameData.Profile;
 
 using MetaMystia.ResourceEx.Models;
+using MetaMystia.ResourceEx.AssetManagement;
 
 namespace MetaMystia;
 
@@ -17,6 +18,9 @@ public static partial class ResourceExManager
 {
     // Abstracted resource root path
     public static string ResourceRoot { get; set; } = Path.Combine(Paths.GameRootPath, "ResourceEx");
+
+    // Asset provider for efficient resource package access
+    private static readonly AssetProvider _assetProvider = new AssetProvider();
 
     private static Dictionary<(int id, string type), CharacterConfig> _characterConfigs = new Dictionary<(int id, string type), CharacterConfig>();
     private static Dictionary<string, CustomDialogList> _dialogPackageConfigs = new Dictionary<string, CustomDialogList>();
@@ -102,7 +106,7 @@ public static partial class ResourceExManager
     private class PackCandidate
     {
         public string ZipPath;
-        public string ModName;
+        public string PackageName;
         public ResourceConfig Config;
         public string InternalPrefix;
     }
@@ -128,8 +132,8 @@ public static partial class ResourceExManager
 
         foreach (var zipPath in zipFiles)
         {
-            string modName = Path.GetFileNameWithoutExtension(zipPath);
-            Log.LogInfo($"Scanning mod pack: {modName} from {zipPath}");
+            string packageName = Path.GetFileNameWithoutExtension(zipPath);
+            Log.LogInfo($"Scanning resource package: {packageName} from {zipPath}");
 
             try
             {
@@ -153,7 +157,7 @@ public static partial class ResourceExManager
 
                     if (configEntry == null)
                     {
-                        Log.LogWarning($"[{modName}] ResourceEx.json not found in zip.");
+                        Log.LogWarning($"[{packageName}] ResourceEx.json not found in zip.");
                         continue;
                     }
 
@@ -185,7 +189,7 @@ public static partial class ResourceExManager
                     candidates.Add(new PackCandidate
                     {
                         ZipPath = zipPath,
-                        ModName = modName,
+                        PackageName = packageName,
                         Config = config,
                         InternalPrefix = internalPrefix
                     });
@@ -193,7 +197,7 @@ public static partial class ResourceExManager
             }
             catch (System.Exception e)
             {
-                Log.LogError($"Failed to load mod {modName}: {e.Message}");
+                Log.LogError($"Failed to load resource package {packageName}: {e.Message}");
             }
         }
 
@@ -215,7 +219,7 @@ public static partial class ResourceExManager
 
                 if (sorted.Count > 1)
                 {
-                    Log.LogWarning($"[ResourceEx] Label Conflict: '{group.Key}'. Selected '{winner.Candidate.ModName}' (v{winner.Version}) over others: {string.Join(", ", sorted.Skip(1).Select(s => s.Candidate.ModName))}");
+                    Log.LogWarning($"[ResourceEx] Label Conflict: '{group.Key}'. Selected '{winner.Candidate.PackageName}' (v{winner.Version}) over others: {string.Join(", ", sorted.Skip(1).Select(s => s.Candidate.PackageName))}");
                 }
 
                 return winner.Candidate;
@@ -233,7 +237,7 @@ public static partial class ResourceExManager
             }
             else
             {
-                Log.LogInfo($"Loading mod pack: {pack.ModName} from {pack.ZipPath}");
+                Log.LogInfo($"Loading resource package: {pack.PackageName} from {pack.ZipPath}");
             }
 
             ApplyConfig(pack);
@@ -243,16 +247,28 @@ public static partial class ResourceExManager
     private static void ApplyConfig(PackCandidate pack)
     {
         var config = pack.Config;
-        string modName = pack.ModName;
-        string modRootInfo = $"{pack.ZipPath}|{pack.InternalPrefix}";
+        string packageName = pack.PackageName;
+        string packageRootInfo = $"{pack.ZipPath}|{pack.InternalPrefix}";
+
+        // Register resource package to asset provider for memory-cached access
+        try
+        {
+            var resourcePackage = new ResourcePackage(pack.ZipPath, pack.InternalPrefix);
+            _assetProvider.RegisterPackage(resourcePackage);
+            Log.LogInfo($"[{packageName}] Loaded ZIP into memory, size: {new FileInfo(pack.ZipPath).Length / 1024} KB");
+        }
+        catch (System.Exception ex)
+        {
+            Log.LogError($"[{packageName}] Failed to load ZIP into memory: {ex.Message}");
+        }
 
         if (config?.characters != null)
         {
             foreach (var charConfig in config.characters)
             {
-                charConfig.ModRoot = modRootInfo;
+                charConfig.PackageRoot = packageRootInfo;
                 _characterConfigs[(charConfig.id, charConfig.type)] = charConfig;
-                Log.LogInfo($"[{modName}] Loaded config for character {charConfig.name} ({charConfig.id}, {charConfig.type})");
+                Log.LogInfo($"[{packageName}] Loaded config for character {charConfig.name} ({charConfig.id}, {charConfig.type})");
             }
         }
 
@@ -279,7 +295,7 @@ public static partial class ResourceExManager
                     dialogList.AddDialog(d.characterId, speakerType, d.pid, position, d.text);
                 }
                 _dialogPackageConfigs[pkgConfig.name] = dialogList;
-                Log.LogInfo($"[{modName}] Loaded dialog package: {pkgConfig.name}");
+                Log.LogInfo($"[{packageName}] Loaded dialog package: {pkgConfig.name}");
             }
         }
 
@@ -287,9 +303,9 @@ public static partial class ResourceExManager
         {
             foreach (var ingredientConfig in config.ingredients)
             {
-                ingredientConfig.ModRoot = modRootInfo;
+                ingredientConfig.PackageRoot = packageRootInfo;
                 IngredientConfigs[ingredientConfig.id] = ingredientConfig;
-                Log.LogInfo($"[{modName}] Loaded config for ingredient {ingredientConfig.id}");
+                Log.LogInfo($"[{packageName}] Loaded config for ingredient {ingredientConfig.id}");
             }
         }
 
@@ -297,9 +313,9 @@ public static partial class ResourceExManager
         {
             foreach (var foodConfig in config.foods)
             {
-                foodConfig.ModRoot = modRootInfo;
+                foodConfig.PackageRoot = packageRootInfo;
                 FoodConfigs[foodConfig.id] = foodConfig;
-                Log.LogInfo($"[{modName}] Loaded config for food {foodConfig.name} ({foodConfig.id})");
+                Log.LogInfo($"[{packageName}] Loaded config for food {foodConfig.name} ({foodConfig.id})");
             }
         }
 
@@ -307,9 +323,9 @@ public static partial class ResourceExManager
         {
             foreach (var beverageConfig in config.beverages)
             {
-                beverageConfig.ModRoot = modRootInfo;
+                beverageConfig.PackageRoot = packageRootInfo;
                 BeverageConfigs[beverageConfig.id] = beverageConfig;
-                Log.LogInfo($"[{modName}] Loaded config for beverage {beverageConfig.name} ({beverageConfig.id})");
+                Log.LogInfo($"[{packageName}] Loaded config for beverage {beverageConfig.name} ({beverageConfig.id})");
             }
         }
         if (config?.recipes != null)
@@ -317,7 +333,7 @@ public static partial class ResourceExManager
             foreach (var recipeConfig in config.recipes)
             {
                 RecipeConfigs[recipeConfig.id] = recipeConfig;
-                Log.LogInfo($"[{modName}] Loaded config for recipe {recipeConfig.id}");
+                Log.LogInfo($"[{packageName}] Loaded config for recipe {recipeConfig.id}");
             }
         }
 
@@ -325,9 +341,9 @@ public static partial class ResourceExManager
         {
             foreach (var missionNodeConfig in config.missionNodes)
             {
-                // missionNodeConfig.ModRoot = modRootInfo;
+                // missionNodeConfig.PackageRoot = packageRootInfo;
                 MissionNodeConfigs.Add(missionNodeConfig);
-                Log.LogInfo($"[{modName}] Loaded config for mission node {missionNodeConfig.title}");
+                Log.LogInfo($"[{packageName}] Loaded config for mission node {missionNodeConfig.title}");
             }
         }
 
@@ -335,9 +351,9 @@ public static partial class ResourceExManager
         {
             foreach (var eventNodeConfig in config.eventNodes)
             {
-                // eventNodeConfig.ModRoot = modRootInfo;
+                // eventNodeConfig.PackageRoot = packageRootInfo;
                 EventNodeConfigs.Add(eventNodeConfig);
-                Log.LogInfo($"[{modName}] Loaded config for event node {eventNodeConfig.debugLabel}");
+                Log.LogInfo($"[{packageName}] Loaded config for event node {eventNodeConfig.debugLabel}");
             }
         }
     }

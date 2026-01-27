@@ -213,7 +213,7 @@ public static partial class ResourceExManager
         RegisterSpecialGuestPortrayal(dummyPortrayal, config);
 
         var pixelSet = ScriptableObject.CreateInstance<CharacterSkinSets>();
-        pixelSet.defaultSkin = MakePixel(config.characterSpriteSetCompact, config.ModRoot);
+        pixelSet.defaultSkin = MakePixel(config.characterSpriteSetCompact, config.PackageRoot);
 
         dummyPortrayal.name = $"{config.name}_DummyPortrayal";
         var pair = new GuestProfilePair(
@@ -234,7 +234,7 @@ public static partial class ResourceExManager
 
         return;
 
-        static CharacterSpriteSetCompact MakePixel(CharacterSpriteSetCompactConfig pixelConfig, string modRoot)
+        static CharacterSpriteSetCompact MakePixel(CharacterSpriteSetCompactConfig pixelConfig, string packageRoot)
         {
             var template = DataBaseCharacter.FallbackCompactPixel;
 
@@ -243,8 +243,8 @@ public static partial class ResourceExManager
             var mainSprites = CopySpriteArray(template.MainSprite);
             var eyeSprites = CopySpriteArray(template.EyeSprite);
 
-            ApplySprites(mainSprites, pixelConfig.mainSprite, modRoot);
-            ApplySprites(eyeSprites, pixelConfig.eyeSprite, modRoot);
+            ApplySprites(mainSprites, pixelConfig.mainSprite, packageRoot);
+            ApplySprites(eyeSprites, pixelConfig.eyeSprite, packageRoot);
 
             pixel.Initialize(
                 mainSprites,
@@ -279,7 +279,7 @@ public static partial class ResourceExManager
                 return newArray;
             }
 
-            static void ApplySprites(Il2CppReferenceArray<Sprite> targetArray, List<string> spritePaths, string modRoot,
+            static void ApplySprites(Il2CppReferenceArray<Sprite> targetArray, List<string> spritePaths, string packageRoot,
                 int pixelOffsetX = 0, int pixelOffsetY = 0)
             {
                 if (spritePaths == null) return;
@@ -303,7 +303,7 @@ public static partial class ResourceExManager
                     if (string.IsNullOrEmpty(path)) continue;
 
                     // Use GetSprite with caching, matching the parameters used for SpriteSetCompact
-                    var sprite = GetSprite(path, modRoot, new Vector2(0.5f, 0.0f), 64, 64, pixelOffsetX, pixelOffsetY);
+                    var sprite = ResourceExManager.GetSprite(path, packageRoot, new Vector2(0.5f, 0.0f), 64, 64, pixelOffsetX, pixelOffsetY);
 
                     if (sprite != null)
                     {

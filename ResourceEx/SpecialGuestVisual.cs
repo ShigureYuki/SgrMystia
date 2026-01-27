@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using GameData.Profile;
 using MetaMystia.ResourceEx.Models;
@@ -71,7 +71,7 @@ public static partial class ResourceExManager
 
             Log.LogInfo(
                 $"Getting portrait sprite for characterId {config.id}, pid {portraitConfig.pid} from path {portraitConfig.path}");
-            var sprite = ResourceExManager.GetSprite(portraitConfig.path, config.ModRoot, useCache: false);
+            var sprite = ResourceExManager.GetSprite(portraitConfig.path, config.PackageRoot, useCache: false);
             if (sprite != null)
             {
                 portraits[index] = sprite;
