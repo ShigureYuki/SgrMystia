@@ -30,7 +30,7 @@ public static partial class ResourceExManager
 
     private static void RegisterBeverage(BeverageConfig config)
     {
-        var beverage = config.ToRuntimeBeverage();
+        var beverage = config.ToBeverage();
         var success = DataBaseCore.Beverages.TryAdd(beverage.Id, beverage);
         Log.Info($"Registered beverage object {config.id}: {config.name}, success={success}");
     }

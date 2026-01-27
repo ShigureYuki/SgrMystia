@@ -23,7 +23,7 @@ public static partial class ResourceExManager
     private static void RegisterMissionNode(MissionNodeConfig config)
     {
         Log.Info($"Registering MissionNode {config.title}({config.debugLabel})");
-        var missionNode = config.ToRuntimeMissionNode();
+        var missionNode = config.ToMissionNode();
         var success = DataBaseScheduler.allNodes.TryAdd(missionNode.label, missionNode);
         Log.Info($"Registered MissionNode {config.title}({config.label}): Success: {success}");
     }

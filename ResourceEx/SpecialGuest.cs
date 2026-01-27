@@ -121,7 +121,7 @@ public static partial class ResourceExManager
         }
 
         var template = specialGuests[0];
-        var specialGuest = config.ToRuntimeSpecialGuest(template);
+        var specialGuest = config.ToSpecialGuest(template);
 
         if (specialGuest != null)
         {

@@ -32,6 +32,7 @@
         "hakurei",
         "idsite",
         "imgui",
+        "Ingerdient",
         "interactable",
         "interactables",
         "izakaya",
@@ -79,6 +80,6 @@
         "yagokoroeirin",
         "youkai",
         "yuki",
-        "yuyuko"
+        "yuyuko",
     ]
 }

@@ -17,7 +17,7 @@ public static partial class ResourceExManager
 
     private static void RegisterFood(FoodConfig config)
     {
-        var food = config.ToRuntimeFood();
+        var food = config.ToFood();
         var success = DataBaseCore.Foods.TryAdd(config.id, food);
         var mappingSuccess = DataBaseCore.FoodsMapping.TryAdd(config.id, "ResourceEx");
         Log.Info($"Registered Food ID {config.id} ({config.name}): Success: {success}, Mapping Success: {mappingSuccess}");

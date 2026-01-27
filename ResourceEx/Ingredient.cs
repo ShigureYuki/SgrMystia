@@ -30,7 +30,7 @@ public static partial class ResourceExManager
 
     private static void RegisterIngredient(IngredientConfig config)
     {
-        var ingredient = config.ToRuntimeIngredient();
+        var ingredient = config.ToIngredient();
         var success = DataBaseCore.Ingredients.TryAdd(ingredient.Id, ingredient);
         Log.Info($"Registered ingredient object {config.id}: {config.name}, success={success}");
     }

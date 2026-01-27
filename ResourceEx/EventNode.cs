@@ -78,7 +78,7 @@ public static partial class ResourceExManager
     private static void RegisterAllEventNodes() => EventNodeConfigs.ToList().ForEach(RegisterEventNode);
     private static void RegisterEventNode(EventNodeConfig config)
     {
-        var eventNode = config.ToRuntimeEventNode();
+        var eventNode = config.ToEventNode();
         var success = DataBaseScheduler.allNodes.TryAdd(config.label, eventNode);
         Log.Info($"Registering EventNode {config.debugLabel}({config.label}), success: {success}");
     }
