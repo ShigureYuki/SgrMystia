@@ -18,14 +18,24 @@ public class ResourcePackage : IDisposable
     private readonly ZipArchive _zipArchive;
     private readonly Dictionary<string, ZipArchiveEntry> _entryIndex;
 
+    /// <summary>
+    /// Creates a resource package from a ZIP file path (reads from disk)
+    /// </summary>
     public ResourcePackage(string zipPath, string internalPrefix)
+        : this(zipPath, internalPrefix, File.ReadAllBytes(zipPath))
+    {
+    }
+
+    /// <summary>
+    /// Creates a resource package from pre-loaded ZIP bytes (optimized, no disk IO)
+    /// </summary>
+    public ResourcePackage(string zipPath, string internalPrefix, byte[] zipBytes)
     {
         ZipPath = zipPath;
         InternalPrefix = internalPrefix;
 
-        // Load entire ZIP into memory
-        var fileBytes = File.ReadAllBytes(zipPath);
-        _zipMemoryStream = new MemoryStream(fileBytes);
+        // Load ZIP from memory
+        _zipMemoryStream = new MemoryStream(zipBytes);
         _zipArchive = new ZipArchive(_zipMemoryStream, ZipArchiveMode.Read, leaveOpen: false);
 
         // Build case-insensitive entry index for O(1) lookup

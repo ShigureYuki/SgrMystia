@@ -106,9 +106,9 @@ public class ResourceConfig
 public class DialogConfig
 {
     public int characterId { get; set; }
-    public string characterType { get; set; }
+    public Common.DialogUtility.SpeakerIdentity.Identity characterType { get; set; }
     public int pid { get; set; }
-    public string position { get; set; }
+    public Common.DialogUtility.Position position { get; set; }
     public string text { get; set; }
 }
 

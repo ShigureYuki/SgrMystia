@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
-using System.IO.Compression;
-using System.Text.Json;
+using System.Linq;
 using BepInEx;
 using Common.DialogUtility;
 using GameData.Profile;
@@ -33,11 +31,9 @@ public static partial class ResourceExManager
     private static List<MissionNodeConfig> MissionNodeConfigs = new List<MissionNodeConfig>();
     private static List<EventNodeConfig> EventNodeConfigs = new List<EventNodeConfig>();
 
-    private static readonly string DialogPackageNamePrefix = "";
-
     public static void Initialize()
     {
-        LoadConfigs();
+        LoadAllResourcePackages();
         PreloadAllImages();
     }
 
@@ -103,170 +99,38 @@ public static partial class ResourceExManager
         ActivateAllKizunaEventNodes();
     }
 
-    private class PackCandidate
+    /// <summary>
+    /// Loads all resource packages from the ResourceEx directory
+    /// </summary>
+    private static void LoadAllResourcePackages()
     {
-        public string ZipPath;
-        public string PackageName;
-        public ResourceConfig Config;
-        public string InternalPrefix;
+        var packages = ResourcePackageLoader.LoadAllPackages(ResourceRoot);
+
+        foreach (var package in packages)
+        {
+            MergeResourcePackage(package);
+        }
+
+        Log.LogInfo($"Loaded {packages.Count} resource package(s) successfully.");
     }
 
-    private static System.Version GetVersion(string v)
+    /// <summary>
+    /// Merges a loaded resource package into the manager's internal data structures
+    /// </summary>
+    private static void MergeResourcePackage(LoadedResourcePackage package)
     {
-        if (string.IsNullOrWhiteSpace(v)) return new System.Version(0, 0, 0);
-        if (System.Version.TryParse(v, out var result)) return result;
-        return new System.Version(0, 0, 0);
-    }
+        var config = package.Config;
+        string packageName = package.PackageName;
+        string packageRoot = package.PackageRoot;
 
-    private static void LoadConfigs()
-    {
-        if (!Directory.Exists(ResourceRoot))
-        {
-            Directory.CreateDirectory(ResourceRoot);
-            Log.LogInfo($"Created ResourceEx directory at {ResourceRoot}");
-            return;
-        }
-
-        var zipFiles = Directory.GetFiles(ResourceRoot, "*.zip");
-        var candidates = new List<PackCandidate>();
-
-        foreach (var zipPath in zipFiles)
-        {
-            string packageName = Path.GetFileNameWithoutExtension(zipPath);
-            Log.LogInfo($"Scanning resource package: {packageName} from {zipPath}");
-
-            try
-            {
-                using (ZipArchive archive = ZipFile.OpenRead(zipPath))
-                {
-                    ZipArchiveEntry configEntry = null;
-                    string internalPrefix = "";
-
-                    // Find ResourceEx.json
-                    foreach (var entry in archive.Entries)
-                    {
-                        if (entry.FullName.EndsWith("ResourceEx.json", System.StringComparison.OrdinalIgnoreCase))
-                        {
-                            // Prefer shorter path (root level)
-                            if (configEntry == null || entry.FullName.Length < configEntry.FullName.Length)
-                            {
-                                configEntry = entry;
-                            }
-                        }
-                    }
-
-                    if (configEntry == null)
-                    {
-                        Log.LogWarning($"[{packageName}] ResourceEx.json not found in zip.");
-                        continue;
-                    }
-
-                    string entryName = configEntry.FullName;
-                    if (entryName.EndsWith("ResourceEx.json", System.StringComparison.OrdinalIgnoreCase))
-                    {
-                        internalPrefix = entryName.Substring(0, entryName.Length - "ResourceEx.json".Length);
-                    }
-
-                    // Log.LogInfo($"[{modName}] Found config at {configEntry.FullName}, Prefix: '{internalPrefix}'");
-
-                    string jsonString;
-                    using (var stream = configEntry.Open())
-                    using (var reader = new StreamReader(stream))
-                    {
-                        jsonString = reader.ReadToEnd();
-                    }
-
-                    var options = new JsonSerializerOptions
-                    {
-                        ReadCommentHandling = JsonCommentHandling.Skip,
-                        AllowTrailingCommas = true,
-                        PropertyNameCaseInsensitive = true
-                    };
-                    options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-
-                    var config = JsonSerializer.Deserialize<ResourceConfig>(jsonString, options);
-
-                    candidates.Add(new PackCandidate
-                    {
-                        ZipPath = zipPath,
-                        PackageName = packageName,
-                        Config = config,
-                        InternalPrefix = internalPrefix
-                    });
-                }
-            }
-            catch (System.Exception e)
-            {
-                Log.LogError($"Failed to load resource package {packageName}: {e.Message}");
-            }
-        }
-
-        var finalPacks = candidates
-            .Where(c => string.IsNullOrEmpty(c.Config?.packInfo?.label))
-            .ToList();
-
-        var resolvedPacks = candidates
-            .Where(c => !string.IsNullOrEmpty(c.Config?.packInfo?.label))
-            .GroupBy(c => c.Config.packInfo.label)
-            .Select(group =>
-            {
-                var sorted = group
-                    .Select(c => new { Candidate = c, Version = GetVersion(c.Config.packInfo.version) })
-                    .OrderByDescending(x => x.Version)
-                    .ToList();
-
-                var winner = sorted.First();
-
-                if (sorted.Count > 1)
-                {
-                    Log.LogWarning($"[ResourceEx] Label Conflict: '{group.Key}'. Selected '{winner.Candidate.PackageName}' (v{winner.Version}) over others: {string.Join(", ", sorted.Skip(1).Select(s => s.Candidate.PackageName))}");
-                }
-
-                return winner.Candidate;
-            });
-
-        finalPacks.AddRange(resolvedPacks);
-
-        foreach (var pack in finalPacks)
-        {
-            if (pack.Config?.packInfo != null)
-            {
-                var info = pack.Config.packInfo;
-                string authors = info.authors != null ? string.Join(", ", info.authors) : "Unknown";
-                Log.LogMessage($"Loaded Resource Pack: {info.name} [{info.label}] v{info.version} by {authors}");
-            }
-            else
-            {
-                Log.LogInfo($"Loading resource package: {pack.PackageName} from {pack.ZipPath}");
-            }
-
-            ApplyConfig(pack);
-        }
-    }
-
-    private static void ApplyConfig(PackCandidate pack)
-    {
-        var config = pack.Config;
-        string packageName = pack.PackageName;
-        string packageRootInfo = $"{pack.ZipPath}|{pack.InternalPrefix}";
-
-        // Register resource package to asset provider for memory-cached access
-        try
-        {
-            var resourcePackage = new ResourcePackage(pack.ZipPath, pack.InternalPrefix);
-            _assetProvider.RegisterPackage(resourcePackage);
-            Log.LogInfo($"[{packageName}] Loaded ZIP into memory, size: {new FileInfo(pack.ZipPath).Length / 1024} KB");
-        }
-        catch (System.Exception ex)
-        {
-            Log.LogError($"[{packageName}] Failed to load ZIP into memory: {ex.Message}");
-        }
+        // Register asset package to provider
+        _assetProvider.RegisterPackage(package.AssetPackage);
 
         if (config?.characters != null)
         {
             foreach (var charConfig in config.characters)
             {
-                charConfig.PackageRoot = packageRootInfo;
+                charConfig.PackageRoot = packageRoot;
                 _characterConfigs[(charConfig.id, charConfig.type)] = charConfig;
                 Log.LogInfo($"[{packageName}] Loaded config for character {charConfig.name} ({charConfig.id}, {charConfig.type})");
             }
@@ -277,22 +141,10 @@ public static partial class ResourceExManager
             foreach (var pkgConfig in config.dialogPackages)
             {
                 var dialogList = new CustomDialogList();
-                dialogList.packageName = DialogPackageNamePrefix + pkgConfig.name;
+                dialogList.packageName = pkgConfig.name;
                 foreach (var d in pkgConfig.dialogList)
                 {
-                    var speakerType = SpeakerIdentity.Identity.Unknown;
-                    if (!string.IsNullOrEmpty(d.characterType) && System.Enum.TryParse<SpeakerIdentity.Identity>(d.characterType, true, out var st))
-                    {
-                        speakerType = st;
-                    }
-
-                    var position = Position.Left;
-                    if (System.Enum.TryParse<Position>(d.position, out var pos))
-                    {
-                        position = pos;
-                    }
-
-                    dialogList.AddDialog(d.characterId, speakerType, d.pid, position, d.text);
+                    dialogList.AddDialog(d.characterId, d.characterType, d.pid, d.position, d.text);
                 }
                 _dialogPackageConfigs[pkgConfig.name] = dialogList;
                 Log.LogInfo($"[{packageName}] Loaded dialog package: {pkgConfig.name}");
@@ -303,7 +155,7 @@ public static partial class ResourceExManager
         {
             foreach (var ingredientConfig in config.ingredients)
             {
-                ingredientConfig.PackageRoot = packageRootInfo;
+                ingredientConfig.PackageRoot = packageRoot;
                 IngredientConfigs[ingredientConfig.id] = ingredientConfig;
                 Log.LogInfo($"[{packageName}] Loaded config for ingredient {ingredientConfig.id}");
             }
@@ -313,7 +165,7 @@ public static partial class ResourceExManager
         {
             foreach (var foodConfig in config.foods)
             {
-                foodConfig.PackageRoot = packageRootInfo;
+                foodConfig.PackageRoot = packageRoot;
                 FoodConfigs[foodConfig.id] = foodConfig;
                 Log.LogInfo($"[{packageName}] Loaded config for food {foodConfig.name} ({foodConfig.id})");
             }
@@ -323,7 +175,7 @@ public static partial class ResourceExManager
         {
             foreach (var beverageConfig in config.beverages)
             {
-                beverageConfig.PackageRoot = packageRootInfo;
+                beverageConfig.PackageRoot = packageRoot;
                 BeverageConfigs[beverageConfig.id] = beverageConfig;
                 Log.LogInfo($"[{packageName}] Loaded config for beverage {beverageConfig.name} ({beverageConfig.id})");
             }
