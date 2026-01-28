@@ -7,7 +7,7 @@ namespace MetaMystia;
 [AutoLog]
 public static partial class PrepSceneManager
 {
-    public static PrepAction.Table localPrepTable = new ();
+    public static PrepAction.Table localPrepTable = new();
 
     public static readonly int MaxRecipes = 8;
     public static readonly int MaxBeverages = 8;
@@ -62,7 +62,7 @@ public static partial class PrepSceneManager
             int id = kvp.Key;
             long addTs = kvp.Value;
             long delTs = deletions.ContainsKey(id) ? deletions[id] : 0;
-            
+
             if (addTs > delTs)
             {
                 validItems.Add(kvp);
@@ -241,7 +241,7 @@ public static partial class PrepSceneManager
                 Log.LogWarning($"{itemTypeName} with ID {kvp.Key} not found in GameData.Core.Collections.DataBaseCore.{itemTypeName}s");
             }
         }
-        
+
         Log.LogInfo($"Updated {listName} with {dailyList.Count} items.");
     }
 
@@ -279,7 +279,7 @@ public static partial class PrepSceneManager
 
         var sourceSlots = EnsureLocalCookerSlots();
 
-        int usableLength = cookerConfigure.Length; // 该数组长度即为实际可用长度(3/6/8)
+        int usableLength = cookerConfigure.Length; // 该数组长度即为实际可用长度(3/6/8) // 20260128注: 特殊场景如 博丽大祭 可能有 不同情况如 10 个
 
         for (int i = 0; i < usableLength; i++)
         {
@@ -312,21 +312,17 @@ public static partial class PrepSceneManager
     }
     public static void UpdateUI()
     {
-        if (IzakayaConfigPannelPatch.instanceRef == null)
-        {
-            return;
-        }
-        IzakayaConfigPannelPatch.instanceRef.SolveDailyCompletion();
-        IzakayaConfigPannelPatch.instanceRef.m_CookerGroup?.UpdateGroupRaw();
-        IzakayaConfigPannelPatch.instanceRef.m_BeverageGroup?.UpdateGroupRaw();
-        IzakayaConfigPannelPatch.instanceRef.m_RecipeGroup?.UpdateGroupRaw();
+        IzakayaConfigPannelPatch.instanceRef?.SolveDailyCompletion();
+        IzakayaConfigPannelPatch.instanceRef?.m_CookerGroup?.UpdateGroupRaw();
+        IzakayaConfigPannelPatch.instanceRef?.m_BeverageGroup?.UpdateGroupRaw();
+        IzakayaConfigPannelPatch.instanceRef?.m_RecipeGroup?.UpdateGroupRaw();
     }
 
     public static void ClearGroups()
     {
         GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.DailyRecipes.Clear();
         GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.DailyBeverages.Clear();
-        // GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.CookerConfigure.Clear(); 
+        // GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance.CookerConfigure.Clear();
         // System.ExecutionEngineException: Attempting to call method 'UnityEngine.InputSystem.Utilities.ArrayHelpers::Clear<System.Int32>' for which no ahead of time (AOT) code was generated.
     }
 
