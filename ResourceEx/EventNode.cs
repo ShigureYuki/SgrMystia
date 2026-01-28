@@ -22,57 +22,44 @@ public static partial class ResourceExManager
 
     private static void CheckAndActivateKizunaEventNode(CharacterConfig config)
     {
-        var scheduledEvents = GameData.RunTime.Common.RunTimeScheduler.scheduledEvents;
-        if (scheduledEvents[-1].Contains(config.kizuna.lv1UpgradePrerequisiteEvent) ||
-            scheduledEvents[-1].Contains(config.kizuna.lv2UpgradePrerequisiteEvent) ||
-            scheduledEvents[-1].Contains(config.kizuna.lv3UpgradePrerequisiteEvent) ||
-            scheduledEvents[-1].Contains(config.kizuna.lv4UpgradePrerequisiteEvent))
+        var currentBondLevel = RunTimeAlbum.RefOrGenerateSpecialRunTimeData(config.id).CurrentBondLevel;
+
+        if (!TryGetPrerequisiteEventForBondLevel(config.kizuna, currentBondLevel, out var prerequisiteEvent))
+        {
+            if (currentBondLevel != 5)
+            {
+                Log.Error($"Invalid bond level {currentBondLevel} for character {config.name}({config.id})");
+            }
+            return;
+        }
+
+        var scheduledEvents = RunTimeScheduler.scheduledEvents[-1];
+        if (scheduledEvents.Contains(prerequisiteEvent))
         {
             return;
         }
 
-        var currentBondLevel = RunTimeAlbum.RefOrGenerateSpecialRunTimeData(config.id).CurrentBondLevel;
-        switch (currentBondLevel)
+        if (RunTimeScheduler.finishedEvents.Contains(prerequisiteEvent))
         {
-            case 1:
-                if (RunTimeScheduler.finishedEvents.Contains(config.kizuna.lv1UpgradePrerequisiteEvent))
-                {
-                    Log.Info($"Kizuna event node for character {config.name}({config.id}) at bond level 1 already finished.");
-                    return;
-                }
-                scheduledEvents[-1].Add(config.kizuna.lv1UpgradePrerequisiteEvent);
-                break;
-            case 2:
-                if (RunTimeScheduler.finishedEvents.Contains(config.kizuna.lv2UpgradePrerequisiteEvent))
-                {
-                    Log.Info($"Kizuna event node for character {config.name}({config.id}) at bond level 2 already finished.");
-                    return;
-                }
-                scheduledEvents[-1].Add(config.kizuna.lv2UpgradePrerequisiteEvent);
-                break;
-            case 3:
-                if (RunTimeScheduler.finishedEvents.Contains(config.kizuna.lv3UpgradePrerequisiteEvent))
-                {
-                    Log.Info($"Kizuna event node for character {config.name}({config.id}) at bond level 3 already finished.");
-                    return;
-                }
-                scheduledEvents[-1].Add(config.kizuna.lv3UpgradePrerequisiteEvent);
-                break;
-            case 4:
-                if (RunTimeScheduler.finishedEvents.Contains(config.kizuna.lv4UpgradePrerequisiteEvent))
-                {
-                    Log.Info($"Kizuna event node for character {config.name}({config.id}) at bond level 4 already finished.");
-                    return;
-                }
-                scheduledEvents[-1].Add(config.kizuna.lv4UpgradePrerequisiteEvent);
-                break;
-            case 5:
-                break;
-            default:
-                Log.Error($"Invalid bond level {currentBondLevel} for character {config.name}({config.id})");
-                break;
+            Log.Info($"Kizuna event node for character {config.name}({config.id}) at bond level {currentBondLevel} already finished.");
+            return;
         }
+
+        scheduledEvents.Add(prerequisiteEvent);
         Log.Info($"Activated kizuna event node for character {config.name}({config.id}) at bond level {currentBondLevel}");
+    }
+
+    private static bool TryGetPrerequisiteEventForBondLevel(KizunaEventConfig kizuna, int bondLevel, out string prerequisiteEvent)
+    {
+        prerequisiteEvent = bondLevel switch
+        {
+            1 => kizuna.lv1UpgradePrerequisiteEvent,
+            2 => kizuna.lv2UpgradePrerequisiteEvent,
+            3 => kizuna.lv3UpgradePrerequisiteEvent,
+            4 => kizuna.lv4UpgradePrerequisiteEvent,
+            _ => null
+        };
+        return prerequisiteEvent != null;
     }
 
     private static void RegisterAllEventNodes() => EventNodeConfigs.ToList().ForEach(RegisterEventNode);
