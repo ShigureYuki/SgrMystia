@@ -109,11 +109,8 @@ public partial class GuestLeaveAction : SendAffectStoryAction
                 // Just in case the LeaveFromDesk method fail
                 if (WorkSceneManager.GetInDeskGuest(deskcode)?.GetGuestUUID() == GuestUUID)
                 {
-                    // TODO: use LeaveFromDesk impl
                     Log.Error($"{fsm.Identifier} still in desk, try remove..");
-                    fsm.SafeLeaveFromDesk();
-                    // WorkSceneManager.RemoveOccupiedDesk(deskcode);
-                    // WorkSceneManager.RemoveOrder(guest);
+                    fsm.SafeLeaveFromDesk(triggerOnLeaveCallback: false);
                     // GuestsManager.instance?.registeredCharacterArrivedEvents?.Remove(deskcode);
                 }
             },

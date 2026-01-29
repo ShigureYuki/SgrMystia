@@ -194,7 +194,9 @@ public partial class GuestFSM
         fSMState.OnEnter();
     }
 
-    public string Identifier => $"{GuestController?.OnGetGuestName()}-{GuestUUID}-[{DeskCode + 1}]";
+    public string GuestName => GuestController?.OnGetGuestName();
+    public GuestType GuestType => GuestController?.ControllType ?? GuestType.Normal;
+    public string Identifier => $"{GuestName}-{GuestUUID}-[{DeskCode + 1}]";
 
     public void Update()
     {

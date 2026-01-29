@@ -380,7 +380,7 @@ public static partial class WorkSceneManager
         return RemoveOccupiedDesk(targetDeskCode);
     }
 
-    public static void SafeLeaveFromDesk(this GuestFSM fSM)
+    public static void SafeLeaveFromDesk(this GuestFSM fSM, bool triggerOnLeaveCallback = true)
     {
         var controller = fSM.GuestController;
         if (controller == null) return;
@@ -398,12 +398,12 @@ public static partial class WorkSceneManager
             NightScene.UI.UIManager.Instance.guestBuffMarkModule?.ClearBuffMarkWhenTargetDeskGuestLeave(controller.DeskCode);
             GuestsManager.Instance.SetGuestOutDesk(controller);
             GuestsManager.Instance.SetPlayerCanNotRepelGuest(controller);
-            controller.OnLeaveDeskCallback?.Invoke(controller);
+            if (triggerOnLeaveCallback) controller.OnLeaveDeskCallback?.Invoke(controller);
             controller.TryReleaseAllServedFood();
             controller.MoveToSpawn();
             GuestsManager.Instance.CheckAndSendFromQueue();
         };
-        if (controller.ControllType == GuestsManager.GuestType.Special && controller is SpecialGuestsController sgc)
+        if (controller.ControllType == GuestsManager.GuestType.Special && controller is SpecialGuestsController sgc && triggerOnLeaveCallback)
         {
             sgc.TriggerLeaveBuff(ConfirmLeave);
         }
