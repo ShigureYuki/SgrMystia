@@ -5,9 +5,11 @@ using DEYU.Utils;
 using GameData.Core.Collections.CharacterUtility;
 using GameData.CoreLanguage.Collections;
 using GameData.Profile;
+using GameData.Core.Collections.DaySceneUtility;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MetaMiku;
 using MetaMystia.ResourceEx.Mappers;
+using DayScene.Interactables;
 using MetaMystia.ResourceEx.Models;
 using SgrYuki.Utils;
 using UnityEngine;
@@ -46,8 +48,10 @@ public static partial class ResourceExManager
     {
         return _characterConfigs.Values;
     }
+    public static bool IsResourceExSpecialGuest(this int id, string type = "Special") => _characterConfigs.ContainsKey((id, type));
+    public static bool IsResourceExSpecialGuest(this string stringId, string type = "Special") => _characterConfigs.Values.Any(c => c.label == stringId && c.type == type);
 
-    public static CharacterConfig GetCharacterConfig(int id, string type)
+    public static CharacterConfig GetCharacterConfig(int id, string type = "Special")
     {
         if (_characterConfigs.TryGetValue((id, type), out var config))
         {
@@ -353,6 +357,38 @@ public static partial class ResourceExManager
         // }
     }
 
+
+    private static void RegisterAllSpawnMarkers()
+    {
+        Log.Info($"Registering Spawn Markers from ResourceEx...");
+        GetAllCharacterConfigs()
+            .Select(c => c.spawnMarker ?? new SpawnMarkerConfig() { mapLabel = "BeastForest", x = 0f, y = 0f, rotation = DayScene.Input.DayScenePlayerInputGenerator.CharacterRotation.Down })
+            .ToList()
+            .ForEach(RegisterSpawnMarker);
+    }
+
+    private static void RegisterSpawnMarker(SpawnMarkerConfig config)
+    {
+        var mapLabel = DataBaseDay.allSpawnMarkerLabels.ContainsKey(config.mapLabel) ? config.mapLabel : "BeastForest";
+        DataBaseDay.allSpawnMarkerLabels[mapLabel].Add(config.mapLabel);
+        Log.Info($"Registered Spawn Marker for map: {config.mapLabel}");
+    }
+
+    public static SpawnMarkerConfig GetSpawnMarkerConfig(this string stringId) =>
+        GetAllCharacterConfigs()
+            .FirstOrDefault(c => c.label == stringId)
+            ?.spawnMarker
+            ?? new SpawnMarkerConfig()
+            {
+                mapLabel = "BeastForest",
+                x = 0f,
+                y = 0f,
+                rotation = DayScene.Input.DayScenePlayerInputGenerator.CharacterRotation.Down
+            };
+
+
+
+
     private static void InitializeAllDaySpawnConfigs()
     {
         GetAllCharacterConfigs()
@@ -364,7 +400,7 @@ public static partial class ResourceExManager
     private static void InitializeDaySpawnConfig(CharacterConfig config)
     {
         // TODO: 实现更合适的白天生成配置
-        GameData.RunTime.DaySceneUtility.RunTimeDayScene.MoveCharacter(config.label, "BeastForest", new Vector2(114, 514), 0, out var oldNPCData);
+        // GameData.RunTime.DaySceneUtility.RunTimeDayScene.MoveCharacter(config.label, "BeastForest", new Vector2(114, 514), 0, out var oldNPCData);
         Log.Info($"Initialized Day Scene Spawn Config for Special Guest: {config.name} ({config.id})");
     }
 

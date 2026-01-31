@@ -48,6 +48,7 @@ public static partial class ResourceExManager
     public static void OnDataBaseDayInitialized()
     {
         RegisterNPCs();
+        RegisterAllSpawnMarkers();
     }
     public static void OnDataBaseLanguageInitialized()
     {

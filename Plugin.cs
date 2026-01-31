@@ -36,6 +36,7 @@ public class Plugin : BasePlugin
         typeof(CharacterControllerUnitPatch),
         typeof(CharacterInputPatch),
         typeof(DayScenePlayerInputPatch),
+        typeof(DaySceneMapPatch),
         // typeof(RunTimeSchedulerPatch),
 
         // PrepScene Patches

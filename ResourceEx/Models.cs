@@ -20,8 +20,18 @@ public class CharacterConfig
     public GuestConfig guest { get; set; }
     public CharacterSpriteSetCompactConfig characterSpriteSetCompact { get; set; }
     public KizunaEventConfig kizuna { get; set; }
+    public SpawnMarkerConfig spawnMarker { get; set; }
     public string PackageRoot { get; set; }
 }
+
+public class SpawnMarkerConfig
+{
+    public string mapLabel { get; set; } = "BeastForest";
+    public float x { get; set; } = 0f;
+    public float y { get; set; } = 0f;
+    public DayScene.Input.DayScenePlayerInputGenerator.CharacterRotation rotation { get; set; } = DayScene.Input.DayScenePlayerInputGenerator.CharacterRotation.Down;
+}
+
 
 public class KizunaEventConfig
 {
