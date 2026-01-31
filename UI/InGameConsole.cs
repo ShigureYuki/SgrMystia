@@ -301,6 +301,14 @@ public partial class InGameConsole
                     System.Console.OutputEncoding = System.Text.Encoding.UTF8;
                     LogToConsole("BepinEX console enabled");
                     break;
+                case "whereami":
+                    if (MpManager.LocalScene != Common.UI.Scene.DayScene)
+                    {
+                        LogToConsole("Not in Day Scene");
+                        break;
+                    }
+                    LogToConsole($"label = {MystiaManager.MapLabel}, position = {MystiaManager.Position}");
+                    break;
                 default:
                     LogToConsole("Unknown command: " + command);
                     HelpCommand();
@@ -313,7 +321,7 @@ public partial class InGameConsole
 
     private void HelpCommand()
     {
-        LogToConsole("Available commands: /help, /clear, /get, /mp, /call, /debug, /webdebug, /enable_bepin_console");
+        LogToConsole("Available commands: /help, /clear, /get, /mp, /call, /debug, /webdebug, /enable_bepin_console, /whereami");
     }
 
     private void GetCommand(string[] args)
