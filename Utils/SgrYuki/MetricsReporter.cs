@@ -5,6 +5,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 using MetaMystia;
 
 namespace SgrYuki;
@@ -69,16 +70,28 @@ public static partial class MetricsReporter
         return null;
     }
 
+    private static string ReadMachineGuidFromRegistry()
+    {
+        try
+        {
+            var value = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography", "MachineGuid", null) as string;
+            if (!string.IsNullOrEmpty(value)) return value.Trim();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"Failed to read MachineGuid from registry: {ex.Message}");
+            return null;
+        }
+    }
+
     private static string GetMachineId()
     {
         try
         {
             var computerName = Environment.MachineName;
             var userName = Environment.UserName;
-            var osVersion = Environment.OSVersion.VersionString;
-            var processorCount = Environment.ProcessorCount;
 
-            var combined = $"{computerName}|{userName}|{osVersion}|{processorCount}";
+            var combined = $"{computerName}|{userName}";
             return combined;
         }
         catch (Exception ex)
@@ -92,21 +105,20 @@ public static partial class MetricsReporter
 
     private static readonly Lazy<string> _cachedUserId = new(() =>
     {
-        var identifiers = new List<string>();
+        var machineGuid = ReadMachineGuidFromRegistry();
+        if (!string.IsNullOrEmpty(machineGuid))
+        {
+            var id = MD5(machineGuid);
+            Log.Message($"User ID generated from MachineGuid: {id}");
+            return id;
+        }
 
         var machineId = GetMachineId();
         if (!string.IsNullOrEmpty(machineId))
-            identifiers.Add($"MACHINE:{machineId}");
-
-        var macAddress = GetActiveMacAddress();
-        if (!string.IsNullOrEmpty(macAddress))
-            identifiers.Add($"MAC:{macAddress}");
-
-        if (identifiers.Count > 0)
         {
-            var combined = MD5(string.Join("|", identifiers));
-            Log.Message($"User ID generated from: {combined}");
-            return combined;
+            var id = MD5(machineId);
+            Log.Message($"User ID generated from MachineId: {id}");
+            return id;
         }
 
         var fallbackId = Guid.NewGuid().ToString("N");
