@@ -285,7 +285,7 @@ public static partial class Mappers
             .WithHateFoodTags(config.guest.hateFoodTag)
             .WithLikeFoodTags(config.guest.likeFoodTag)
             .WithLikeBevTags(config.guest.likeBevTag)
-            .WithDestination(config.label) // spawn marker label
+            // .WithDestination(config.label) // DO NOT ENABLE
             .Build();
     }
 

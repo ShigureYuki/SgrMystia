@@ -31,6 +31,11 @@ public static partial class ResourceExManager
             return;
         }
 
+        if (RunTimeScheduler.scheduledEvents == null || !RunTimeScheduler.scheduledEvents.ContainsKey(-1))
+        {
+            Log.Error("RunTimeScheduler.scheduledEvents is null!");
+            return;
+        }
         var scheduledEvents = RunTimeScheduler.scheduledEvents[-1];
         if (scheduledEvents.Contains(prerequisiteEvent))
         {

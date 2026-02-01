@@ -21,7 +21,7 @@ internal class SpecialGuestBuilder
     private int[] _hateFoodTag;
     private Il2CppReferenceArray<SpecialGuest.WeightedTag> _likeFoodTag;
     private Il2CppReferenceArray<SpecialGuest.WeightedTag> _likeBevTag;
-    private NPC.Destination _destination;
+    // private NPC.Destination _destination;
 
     private SpecialGuestBuilder(SpecialGuest template)
     {
@@ -68,17 +68,17 @@ internal class SpecialGuestBuilder
         return this;
     }
 
-    public SpecialGuestBuilder WithDestination(string spawnMarkerName)
-    {
-        _destination = new NPC.Destination()
-        {
-            spawnMarker = spawnMarkerName,
-            initialDialogPackIDs = new Il2CppStringArray(0),
-            interactiveAreaSize = _template.destination.interactiveAreaSize,
-            stayTime = _template.destination.stayTime
-        };
-        return this;
-    }
+    // public SpecialGuestBuilder WithDestination(string spawnMarkerName)
+    // {
+    //     _destination = new NPC.Destination()
+    //     {
+    //         spawnMarker = spawnMarkerName,
+    //         initialDialogPackIDs = new Il2CppStringArray(0),
+    //         interactiveAreaSize = _template.destination.interactiveAreaSize,
+    //         stayTime = _template.destination.stayTime
+    //     };
+    //     return this;
+    // }
 
     public SpecialGuest Build()
     {
@@ -90,7 +90,7 @@ internal class SpecialGuestBuilder
             _likeFoodTag,   // 喜欢的食物标签权重
             _likeBevTag,    // 喜欢的饮品标签权重
             _template.Reaction, // ？
-            _destination,  // 白天生成位置
+            _template.destination,  // 白天生成位置
             _template.CommisionAreaLabel,   // 委托采集对应地图标签，例如 (0)Wriggle 是 BeastForest，(3)Akyuu 是 HumanVillage，似乎对尚未实现自定义地图的 mod 无用
             _template.characterKizunaLevel1Welcome,
             _template.characterKizunaLevel2Welcome,
