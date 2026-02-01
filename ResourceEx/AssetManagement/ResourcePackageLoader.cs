@@ -189,6 +189,8 @@ public static partial class ResourcePackageLoader
             var info = candidate.Config.packInfo;
             string authors = info.authors != null ? string.Join(", ", info.authors) : "Unknown";
             Log.LogMessage($"Loaded Resource Pack: {info.name} [{info.label}] v{info.version} by {authors}");
+
+            Notify.ShowOnNextAvailableScene($"已加载资源包 {info.name} [{info.label}] v{info.version}");
         }
         else
         {
