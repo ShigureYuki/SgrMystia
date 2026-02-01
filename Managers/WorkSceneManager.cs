@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -11,6 +12,7 @@ using NightScene.GuestManagementUtility;
 using NightScene.Tiles;
 using SgrYuki;
 using SgrYuki.Utils;
+using UnityEngine;
 namespace MetaMystia;
 
 [AutoLog]
@@ -66,7 +68,7 @@ public static partial class WorkSceneManager
         public bool IsSpecial { get; set; } = false;
 
         [JsonIgnore]
-        public UnityEngine.Vector3? OverrideSpawnPosition { get; set; } = null;
+        public Vector3? OverrideSpawnPosition { get; set; } = null;
         public GuestGroupController.LeaveType LeaveType { get; set; } = GuestGroupController.LeaveType.Move;
     }
 
@@ -135,6 +137,77 @@ public static partial class WorkSceneManager
     public static void DelayedSafeAddMaxPatient(GuestGroupController guest, int patientSecs = PatientAddedSecs)
         => CommandScheduler.DelayExecute(1, () => SafeAddMaxPatient(guest, patientSecs));
 
+    private static Il2CppSystem.Collections.Generic.Dictionary<int, Vector2> SpecialGuestPool => GameData.RunTime.NightSceneUtility.IzakayaConfigure.Instance?.specialGuestPool;
+    public static Dictionary<int, Vector2> PeerAvailableSpecialGuestPool
+    {
+        get
+        {
+            if (field != null) return field;
+            field = SpecialGuestPool
+                .ToList()
+                .Where(pair => DLCManager.PeerSpecialGuestAvailable(pair.Key))
+                .ToDictionary(keySelector: pair => pair.Key, elementSelector: pair => pair.Value);
+            return RebuildWeightIntervals(PeerAvailableSpecialGuestPool);
+        }
+        set;
+    }
+
+    public static int SampleByWeight(this Dictionary<int, Vector2> dict)
+    {
+        float r = UnityEngine.Random.value;
+
+        foreach (var kv in dict)
+        {
+            Vector2 range = kv.Value;
+            if (r >= range.x && r < range.y)
+                return kv.Key;
+        }
+        return dict.First().Key;
+    }
+
+    public static int GetRandomSpecialGuestIdFromThisIzakaya()
+    {
+        if (PeerAvailableSpecialGuestPool.Count == 0)
+        {
+            Log.Error($"dict is empty, will random select from CoreSpecialGuests");
+            return DLCManager.CoreSpecialGuests.GetRandomOne();
+        }
+        return PeerAvailableSpecialGuestPool.SampleByWeight();
+    }
+
+    private static Dictionary<int, Vector2> RebuildWeightIntervals(Dictionary<int, Vector2> dict)
+    {
+        var entries = new List<(int key, float weight)>();
+        float totalWeight = 0f;
+
+        foreach (var kv in dict)
+        {
+            float w = kv.Value.y - kv.Value.x;
+            if (w > 0f)
+            {
+                entries.Add((kv.Key, w));
+                totalWeight += w;
+            }
+        }
+
+        if (totalWeight <= 0f)
+            throw new InvalidOperationException("剩余区间总权重为 0");
+
+        float current = 0f;
+        foreach (var (key, weight) in entries)
+        {
+            float normalized = weight / totalWeight;
+            dict[key] = new Vector2(current, current + normalized);
+            current += normalized;
+        }
+
+        // （可选）数值误差修正
+        // 保证最后一个 y == 1
+        var lastKey = entries[^1].key;
+        dict[lastKey] = new Vector2(dict[lastKey].x, 1f);
+        return dict;
+    }
+
 
 
     //private static int getGuestControllerHashCode(GuestGroupController controller) => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(controller);
@@ -149,6 +222,7 @@ public static partial class WorkSceneManager
         guestIds.Clear();
         guestFSMs.Clear();
         normalGuestProfilePairIndexQueue.Clear();
+        PeerAvailableSpecialGuestPool = null;
         ClearGuestCommandSchedulerQueue();
     }
 
@@ -235,9 +309,9 @@ public static partial class WorkSceneManager
             guests.Add(guest2);
         }
 
-        Il2CppSystem.Nullable<UnityEngine.Vector3> overrideSpawnPosition = guestInfo.OverrideSpawnPosition.HasValue
-            ? new Il2CppSystem.Nullable<UnityEngine.Vector3>(guestInfo.OverrideSpawnPosition.Value)
-            : new Il2CppSystem.Nullable<UnityEngine.Vector3>();
+        Il2CppSystem.Nullable<Vector3> overrideSpawnPosition = guestInfo.OverrideSpawnPosition.HasValue
+            ? new Il2CppSystem.Nullable<Vector3>(guestInfo.OverrideSpawnPosition.Value)
+            : new Il2CppSystem.Nullable<Vector3>();
 
         var controller = GuestsManagerPatch.SpawnNormalGuestGroup_Original_MinHook(
                 GuestsManager.instance, guests.ToIEnumerable(), overrideSpawnPosition, guestInfo.LeaveType);
@@ -260,7 +334,7 @@ public static partial class WorkSceneManager
     {
         var controller = GuestsManagerPatch.SpawnSpecialGuestGroup_Original(
                 GuestsManager.instance, guestInfo.Id, SpecialGuestsController.GuestSpawnType.Normal,
-                new Il2CppSystem.Nullable<UnityEngine.Vector3>(), leaveType: guestInfo.LeaveType);
+                new Il2CppSystem.Nullable<Vector3>(), leaveType: guestInfo.LeaveType);
 
         StoreGuest(controller, UUID);
 
@@ -303,7 +377,7 @@ public static partial class WorkSceneManager
                 if (current == 0) onMovementFinishCallback.Invoke();
             };
 
-            var colliderCollections = __instance.tileManager.GetCollider(seatDir[deskSeat], new Il2CppSystem.Collections.Generic.IReadOnlyList<UnityEngine.Vector3Int>(__instance.tileManager.PasserBorder.Pointer));
+            var colliderCollections = __instance.tileManager.GetCollider(seatDir[deskSeat], new Il2CppSystem.Collections.Generic.IReadOnlyList<Vector3Int>(__instance.tileManager.PasserBorder.Pointer));
 
             Log.Debug($"setting path for {uuid}, desk {deskCode}, seat {deskSeat}");
 
@@ -313,7 +387,7 @@ public static partial class WorkSceneManager
                 i * 0.2f,
                 onArrive,
                 NightScene.Tiles.TileManager.FindDirection(seatDir[deskSeat], desk.tablePosition),
-                new Il2CppSystem.Nullable<UnityEngine.Vector3>()
+                new Il2CppSystem.Nullable<Vector3>()
             );
             seatDir.RemoveAt(deskSeat);
         }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using DEYU.Utils;
 using GameData.Core.Collections.CharacterUtility;
@@ -228,7 +229,7 @@ public partial class GuestsManagerPatch
     [HarmonyPatch(nameof(GuestsManager.SpawnSpecialGuestGroup))]
     [HarmonyPrefix]
     public static bool SpawnSpecialGuestGroup_Prefix(GuestsManager __instance, ref SpecialGuestsController __result,
-        int id,
+        ref int id,
         SpecialGuestsController.GuestSpawnType guestSpawnType,
         ref Il2CppSystem.Nullable<UnityEngine.Vector3> overrideSpawnPosition,
         Il2CppSystem.Action<GuestGroupController> onGuestLeave,
@@ -258,8 +259,8 @@ public partial class GuestsManagerPatch
 
         if (!DLCManager.PeerSpecialGuestAvailable(id))
         {
-            var newId = DLCManager.CoreSpecialGuests.GetRandomOne();
-            Log.LogWarning($"id {id} is not available for peer, use new {newId}");
+            var newId = WorkSceneManager.GetRandomSpecialGuestIdFromThisIzakaya();
+            Log.WarningCaller($"id {id} is not available for peer, use new {newId}");
             id = newId;
         }
         __result = SpawnSpecialGuestGroup_Original(__instance, id, guestSpawnType, overrideSpawnPosition, onGuestLeave, leaveType, recordIzakaya, targetDeskCode, tryToJumpQueue, postProcessCharacterCallback, shouldFade);

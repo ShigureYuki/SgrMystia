@@ -279,8 +279,6 @@ public static partial class MetricsReporter
                     {
                         Notify.ShowOnNextAvailableScene($"您的 Mod 版本为 {currentVer}，最新版为 {latestVer}，建议更新到最新版！");
                     }
-                    // FIXME: Remove this when mod is stable
-                    Notify.ShowOnNextAvailableScene($"此版本 {currentVer} 不稳定，如您在游玩过程中遇到问题，可以回退到上一个大版本（如v0.12.4）");
                     if (!PluginManager.DEBUG)
                     {
                         _ = ReportEvent("Client", "Run", currentVer);
