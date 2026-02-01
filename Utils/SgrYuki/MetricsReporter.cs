@@ -80,8 +80,8 @@ public static partial class MetricsReporter
         catch (Exception ex)
         {
             Log.Warning($"Failed to read MachineGuid from registry: {ex.Message}");
-            return null;
         }
+        return null;
     }
 
     private static string GetMachineId()
