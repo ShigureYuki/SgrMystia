@@ -79,6 +79,8 @@ public static partial class ResourceExManager
     {
         // RegisterAllMissionNodes(); // 依赖 Dialog
         // RegisterAllEventNodes(); // 依赖 Dialog
+        RegisterAllMissionNodesMapping();
+        RegisterAllEventNodesMapping();
     }
     public static void OnNightSceneLanguageInitialized()
     {
@@ -94,7 +96,8 @@ public static partial class ResourceExManager
     public static void OnDaySceneAwake()
     {
         InitializeAllDaySpawnConfigs();
-        ActivateAllKizunaEventNodes();
+        CheckAndReloadSchedulerData();
+        ActivateAllKizunaEventNodes(); // 依赖 CheckAndReloadSchedulerData
     }
 
     /// <summary>

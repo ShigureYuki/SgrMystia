@@ -97,17 +97,7 @@ public partial class PluginManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.F1))
             {
-                var allMerchants = GameData.Core.Collections.DaySceneUtility.DataBaseDay.allMerchants;
-                foreach (var kvp in allMerchants)
-                {
-                    var merchant = kvp.Value;
-                    Log.Warning($"Merchant ID: {kvp.Key}");
-                    Log.Warning($"  - leastSellNum: \t{merchant.leastSellNum}");
-                    Log.Warning($"  - nullDialogPackage: \t{merchant.nullDialogPackage.Count} dialog packages");
-                    Log.Warning($"  - welcomeDialogPackage: \t{merchant.welcomeDialogPackage.Count} dialog packages");
-                    Log.Warning($"  - priceMultiplierRange: \t{merchant.priceMultiplierRange}");
-                    Log.Warning($"  - merchandiseCollection: \t{merchant.merchandiseCollection.Count} items");
-                }
+                ResourceExManager.LogNotLoadedSchedulerData();
             }
 
             if (Input.GetKeyDown(KeyCode.F9))

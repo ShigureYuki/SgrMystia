@@ -389,7 +389,7 @@ public static partial class ResourceExManager
 
 
 
-    private static void InitializeAllDaySpawnConfigs()
+    public static void InitializeAllDaySpawnConfigs()
     {
         GetAllCharacterConfigs()
             .Where(c => c.spawnMarker != null)

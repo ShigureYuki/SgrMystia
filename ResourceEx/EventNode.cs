@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using GameData.Core.Collections;
 using GameData.RunTime.Common;
@@ -71,5 +72,19 @@ public static partial class ResourceExManager
         var eventNode = config.ToEventNode();
         var success = DataBaseScheduler.allNodes.TryAdd(config.label, eventNode);
         Log.Info($"Registering EventNode {config.debugLabel}({config.label}), success: {success}");
+    }
+
+
+    private static void RegisterAllEventNodesMapping() => EventNodeConfigs.ToList().ForEach(RegisterEventNodeMapping);
+    private static void RegisterEventNodeMapping(EventNodeConfig config)
+    {
+        try
+        {
+            DataBaseScheduler.AllNodesMapping[config.label] = "ResourceEx";
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"Failed to register EventNode mapping for {config.label}: {ex.Message}");
+        }
     }
 }

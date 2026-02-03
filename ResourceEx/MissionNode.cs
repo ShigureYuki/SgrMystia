@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using GameData.Core.Collections;
 using GameData.CoreLanguage.Collections;
@@ -24,5 +25,17 @@ public static partial class ResourceExManager
         var missionNode = config.ToMissionNode();
         var success = DataBaseScheduler.allNodes.TryAdd(missionNode.label, missionNode);
         Log.Info($"Registered MissionNode {config.title}({config.label}): Success: {success}");
+    }
+    private static void RegisterAllMissionNodesMapping() => MissionNodeConfigs.ToList().ForEach(RegisterMissionNodeMapping);
+    private static void RegisterMissionNodeMapping(MissionNodeConfig config)
+    {
+        try
+        {
+            DataBaseScheduler.AllNodesMapping[config.label] = "ResourceEx";
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"Failed to register MissionNode mapping for {config.label}: {ex.Message}");
+        }
     }
 }
