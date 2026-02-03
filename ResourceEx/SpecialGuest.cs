@@ -386,18 +386,15 @@ public static partial class ResourceExManager
                 rotation = DayScene.Input.DayScenePlayerInputGenerator.CharacterRotation.Down
             };
 
-
-
-
-    public static void InitializeAllDaySpawnConfigs()
+    public static void RefreshAllDayNpcs()
     {
         GetAllCharacterConfigs()
             .Where(c => c.spawnMarker != null)
             .ToList()
-            .ForEach(InitializeDaySpawnConfig);
+            .ForEach(RefreshDayNpc);
     }
 
-    private static void InitializeDaySpawnConfig(CharacterConfig config)
+    private static void RefreshDayNpc(CharacterConfig config)
     {
         // TODO: 实现更合适的白天生成配置
         if (config.spawnMarker == null) return;

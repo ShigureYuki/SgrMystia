@@ -29,7 +29,8 @@ public partial class DaySceneMapPatch
             character.Character.rb2d.transform.position = new Vector3(spawnMarkerConfig.x, spawnMarkerConfig.y, 0);
             character.Character.SetRotation((int)spawnMarkerConfig.rotation);
             isNPCOnMap = __instance.mapLabel.Equals(spawnMarkerConfig.mapLabel);
-            Log.Info($"Placed Special Guest NPC: {npc.key} at ({spawnMarkerConfig.x}, {spawnMarkerConfig.y}) on map: {spawnMarkerConfig.mapLabel}. IsNPCOnMap: {isNPCOnMap}");
+            // ResourceExManager.RefreshAllDayNpcs 导致此处有大量重复日志，因此这里注释掉
+            // Log.Info($"Placed Special Guest NPC: {npc.key} at ({spawnMarkerConfig.x}, {spawnMarkerConfig.y}) on map: {spawnMarkerConfig.mapLabel}. IsNPCOnMap: {isNPCOnMap}");
             return false;
         }
         return true;

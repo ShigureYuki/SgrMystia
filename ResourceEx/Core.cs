@@ -95,7 +95,7 @@ public static partial class ResourceExManager
 
     public static void OnDaySceneAwake()
     {
-        InitializeAllDaySpawnConfigs();
+        RefreshAllDayNpcs();
         CheckAndReloadSchedulerData();
         ActivateAllKizunaEventNodes(); // 依赖 CheckAndReloadSchedulerData
     }
