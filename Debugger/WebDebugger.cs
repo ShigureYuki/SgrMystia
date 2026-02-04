@@ -31,7 +31,7 @@ namespace MetaMystia.Debugger
                 OpenInBrowser();
                 return;
             }
-            
+
             try
             {
                 _token = GenerateToken();
@@ -65,7 +65,7 @@ namespace MetaMystia.Debugger
             {
                 byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()));
                 StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < 16; i++) 
+                for (int i = 0; i < 16; i++)
                 {
                     builder.Append(bytes[i].ToString("x2"));
                 }
@@ -111,12 +111,12 @@ namespace MetaMystia.Debugger
                     using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
                     {
                         string expression = reader.ReadToEnd();
-                        
+
                         InspectionResult result;
                         if (PluginManager.Instance != null)
                         {
                             var tcs = new TaskCompletionSource<InspectionResult>();
-                            PluginManager.Instance.RunOnMainThread(() => 
+                            PluginManager.Instance.RunOnMainThread(() =>
                             {
                                 try
                                 {
@@ -133,11 +133,55 @@ namespace MetaMystia.Debugger
                         {
                             result = new InspectionResult { Error = "PluginManager not initialized" };
                         }
-                        
+
                         string json = System.Text.Json.JsonSerializer.Serialize(result);
 
                         byte[] buffer = Encoding.UTF8.GetBytes(json);
                         response.ContentType = "application/json";
+                        response.ContentLength64 = buffer.Length;
+                        response.OutputStream.Write(buffer, 0, buffer.Length);
+                    }
+                }
+                else if (request.Url.AbsolutePath == "/eval-lua" && request.HttpMethod == "POST")
+                {
+                    using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
+                    {
+                        string expression = reader.ReadToEnd();
+
+                        string result = "";
+                        if (PluginManager.LuaVm != null)
+                        {
+                            var tcs = new TaskCompletionSource<string>();
+                            PluginManager.Instance.RunOnMainThread(() =>
+                            {
+                                try
+                                {
+                                    object[] res = PluginManager.LuaVm.DoString(expression);
+                                    if (res != null && res.Length > 0)
+                                    {
+                                        var sb = new StringBuilder();
+                                        foreach (var r in res) sb.Append(r?.ToString() + " ");
+                                        tcs.SetResult(sb.ToString());
+                                    }
+                                    else
+                                    {
+                                        tcs.SetResult("OK");
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    tcs.SetResult("Error: " + ex.Message);
+                                }
+                            });
+                            result = await tcs.Task;
+                        }
+                        else
+                        {
+                            result = "Lua VM not initialized";
+                        }
+
+                        byte[] buffer = Encoding.UTF8.GetBytes(result);
+                        response.ContentType = "text/plain";
                         response.ContentLength64 = buffer.Length;
                         response.OutputStream.Write(buffer, 0, buffer.Length);
                     }
@@ -148,7 +192,7 @@ namespace MetaMystia.Debugger
                     if (PluginManager.Instance != null)
                     {
                         var tcs = new TaskCompletionSource<object>();
-                        PluginManager.Instance.RunOnMainThread(() => 
+                        PluginManager.Instance.RunOnMainThread(() =>
                         {
                             try
                             {
@@ -165,7 +209,7 @@ namespace MetaMystia.Debugger
                     {
                         result = new { error = "PluginManager not initialized" };
                     }
-                    
+
                     string json = System.Text.Json.JsonSerializer.Serialize(result);
                     byte[] buffer = Encoding.UTF8.GetBytes(json);
                     response.ContentType = "application/json";
@@ -179,7 +223,7 @@ namespace MetaMystia.Debugger
                     {
                         string state = "";
                         try { state = t.ThreadState.ToString(); } catch { state = "Unknown"; }
-                        
+
                         string priority = "";
 #pragma warning disable CA1416 // 验证平台兼容性
                         try { priority = t.PriorityLevel.ToString(); } catch { priority = "Unknown"; }
@@ -190,12 +234,13 @@ namespace MetaMystia.Debugger
 
                         threads.Add(new { Id = t.Id, State = state, Priority = priority, WaitReason = waitReason });
                     }
-                    
+
                     ThreadPool.GetAvailableThreads(out int wA, out int ioA);
                     ThreadPool.GetMaxThreads(out int wM, out int ioM);
-                    
+
                     var proc = System.Diagnostics.Process.GetCurrentProcess();
-                    var procInfo = new {
+                    var procInfo = new
+                    {
                         Name = proc.ProcessName,
                         Id = proc.Id,
                         Memory = (proc.WorkingSet64 / 1024 / 1024) + " MB",
@@ -204,12 +249,13 @@ namespace MetaMystia.Debugger
                         Threads = proc.Threads.Count
                     };
 
-                    var data = new {
+                    var data = new
+                    {
                         Stats = $"Worker Threads: {wA}/{wM}, IO Threads: {ioA}/{ioM}",
                         Threads = threads,
                         Process = procInfo
                     };
-                    
+
                     string json = System.Text.Json.JsonSerializer.Serialize(data);
                     byte[] buffer = Encoding.UTF8.GetBytes(json);
                     response.ContentType = "application/json";
@@ -220,11 +266,11 @@ namespace MetaMystia.Debugger
                 {
                     string className = request.QueryString["className"];
                     string json = "[]";
-                    
+
                     if (PluginManager.Instance != null)
                     {
                         var tcs = new TaskCompletionSource<string>();
-                        PluginManager.Instance.RunOnMainThread(() => 
+                        PluginManager.Instance.RunOnMainThread(() =>
                         {
                             try
                             {
@@ -239,7 +285,7 @@ namespace MetaMystia.Debugger
                         });
                         json = await tcs.Task;
                     }
-                    
+
                     byte[] buffer = Encoding.UTF8.GetBytes(json);
                     response.ContentType = "application/json";
                     response.ContentLength64 = buffer.Length;
@@ -249,11 +295,11 @@ namespace MetaMystia.Debugger
                 {
                     int index = int.Parse(request.QueryString["index"]);
                     string result = "";
-                    
+
                     if (PluginManager.Instance != null)
                     {
                         var tcs = new TaskCompletionSource<string>();
-                        PluginManager.Instance.RunOnMainThread(() => 
+                        PluginManager.Instance.RunOnMainThread(() =>
                         {
                             try
                             {
@@ -267,7 +313,7 @@ namespace MetaMystia.Debugger
                         });
                         result = await tcs.Task;
                     }
-                    
+
                     byte[] buffer = Encoding.UTF8.GetBytes(result);
                     response.ContentType = "text/plain";
                     response.ContentLength64 = buffer.Length;
@@ -295,7 +341,7 @@ namespace MetaMystia.Debugger
                 response.OutputStream.Close();
             }
         }
-        
+
         public void Dispose()
         {
             _isRunning = false;
