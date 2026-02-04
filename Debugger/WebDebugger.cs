@@ -22,6 +22,9 @@ namespace MetaMystia.Debugger
         {
             _listener = new HttpListener();
             _listener.Prefixes.Add("http://localhost:21101/");
+
+            // Initialize Lua VM when WebDebugger is created
+            LuaDebugger.Initialize();
         }
 
         public void Start()
@@ -149,24 +152,39 @@ namespace MetaMystia.Debugger
                         string expression = reader.ReadToEnd();
 
                         string result = "";
-                        if (PluginManager.LuaVm != null)
+                        if (LuaDebugger.LuaVm != null)
                         {
                             var tcs = new TaskCompletionSource<string>();
                             PluginManager.Instance.RunOnMainThread(() =>
                             {
                                 try
                                 {
-                                    object[] res = PluginManager.LuaVm.DoString(expression);
+                                    // Get DebugHelper instance to capture print output
+                                    var debugHelper = LuaDebugger.DebugHelper;
+
+                                    object[] res = LuaDebugger.LuaVm.DoString(expression);
+
+                                    var sb = new StringBuilder();
+
+                                    // First, add any captured print output
+                                    if (debugHelper != null)
+                                    {
+                                        string printOutput = debugHelper.GetLuaOutput();
+                                        if (!string.IsNullOrEmpty(printOutput))
+                                        {
+                                            sb.AppendLine(printOutput.TrimEnd());
+                                        }
+                                    }
+
+                                    // Then add return values if any
                                     if (res != null && res.Length > 0)
                                     {
-                                        var sb = new StringBuilder();
+                                        if (sb.Length > 0) sb.AppendLine();
+                                        sb.Append("=> ");
                                         foreach (var r in res) sb.Append(r?.ToString() + " ");
-                                        tcs.SetResult(sb.ToString());
                                     }
-                                    else
-                                    {
-                                        tcs.SetResult("OK");
-                                    }
+
+                                    tcs.SetResult(sb.Length > 0 ? sb.ToString() : "OK");
                                 }
                                 catch (Exception ex)
                                 {

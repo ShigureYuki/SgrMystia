@@ -9,8 +9,6 @@ using GameData.Profile;
 using GameData.Profile.SchedulerNodeCollection;
 using HarmonyLib;
 using Il2CppInterop.Runtime;
-using MetaMystia.Debugger; // Added namespace for DebugHelper
-using NLua;
 using SgrYuki;
 using SgrYuki.Utils;
 using UnityEngine;
@@ -35,7 +33,6 @@ public partial class PluginManager : MonoBehaviour
     private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
     private readonly List<(Action action, Func<bool> condition)> _conditionalActions = new List<(Action, Func<bool>)>();
     public static bool DEBUG => Plugin.ConfigDebug.Value;
-    public static NLua.Lua LuaVm { get; private set; }
 
     public PluginManager(IntPtr ptr) : base(ptr)
     {
@@ -66,14 +63,6 @@ public partial class PluginManager : MonoBehaviour
             intervalSeconds: ChangePluginNameCommandInterval,
             execute: () => PluginName = PluginNames.GetRandomOne()
         );
-
-        if (LuaVm == null)
-        {
-            LuaVm = new Lua();
-            LuaVm.LoadCLRPackage();
-            LuaVm["debug"] = new DebugHelper();
-            LuaVm.DoString("print('Lua VM Initialized')");
-        }
     }
 
     private void OnGUI()
