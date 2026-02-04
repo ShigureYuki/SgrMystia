@@ -595,12 +595,18 @@ public static partial class WorkSceneManager
     {
         if (guestGroup == null) throw new NullReferenceException();
         Log.InfoCaller($"generating order for {guestGroup.GetGuestFSM()?.Identifier}: {orderData.OrderDescription()}");
+
+        guestGroup.RefreshCurrentFundAndOrder();
         TileManager.Instance?.GuestTables[guestGroup.DeskCode].tableDisplayer.CleanDesk();
         guestGroup.OnFinishOrderCallback?.Invoke(guestGroup);
         guestGroup.PushToOrder(orderData);
         GuestsManager.Instance.onOrderAdd?.Invoke(orderData);
+
         Action<GuestGroupController> onPatientDepeletedCallback = GuestsManager.Instance.PatientDepletedLeave;
         GuestsManager.Instance.AddToPatientCountdown(guestGroup, onPatientDepeletedCallback);
+
+        var onCharacterArrived = () => GuestsManager.Instance.ShowOrder(guestGroup);
+        GuestsManager.Instance.registeredCharacterArrivedEvents.Add(guestGroup.DeskCode, onCharacterArrived);
     }
 
 

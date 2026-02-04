@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Il2CppInterop.Runtime;
 using Il2CppSystem.Linq;
 
 namespace SgrYuki.Utils;
@@ -317,6 +318,11 @@ public static class ContainerExtensions
             }
         }
         return result;
+    }
+
+    public static Il2CppSystem.Type ToIl2cppType(this System.Type T)
+    {
+        return Il2CppType.From(T);
     }
 }
 

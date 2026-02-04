@@ -52,9 +52,7 @@ public static partial class MinHook_SpawnNormalGuestGroup
     {
         Log.DebugCaller($"called");
         if (!GuestsManagerPatch.SpawnNormalGuestGroup_WithArg_Manual_Call
-            && MpManager.IsConnectedClient
-            && MpManager.LocalScene == Common.UI.Scene.WorkScene
-            && !MpManager.InStory)
+            && MpManager.IsConnectedClient && !MpManager.InStory)
         {
             return IntPtr.Zero;
         }
@@ -75,46 +73,45 @@ public static partial class MinHook_SpawnNormalGuestGroup
             return IntPtr.Zero;
         }
 
-        if (MpManager.IsConnectedHost && MpManager.LocalScene == Common.UI.Scene.WorkScene && !MpManager.InStory)
+        if (MpManager.ShouldSkipAction || MpManager.IsClient) return res;
+
+        var guestGroupControllerCvt = new GuestGroupController(res);
+        // var normalGuestsCvt = new Il2CppSystem.Collections.Generic.IEnumerable<NormalGuest>(normalGuests);
+        var overrideSpawnPositionCvt = new Il2CppSystem.Nullable<UnityEngine.Vector3>(overrideSpawnPosition);
+
+        // uuid stored in PostInitializeGuestGroup_Prefix
+        string uuid = WorkSceneManager.GetGuestUUID(guestGroupControllerCvt);
+        var array = guestGroupControllerCvt.GetAllGuests().ToIl2CppReferenceArray();
+
+        var guestVisualArray = DataBaseCharacter.NormalGuestVisual.Get(array[0].id).SortByToString();
+        int visualId1 = guestVisualArray.IndexAtByToString(array[0].CharacterPixel);
+        Log.InfoCaller($"{uuid} visualId1 found at {visualId1} => {guestVisualArray[visualId1].ToString()}");
+
+        var info = new WorkSceneManager.GuestInfo
         {
-            var guestGroupControllerCvt = new GuestGroupController(res);
-            // var normalGuestsCvt = new Il2CppSystem.Collections.Generic.IEnumerable<NormalGuest>(normalGuests);
-            var overrideSpawnPositionCvt = new Il2CppSystem.Nullable<UnityEngine.Vector3>(overrideSpawnPosition);
-
-            // uuid stored in PostInitializeGuestGroup_Prefix
-            string uuid = WorkSceneManager.GetGuestUUID(guestGroupControllerCvt);
-            var array = guestGroupControllerCvt.GetAllGuests().ToIl2CppReferenceArray();
-
-            var guestVisualArray = DataBaseCharacter.NormalGuestVisual.Get(array[0].id).SortByToString();
-            int visualId1 = guestVisualArray.IndexAtByToString(array[0].CharacterPixel);
-            Log.InfoCaller($"{uuid} visualId1 found at {visualId1} => {guestVisualArray[visualId1].ToString()}");
-
-            var info = new WorkSceneManager.GuestInfo
-            {
-                Id = array[0].id,
-                VisualId = visualId1,
-                IsSpecial = false,
-                LeaveType = (GuestGroupController.LeaveType)leaveType
-            };
-            if (overrideSpawnPositionCvt.HasValue && overrideSpawnPositionCvt.Value.sqrMagnitude > 0.25 * 0.25 * 3 && overrideSpawnPositionCvt.Value.sqrMagnitude < 15 * 15 * 3) // min: 0.25*0.25*3 / max: 15*15*3
-            {
-                info.OverrideSpawnPosition = overrideSpawnPositionCvt.Value;
-                Log.InfoCaller($"overrideSpawnPositionCvt, {overrideSpawnPositionCvt.Value}");
-            }
-            if (array.Length > 1)
-            {
-                var guestVisualArray2 = DataBaseCharacter.NormalGuestVisual.Get(array[1].id).SortByToString();
-                int visualId2 = guestVisualArray2.IndexAtByToString(array[1].CharacterPixel);
-                Log.InfoCaller($"{uuid} visualId2 found at {visualId2} => {guestVisualArray2[visualId2].ToString()}");
-
-                info.Id2 = array[1].id;
-                info.VisualId2 = visualId2;
-            }
-            GuestSpawnAction.Send(uuid, info);
-
-            var fsm = WorkSceneManager.GetOrCreateGuestFSM(uuid);
-            fsm.ChangeState(WorkSceneManager.Status.Generated);
+            Id = array[0].id,
+            VisualId = visualId1,
+            IsSpecial = false,
+            LeaveType = (GuestGroupController.LeaveType)leaveType
+        };
+        if (overrideSpawnPositionCvt.HasValue && overrideSpawnPositionCvt.Value.sqrMagnitude > 0.25 * 0.25 * 3 && overrideSpawnPositionCvt.Value.sqrMagnitude < 15 * 15 * 3) // min: 0.25*0.25*3 / max: 15*15*3
+        {
+            info.OverrideSpawnPosition = overrideSpawnPositionCvt.Value;
+            Log.InfoCaller($"overrideSpawnPositionCvt, {overrideSpawnPositionCvt.Value}");
         }
+        if (array.Length > 1)
+        {
+            var guestVisualArray2 = DataBaseCharacter.NormalGuestVisual.Get(array[1].id).SortByToString();
+            int visualId2 = guestVisualArray2.IndexAtByToString(array[1].CharacterPixel);
+            Log.InfoCaller($"{uuid} visualId2 found at {visualId2} => {guestVisualArray2[visualId2].ToString()}");
+
+            info.Id2 = array[1].id;
+            info.VisualId2 = visualId2;
+        }
+        GuestSpawnAction.Send(uuid, info);
+
+        var fsm = WorkSceneManager.GetOrCreateGuestFSM(uuid);
+        fsm.ChangeState(WorkSceneManager.Status.Generated);
         return res;
     }
 }
