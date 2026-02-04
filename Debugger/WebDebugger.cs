@@ -21,7 +21,7 @@ namespace MetaMystia.Debugger
         public WebDebugger()
         {
             _listener = new HttpListener();
-            _listener.Prefixes.Add("http://localhost:21101/");
+            _listener.Prefixes.Add("http://127.0.0.1:21101/");
 
             // Initialize Lua VM when WebDebugger is created
             LuaDebugger.Initialize();
@@ -40,7 +40,7 @@ namespace MetaMystia.Debugger
                 _token = GenerateToken();
                 _listener.Start();
                 _isRunning = true;
-                string url = $"http://localhost:21101/?token={_token}";
+                string url = $"http://127.0.0.1:21101/?token={_token}";
                 _log.LogInfo($"Web Debugger started on {url}");
                 OpenInBrowser();
                 Task.Run(ListenLoop);
@@ -58,7 +58,7 @@ namespace MetaMystia.Debugger
                 _log.LogWarning("Web Debugger token is not generated yet.");
                 return;
             }
-            string url = $"http://localhost:21101/?token={_token}";
+            string url = $"http://127.0.0.1:21101/?token={_token}";
             Application.OpenURL(url);
         }
 
@@ -99,6 +99,16 @@ namespace MetaMystia.Debugger
 
             try
             {
+                // Only accept connections from 127.0.0.1
+                var remoteIp = request.RemoteEndPoint.Address;
+                if (!IPAddress.IsLoopback(remoteIp))
+                {
+                    _log.LogWarning($"Rejected connection from non-loopback address: {remoteIp}");
+                    response.StatusCode = 403;
+                    response.Close();
+                    return;
+                }
+
                 string reqToken = request.QueryString["token"];
                 bool isAuthenticated = !string.IsNullOrEmpty(reqToken) && reqToken == _token;
 
