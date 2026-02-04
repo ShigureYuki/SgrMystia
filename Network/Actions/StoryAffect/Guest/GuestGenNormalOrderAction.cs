@@ -50,11 +50,12 @@ public partial class GuestGenNormalOrderAction : SendAffectStoryAction
             var guest = fsm.GuestController;
             var array = guest.GetAllGuests().TryCast<Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GuestBase>>();
             var normalOrder = Order.ToNormalOrder(array[0]);
-            fsm.EnqueueOrder(normalOrder, Message);
+            // fsm.EnqueueOrder(normalOrder, Message);
 
             try
             {
-                GuestsManagerPatch.GenerateOrderSession_Original(GuestsManager.instance, guest, true);
+                // GuestsManagerPatch.GenerateOrderSession_Original(GuestsManager.instance, guest, true);
+                WorkSceneManager.ClientGenerateOrderSession(guest, normalOrder, Message);
                 WorkSceneManager.DelayedSafeAddMaxPatient(guest);
                 fsm.ResetOrderServed();
                 fsm.TryGenerateOrder();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using GameData.Core.Collections;
 using NightScene.GuestManagementUtility;
 using static NightScene.GuestManagementUtility.GuestsManager;
 
@@ -30,7 +31,6 @@ public partial class GuestFSM
     private int _deskCode = -1;
     private int _deskSeatCode = -1;
     private (bool foodServed, bool beverageServed) _orderFulfilled = (false, false);
-    private ConcurrentQueue<(OrderBase, string)> _orders = new();
 
     public GuestFSM(string guestUUID)
     {
@@ -95,22 +95,6 @@ public partial class GuestFSM
     public void SetDeskSeatCode(int seatCode)
     {
         _deskSeatCode = seatCode;
-    }
-
-    /// <summary>
-    /// 入队订单
-    /// </summary>
-    public void EnqueueOrder(OrderBase order, string orderMessage)
-    {
-        _orders.Enqueue((order, orderMessage));
-    }
-
-    /// <summary>
-    /// 出队订单
-    /// </summary>
-    public bool DequeueOrder(out (OrderBase, string) orderTuple)
-    {
-        return _orders.TryDequeue(out orderTuple);
     }
 
     /// <summary>

@@ -70,7 +70,7 @@ public static partial class MystiaManager
                 }
                 return Common.SceneDirector.Instance.characterCollection["Self"];
             default:
-                Log.LogWarning($"GetCharacterComponent called in invalid scene");
+                Log.DebugCaller($"invalid scene");
                 return null;
         }
     }

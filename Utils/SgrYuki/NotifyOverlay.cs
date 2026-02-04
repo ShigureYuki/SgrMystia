@@ -53,11 +53,14 @@ public static partial class NotifyOverlay
 
     public static void CacheTMPUGUI(string text)
     {
+        if (_cachedFontAsset != null && _cachedFontMaterial != null) return;
         _cachedTMPUGUI ??= TextMeshProUGUIs.FirstOrDefault((tmp) => tmp.text.Equals(text));
         if (_cachedTMPUGUI != null)
         {
             _cachedFontAsset = _cachedTMPUGUI.font;
             _cachedFontMaterial = _cachedTMPUGUI.fontMaterial;
+            Object.DontDestroyOnLoad(_cachedFontAsset);
+            Object.DontDestroyOnLoad(_cachedFontMaterial);
             Log.InfoCaller($"cached {_cachedTMPUGUI.font.name}");
         }
     }

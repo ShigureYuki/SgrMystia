@@ -32,21 +32,6 @@ public partial class GuestsManagerPatch
     // public static readonly System.Threading.AsyncLocal<bool> PassGuestSpawn = new();
     public static volatile bool SpawnNormalGuestGroup_WithArg_Manual_Call = false;
 
-    public static int IndexAt(string uuid, Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<CharacterSpriteSetCompact> arr, CharacterSpriteSetCompact item)
-    {
-        int result = 0;
-        var itemString = item.ToString();
-        for (int i = 0; i < arr.Length; i++)
-        {
-            if (itemString.Equals(arr[i].ToString()))
-            {
-                result = i;
-                Log.LogMessage($"{uuid} found at {i} => {itemString}");
-                break;
-            }
-        }
-        return result;
-    }
     [HarmonyPatch(nameof(GuestsManager.PostInitializeGuestGroup))]
     [HarmonyPrefix]
     public static void PostInitializeGuestGroup_Prefix(GuestGroupController initializedController)
@@ -109,35 +94,26 @@ public partial class GuestsManagerPatch
     [HarmonyPrefix]
     public static bool SpawnNormalGuestGroup_Prefix()
     {
-        // Log.LogInfo($"SpawnNormalGuestGroup_Prefix called");
-        if (!MpManager.ShouldSkipAction)
+        if (MpManager.ShouldSkipAction) return true;
+        if (MpManager.IsClient) return false;
+
+        var cook = NightScene.CookingUtility.CookSystemManager.Instance;
+        while (true)
         {
-            if (MpManager.IsClient)
+            var guestGroups = cook?.GetRandomNormalGuestGroups();
+            if (guestGroups == null)
             {
+                Log.LogError($"CookSystemManager failed to GetRandomNormalGuestGroups!");
+                return true;
+            }
+            var arr = guestGroups.ToArray();
+            if (arr.All((guest) => DLCManager.PeerNormalGuestAvailable(guest.id)))
+            {
+                _ = SpawnNormalGuestGroup_Original_MinHook(
+                            GuestsManager.instance, guestGroups, new Il2CppSystem.Nullable<UnityEngine.Vector3>(), GuestGroupController.LeaveType.Move, -1, true);
                 return false;
             }
-            else
-            {
-                var cook = NightScene.CookingUtility.CookSystemManager.Instance;
-                while (true)
-                {
-                    var guestGroups = cook?.GetRandomNormalGuestGroups();
-                    if (guestGroups == null)
-                    {
-                        Log.LogError($"CookSystemManager failed to GetRandomNormalGuestGroups!");
-                        return true;
-                    }
-                    var arr = guestGroups.ToArray();
-                    if (arr.All((guest) => DLCManager.PeerNormalGuestAvailable(guest.id)))
-                    {
-                        _ = SpawnNormalGuestGroup_Original_MinHook(
-                                    GuestsManager.instance, guestGroups, new Il2CppSystem.Nullable<UnityEngine.Vector3>(), GuestGroupController.LeaveType.Move, -1, true);
-                        return false;
-                    }
-                }
-            }
         }
-        return true;
     }
 
     public static NormalGuestsController SpawnNormalGuestGroup_Original_MinHook(
@@ -242,28 +218,29 @@ public partial class GuestsManagerPatch
     {
         overrideSpawnPosition ??= new Il2CppSystem.Nullable<UnityEngine.Vector3>();
 
-        if (MpManager.ShouldSkipAction)
-        {
-            return true;
-        }
+        if (MpManager.ShouldSkipAction) return true;
 
         bool IsReimuSpellCardTriggered = Functional.CheckStacktraceContains("InitializeAsGeneralWorkScene");
-        if (IsReimuSpellCardTriggered)
-        {
-            return true;
-        }
-        if (MpManager.IsClient)
-        {
-            return false;
-        }
+        if (IsReimuSpellCardTriggered) return true;
+
+        if (MpManager.IsClient) return false;
 
         if (!DLCManager.PeerSpecialGuestAvailable(id))
         {
             var newId = WorkSceneManager.GetRandomSpecialGuestIdFromThisIzakaya();
+            if (newId == -1)
+            {
+                Log.WarningCaller($"id {id} is not available for peer, and no more available guests tonight, will not generate");
+                return false;
+            }
             Log.WarningCaller($"id {id} is not available for peer, use new {newId}");
             id = newId;
         }
         __result = SpawnSpecialGuestGroup_Original(__instance, id, guestSpawnType, overrideSpawnPosition, onGuestLeave, leaveType, recordIzakaya, targetDeskCode, tryToJumpQueue, postProcessCharacterCallback, shouldFade);
+        if (__result != null)
+        {
+            NightScene.EventUtility.EventManager.Instance?.SetTargetGuestHasSpawnedHandle?.Invoke(id);
+        }
         var info = new WorkSceneManager.GuestInfo
         {
             Id = id,
@@ -276,7 +253,6 @@ public partial class GuestsManagerPatch
         if (uuid == null) return false;
         GuestSpawnAction.Send(uuid, info);
 
-        // 通过FSM转移状态
         var fsm = WorkSceneManager.GetOrCreateGuestFSM(uuid);
         fsm.ChangeState(WorkSceneManager.Status.Generated);
 
@@ -332,7 +308,7 @@ public partial class GuestsManagerPatch
                         GuestSeatedAction.Send(guuid, copiedTargetDeskCode, firstSpawn, seatRand);
                     },
                     timeoutSeconds: 10);
-                Log.LogDebug($"TrySendToSeat_Prefix called, desk code {targetDeskCode}, seat {seatRand}");
+                Log.DebugCaller($"desk code {targetDeskCode}, seat {seatRand}");
 
             }
         }
@@ -350,39 +326,35 @@ public partial class GuestsManagerPatch
     [HarmonyPrefix]
     public static bool LeaveFromDesk_Prefix(GuestsManager __instance, GuestGroupController toLeave)
     {
-        if (!MpManager.ShouldSkipAction)
+        if (MpManager.ShouldSkipAction) return true;
+
+        bool IsReimuSpellCardTriggered = Functional.CheckStacktraceContains("InitializeAsGeneralWorkScene");
+        if (IsReimuSpellCardTriggered) return true;
+
+        var uuid = WorkSceneManager.GetGuestUUID(toLeave);
+        if (uuid == null) return true;
+
+        var fsm = WorkSceneManager.GetGuestFSM(uuid);
+        Log.InfoCaller($"{fsm.Identifier} try leaving");
+
+        if (WorkSceneManager.IsGuestNull(toLeave))
         {
-            bool IsReimuSpellCardTriggered = Functional.CheckStacktraceContains("InitializeAsGeneralWorkScene");
-            if (IsReimuSpellCardTriggered)
+            Log.ErrorCaller($"{fsm.Identifier} toLeave or its component is null, will stop executing LeaveFromDesk");
+            return false;
+        }
+
+        if (MpManager.IsClient)
+        {
+            return WorkSceneManager.CheckStatus(uuid, WorkSceneManager.Status.Left);
+        }
+        else
+        {
+            if (WorkSceneManager.CheckStatus(uuid, WorkSceneManager.Status.Left))
             {
                 return true;
             }
-
-            var uuid = WorkSceneManager.GetGuestUUID(toLeave);
-            if (uuid == null) return true;
-
-            var fsm = WorkSceneManager.GetGuestFSM(uuid);
-            Log.InfoCaller($"{fsm.Identifier} leaving");
-
-            if (WorkSceneManager.IsGuestNull(toLeave))
-            {
-                Log.ErrorCaller($"{fsm.Identifier} toLeave or its component is null, will stop executing LeaveFromDesk");
-                return false;
-            }
-
-            if (MpManager.IsClient)
-            {
-                return WorkSceneManager.CheckStatus(uuid, WorkSceneManager.Status.Left);
-            }
-            else
-            {
-                if (WorkSceneManager.CheckStatus(uuid, WorkSceneManager.Status.Left))
-                {
-                    return true;
-                }
-                WorkSceneManager.GetGuestFSM(uuid)?.TryLeave();
-                GuestLeaveAction.Send(uuid, GuestLeaveAction.LeaveType.LeaveFromDesk);
-            }
+            WorkSceneManager.GetGuestFSM(uuid)?.TryLeave();
+            GuestLeaveAction.Send(uuid, GuestLeaveAction.LeaveType.LeaveFromDesk);
         }
 
         return true;
@@ -579,20 +551,35 @@ public partial class GuestsManagerPatch
     [HarmonyPrefix]
     public static bool GuestPay_Prefix(GuestsManager __instance, GuestGroupController toPayAndLeave, bool includeTip)
     {
-        Log.InfoCaller($"called for {toPayAndLeave.GetGuestFSM(LogError: false)?.Identifier}");
-        if (MpManager.IsConnectedHost && !MpManager.InStory)
+        if (MpManager.ShouldSkipAction) return true;
+        var uuid = toPayAndLeave.GetGuestUUID();
+        if (uuid == null) return true;
+        var fsm = WorkSceneManager.GetGuestFSM(uuid);
+
+        if (MpManager.IsHost)
         {
-            var uuid = toPayAndLeave.GetGuestUUID();
-            if (uuid == null) return true;
             // NightScene_GuestManagementUtility_GuestsManager__GenerateOrderSession
             // Stacktrace: GenerateOrderSession -> GuestPay(here) -> LeaveFromDesk
             if (Functional.CheckStacktraceContains("GenerateOrderSession"))
             {
-                WorkSceneManager.GetGuestFSM(uuid)?.TryLeave();
+                fsm?.TryLeave();
                 GuestLeaveAction.Send(uuid, GuestLeaveAction.LeaveType.PayAndLeave);
             }
+            return true;
         }
-        return true;
+        else
+        {
+            if (WorkSceneManager.CheckStatus(uuid, WorkSceneManager.Status.Left))
+            {
+                Log.InfoCaller($"{fsm?.Identifier} allow to pay");
+                return true;
+            }
+            else
+            {
+                Log.InfoCaller($"{fsm?.Identifier} not allow to pay now");
+                return false;
+            }
+        }
     }
 
     [HarmonyPatch(nameof(GuestsManager.Eval))]
@@ -634,17 +621,17 @@ public partial class GuestsManagerPatch
     [HarmonyPrefix]
     public static bool GenerateOrderSession_Prefix(GuestsManager __instance, GuestGroupController guestGroup, bool doContinue)
     {
-        if (MpManager.IsConnected && !MpManager.InStory)
-        {
-            var uuid = WorkSceneManager.GetGuestUUID(guestGroup);
-            if (uuid == null) return true;
-            WorkSceneManager.GetGuestFSM(uuid)?.TryPendingOrder();
+        if (MpManager.ShouldSkipAction) return true;
 
-            if (MpManager.IsClient)
-            {
-                Log.LogInfo($"GenerateOrderSession prevented for {uuid.GetGuestFSM()?.Identifier}");
-                return false;
-            }
+        var uuid = WorkSceneManager.GetGuestUUID(guestGroup);
+        if (uuid == null) return true;
+        var fsm = uuid.GetGuestFSM();
+        fsm?.TryPendingOrder();
+
+        if (MpManager.IsClient)
+        {
+            Log.InfoCaller($"prevented for {fsm?.Identifier}");
+            return false;
         }
         return true;
     }

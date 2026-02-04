@@ -24,11 +24,12 @@ public partial class GuestGenSPOrderAction : SendAffectStoryAction
             var guest = fsm.GuestController;
             var array = guest.GetAllGuests().TryCast<Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GuestBase>>();
             var SPOrder = Order.ToSpecialOrder(array[0].Pointer);
-            fsm.EnqueueOrder(SPOrder, Message);
+            // fsm.EnqueueOrder(SPOrder, Message);
 
             try
             {
-                GuestsManagerPatch.GenerateOrderSession_Original(GuestsManager.instance, guest, true);
+                // GuestsManagerPatch.GenerateOrderSession_Original(GuestsManager.instance, guest, true);
+                WorkSceneManager.ClientGenerateOrderSession(guest, SPOrder, Message);
 
                 WorkSceneManager.DelayedSafeAddMaxPatient(guest);
 

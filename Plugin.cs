@@ -124,10 +124,6 @@ public class Plugin : BasePlugin
 
             // ShigureYuki.DebugClassPatcher.PatchAllInnerClass(ref harmony, typeof(ShigureYuki.DebugConsolePatch));
             Network.Action.RegisterAllFormatter();
-
-            ResourceExManager.Initialize();
-
-            MetricsReporter.OnPluginInitialized();
         }
         catch (Exception ex)
         {
@@ -146,7 +142,10 @@ public class Plugin : BasePlugin
         FirstEnterMain = false;
         Instance.Log.LogInfo("First time entering Main Scene.");
 
+        ResourceExManager.Initialize();
         DLCManager.Initialize();
+
+        MetricsReporter.OnEnterMainScene();
     }
 
     class BootstrapPatch

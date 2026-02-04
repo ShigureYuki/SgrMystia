@@ -62,10 +62,7 @@ public static partial class PeerManager
 
     public static void OnFixedUpdate()
     {
-        if (!MpManager.IsConnected || MpManager.InStory)
-        {
-            return;
-        }
+        if (MpManager.ShouldSkipAction) return;
 
         var characterUnit = GetCharacterUnit();
         if (characterUnit == null)
@@ -137,27 +134,12 @@ public static partial class PeerManager
                 }
                 return Common.SceneDirector.Instance.characterCollection[KYOUKO_ID];
             default:
-                Log.LogWarning($"GetCharacterComponent called in invalid scene");
+                Log.DebugCaller($"invalid scene");
                 return null;
         }
     }
 
-    public static CharacterConditionComponent GetCharacterComponent()
-    {
-        var characterUnit = GetCharacterUnit();
-        if (characterUnit == null)
-        {
-            return null;
-        }
-        var component = characterUnit.GetComponent<CharacterConditionComponent>();
-        if (component == null)
-        {
-            Log.Debug($"CharacterConditionComponent of '{KYOUKO_ID}' is null");
-            return null;
-        }
-
-        return component;
-    }
+    public static CharacterConditionComponent GetCharacterComponent() => GetCharacterUnit()?.GetComponent<CharacterConditionComponent>();
 
     [OnMainThread]
     public static void EnableCollision(CharacterControllerUnit unit, bool enable = true)

@@ -46,14 +46,7 @@ public partial class InGameConsole
     {
         try
         {
-            // PluginLog.LogInfo($"Console: UniversalGameManager input availability before set {UniversalGameManager.IsInputEnabled}");
-            // UniversalGameManager.UpdatePlayerInputAvailability();
-            // UniversalGameManager.IsInputEnabled = !IsOpen;
             UniversalGameManager.UpdatePlayerInputAvailability(!IsOpen);
-            // DEYU.AdpUISystem.Managers.AdpUIPanelManager.PlayerInput.m_InputActive = !IsOpen;
-
-            // PluginLog.LogInfo($"Console: UniversalGameManager input availability set to {UniversalGameManager.IsInputEnabled}");
-
         }
         catch (System.Exception e)
         {

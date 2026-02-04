@@ -10,14 +10,12 @@ namespace MetaMystia;
 [AutoLog]
 public partial class WorkSceneStoragePannelPatch
 {
-
     public static WorkSceneStoragePannel instanceRef = null;
 
     [HarmonyPatch(nameof(WorkSceneStoragePannel.OnPanelOpen))]
     [HarmonyPostfix]
     public static void OnPanelOpen_Postfix(WorkSceneStoragePannel __instance)
     {
-        Log.LogDebug("OnPanelOpen_Postfix called");
         instanceRef = __instance;
     }
 
@@ -25,7 +23,6 @@ public partial class WorkSceneStoragePannelPatch
     [HarmonyPrefix]
     public static void OnPanelClose_Prefix()
     {
-        Log.LogDebug("OnPanelClose_Prefix called");
         instanceRef = null;
     }
 
@@ -34,7 +31,7 @@ public partial class WorkSceneStoragePannelPatch
     [HarmonyPrefix]
     public static bool OnExtract_Prefix(Sellable toExtract)
     {
-        Log.Warning("OnExtract_Prefix called");
+        Log.InfoCaller($"{toExtract?.id}, {toExtract?.Text?.Name}");
         if (toExtract.type == Sellable.SellableType.Beverage)
         {
             if (MpManager.IsConnected && !DLCManager.PeerBeverageAvailable(toExtract.id))

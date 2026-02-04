@@ -30,7 +30,7 @@ public partial class UniversalGameManagerPatch
             dialogPackage.dialogContext = Dialog.ExampleDialog.dialogContext;
             Log.Info($"Replaced dialogPackage.dialogContext with ExampleDialog.dialogContext");
         }
-        if (ResourceExManager.ExistsDialogPackage(dialogPackage.name) && overrideReplaceTextCallback == null) 
+        if (ResourceExManager.ExistsDialogPackage(dialogPackage.name) && overrideReplaceTextCallback == null)
         {
             UniversalGameManager.OpenDialogMenu(
                 dialogPackage,
@@ -52,7 +52,7 @@ public partial class UniversalGameManagerPatch
         {
             return true;
         }
-        
+
         Log.LogInfo($"In multiplayer session and dialogPackage is OnTransitionToNight -> show empty dialog instead");
         UniversalGameManager.OpenDialogMenu(
             null,
@@ -71,7 +71,7 @@ public partial class UniversalGameManagerPatch
         {
             if (MpManager.LocalScene == Scene.DayScene && scene == Scene.WorkScene)
             {
-                Notify.ShowOnNextAvailableScene("检测到可能在进行挑战，建议断开连接确保游戏体验!");
+                Notify.ShowOnMainThread("检测到可能在进行挑战，建议断开连接确保游戏体验!");
             }
         }
         MpManager.OnSceneTransit(Scene.LoadScene);

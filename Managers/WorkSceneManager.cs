@@ -5,7 +5,10 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using DEYU.AdpUISystem.Utils;
+using GameData.Core.Collections;
 using GameData.Core.Collections.NightSceneUtility;
+using Il2CppSystem.Linq;
 using LibCpp2IL;
 using MemoryPack;
 using NightScene.GuestManagementUtility;
@@ -13,6 +16,7 @@ using NightScene.Tiles;
 using SgrYuki;
 using SgrYuki.Utils;
 using UnityEngine;
+using UnityEngine.InputSystem;
 namespace MetaMystia;
 
 [AutoLog]
@@ -167,16 +171,27 @@ public static partial class WorkSceneManager
 
     public static int GetRandomSpecialGuestIdFromThisIzakaya()
     {
+        NightScene.EventUtility.EventManager.Instance.exiledGuestIndexes.Flatten().ForEach(Key => PeerAvailableSpecialGuestPool.Remove(Key));
+        PeerAvailableSpecialGuestPool.Keys.ToList().ForEach(Key =>
+        {
+            if (NightScene.EventUtility.EventManager.Instance?.CheckThisGuestHasSpawnedTonightHandler?.Invoke(Key) is true)
+            {
+                PeerAvailableSpecialGuestPool.Remove(Key);
+            }
+        });
+        PeerAvailableSpecialGuestPool.RebuildWeightIntervals();
         if (PeerAvailableSpecialGuestPool.Count == 0)
         {
-            Log.Error($"dict is empty, will random select from CoreSpecialGuests");
-            return DLCManager.CoreSpecialGuests.GetRandomOne();
+            Log.WarningCaller($"dict is empty, will return -1");
+            return -1;
         }
         return PeerAvailableSpecialGuestPool.SampleByWeight();
     }
 
-    private static Dictionary<int, Vector2> RebuildWeightIntervals(Dictionary<int, Vector2> dict)
+    private static Dictionary<int, Vector2> RebuildWeightIntervals(this Dictionary<int, Vector2> dict)
     {
+        if (dict.Count == 0) return dict;
+
         var entries = new List<(int key, float weight)>();
         float totalWeight = 0f;
 
@@ -205,12 +220,15 @@ public static partial class WorkSceneManager
         // 保证最后一个 y == 1
         var lastKey = entries[^1].key;
         dict[lastKey] = new Vector2(dict[lastKey].x, 1f);
+
+        Log.InfoCaller(dict.DumpElements());
         return dict;
     }
 
-
-
-    //private static int getGuestControllerHashCode(GuestGroupController controller) => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(controller);
+    public static string OrderDescription(this GuestsManager.OrderBase order)
+    {
+        return $"Food {order.foodRequest.RefFood()?.Text?.Name}, Bev {order.beverageRequest.RefBeverage()?.Text?.Name}";
+    }
 
     static WorkSceneManager()
     {
@@ -243,7 +261,7 @@ public static partial class WorkSceneManager
 
     public static string GetConnectedGuestUUID(this GuestGroupController guest)
     {
-        if (MpManager.IsConnected) return GetGuestUUID(guest);
+        if (MpManager.IsConnected) return GetGuestUUID(guest, false);
         return "not_connected";
     }
 
@@ -251,7 +269,7 @@ public static partial class WorkSceneManager
     {
         if (guest == null)
         {
-            if (LogError) Log.Error($"guest is null!");
+            if (LogError) Log.ErrorCaller($"guest is null!");
             return "";
         }
         if (guestIds.TryGetValue(guest.Pointer, out var value))
@@ -262,7 +280,7 @@ public static partial class WorkSceneManager
         {
             if (LogError)
             {
-                Log.Error($"pointer {guest.Pointer} not found");
+                Log.ErrorCaller($"pointer {guest.Pointer} not found");
                 Log.LogStacktrace();
             }
         }
@@ -559,6 +577,19 @@ public static partial class WorkSceneManager
         var dialog = GuestsManager.instance.ShowEvaluationDialog(guest, evalStr, evalRes, speaker);
         GuestsManager.instance.StartCoroutine_Auto(dialog);
     }
+
+    public static void ClientGenerateOrderSession(GuestGroupController guestGroup, GuestsManager.OrderBase orderData, string orderMessage)
+    {
+        if (guestGroup == null) throw new NullReferenceException();
+        Log.InfoCaller($"generating order for {guestGroup.GetGuestFSM()?.Identifier}: {orderData.OrderDescription()}");
+        TileManager.Instance?.GuestTables[guestGroup.DeskCode].tableDisplayer.CleanDesk();
+        guestGroup.OnFinishOrderCallback?.Invoke(guestGroup);
+        guestGroup.PushToOrder(orderData);
+        GuestsManager.Instance.onOrderAdd?.Invoke(orderData);
+        Action<GuestGroupController> onPatientDepeletedCallback = GuestsManager.Instance.PatientDepletedLeave;
+        GuestsManager.Instance.AddToPatientCountdown(guestGroup, onPatientDepeletedCallback);
+    }
+
 
     public class GuestInvalidatedException : Exception
     {

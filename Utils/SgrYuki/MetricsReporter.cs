@@ -252,7 +252,7 @@ public static partial class MetricsReporter
         }, "SendHeartbeat");
     }
 
-    public static void OnPluginInitialized()
+    public static void OnEnterMainScene()
     {
         CommandScheduler.RunInBackGround(async () =>
             {
@@ -265,11 +265,11 @@ public static partial class MetricsReporter
 
                     if (currentVer.Equals(latestVer))
                     {
-                        Notify.ShowOnNextAvailableScene($"您的 Mod 版本为 {currentVer}，您正在使用最新版");
+                        Notify.ShowOnMainThread($"您的 Mod 版本为 {currentVer}，您正在使用最新版");
                     }
                     else
                     {
-                        Notify.ShowOnNextAvailableScene($"您的 Mod 版本为 {currentVer}，最新版为 {latestVer}，建议更新到最新版！");
+                        Notify.ShowOnMainThread($"您的 Mod 版本为 {currentVer}，最新版为 {latestVer}，建议更新到最新版！");
                     }
 
                     if (!PluginManager.DEBUG)

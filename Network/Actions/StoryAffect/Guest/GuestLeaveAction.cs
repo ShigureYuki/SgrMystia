@@ -65,6 +65,7 @@ public partial class GuestLeaveAction : SendAffectStoryAction
                     return;
                 }
                 var deskcode = guest.DeskCode;
+                var lastState = fsm.CurrentState;
                 fsm.TryLeave();
 
                 switch (LType)
@@ -95,13 +96,13 @@ public partial class GuestLeaveAction : SendAffectStoryAction
                         GuestsManagerPatch.PlayerRepell_Original(GuestsManager.instance, guest.DeskCode);
                         break;
                     case LeaveType.LeaveFromQueue:
-                        if (WorkSceneManager.CheckStatus(GuestUUID, WorkSceneManager.Status.Generated))
+                        if (lastState == WorkSceneManager.Status.Generated)
                         {
                             GuestGroupControllerPatch.MoveToSpawn_Original(guest);
                         }
                         else
                         {
-                            Log.Warning($"received {LeaveType.LeaveFromQueue} but {fsm.Identifier} already seated, try repel..");
+                            Log.Warning($"received {LType} but {fsm.Identifier} last state {lastState}, try repel..");
                             GuestsManagerPatch.RepellAndLeavePay_Original(GuestsManager.instance, guest, GuestGroupController.LeaveType.Move, true);
                         }
                         break;

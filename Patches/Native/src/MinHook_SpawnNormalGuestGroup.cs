@@ -85,8 +85,9 @@ public static partial class MinHook_SpawnNormalGuestGroup
             string uuid = WorkSceneManager.GetGuestUUID(guestGroupControllerCvt);
             var array = guestGroupControllerCvt.GetAllGuests().ToIl2CppReferenceArray();
 
-            var guestVisualArraySorted = DataBaseCharacter.NormalGuestVisual.Get(array[0].id).SortByToString();
-            int visualId1 = GuestsManagerPatch.IndexAt(uuid, guestVisualArraySorted, array[0].CharacterPixel);
+            var guestVisualArray = DataBaseCharacter.NormalGuestVisual.Get(array[0].id).SortByToString();
+            int visualId1 = guestVisualArray.IndexAtByToString(array[0].CharacterPixel);
+            Log.InfoCaller($"{uuid} visualId1 found at {visualId1} => {guestVisualArray[visualId1].ToString()}");
 
             var info = new WorkSceneManager.GuestInfo
             {
@@ -102,14 +103,15 @@ public static partial class MinHook_SpawnNormalGuestGroup
             }
             if (array.Length > 1)
             {
-                var guestVisualArray2Sorted = DataBaseCharacter.NormalGuestVisual.Get(array[1].id).SortByToString();
-                int visualId2 = GuestsManagerPatch.IndexAt(uuid, guestVisualArray2Sorted, array[1].CharacterPixel);
+                var guestVisualArray2 = DataBaseCharacter.NormalGuestVisual.Get(array[1].id).SortByToString();
+                int visualId2 = guestVisualArray2.IndexAtByToString(array[1].CharacterPixel);
+                Log.InfoCaller($"{uuid} visualId2 found at {visualId2} => {guestVisualArray2[visualId2].ToString()}");
+
                 info.Id2 = array[1].id;
                 info.VisualId2 = visualId2;
             }
             GuestSpawnAction.Send(uuid, info);
 
-            // 通过FSM转移状态
             var fsm = WorkSceneManager.GetOrCreateGuestFSM(uuid);
             fsm.ChangeState(WorkSceneManager.Status.Generated);
         }

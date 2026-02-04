@@ -1,18 +1,18 @@
 using System;
 using System.Linq;
-using Il2CppSystem.IO;
+using Il2CppSystem.Linq;
 
 namespace SgrYuki.Utils;
 
 public static class ContainerExtensions
 {
-    public static unsafe string Il2CppStringToManaged(IntPtr ptr)
+    public static unsafe string Il2CppStringToManaged(this IntPtr ptr)
     {
         if (ptr == IntPtr.Zero)
             return null;
 
-        int length = *(int*)(ptr + IntPtr.Size * 2);
-        char* chars = (char*)(ptr + IntPtr.Size * 2 + sizeof(int));
+        int length = *(int*)(ptr + (IntPtr.Size * 2));
+        char* chars = (char*)(ptr + (IntPtr.Size * 2) + sizeof(int));
 
         return new string(chars, 0, length);
     }
@@ -50,8 +50,7 @@ public static class ContainerExtensions
             return result;
         }
 
-        public string DumpElements(
-            string separator = ", ")
+        public string DumpElements(string separator = ", ")
         {
             if (source == null) return "";
 
@@ -114,52 +113,7 @@ public static class ContainerExtensions
         {
             return enumerable.ToIl2CppList().ToManagedList().GetRandomOne();
         }
-    }
 
-    extension<T>(Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<T> source) where T : Il2CppInterop.Runtime.InteropTypes.Il2CppObjectBase
-    {
-        public Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<T> SortByToString(
-)
-        {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
-            int length = source.Length;
-            if (length <= 1)
-                return source; // 0/1 个元素无需排序
-
-            // 拷贝到托管数组
-            T[] managed = new T[length];
-            for (int i = 0; i < length; i++)
-            {
-                managed[i] = source[i];
-            }
-
-            // 排序（注意 null 处理）
-            Array.Sort(managed, (a, b) =>
-            {
-                if (ReferenceEquals(a, b)) return 0;
-                if (a is null) return -1;
-                if (b is null) return 1;
-
-                string sa = a.ToString();
-                string sb = b.ToString();
-
-                return string.Compare(
-                    sa, sb,
-                    StringComparison.Ordinal
-                );
-            });
-
-            // 构造新的 Il2CppReferenceArray
-            var result = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<T>(length);
-            for (int i = 0; i < length; i++)
-            {
-                result[i] = managed[i];
-            }
-
-            return result;
-        }
     }
 
     extension<KeyT, ValueT>(Il2CppSystem.Collections.Generic.Dictionary<KeyT, ValueT> dict)
@@ -197,8 +151,7 @@ public static class ContainerExtensions
 
     extension<TKey, TValue>(System.Collections.Generic.Dictionary<TKey, TValue> dict)
     {
-        public Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue> ToIl2CppDictionary(
-)
+        public Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue> ToIl2CppDictionary()
         {
             if (dict == null) return null;
             var result = new Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue>();
@@ -212,8 +165,7 @@ public static class ContainerExtensions
 
     extension<T>(Il2CppSystem.Collections.Generic.List<T> il2cppList)
     {
-        public System.Collections.Generic.List<T> ToManagedList(
-)
+        public System.Collections.Generic.List<T> ToManagedList()
         {
             if (il2cppList == null)
                 return null;
@@ -232,6 +184,68 @@ public static class ContainerExtensions
 
     extension<T>(Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<T> array) where T : Il2CppInterop.Runtime.InteropTypes.Il2CppObjectBase
     {
+        public Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<T> SortByToString()
+        {
+            if (array == null)
+                throw new ArgumentNullException(nameof(array));
+
+            int length = array.Length;
+            if (length <= 1)
+                return array; // 0/1 个元素无需排序
+
+            // 拷贝到托管数组
+            T[] managed = new T[length];
+            for (int i = 0; i < length; i++)
+            {
+                managed[i] = array[i];
+            }
+
+            // 排序（注意 null 处理）
+            Array.Sort(managed, (a, b) =>
+            {
+                if (ReferenceEquals(a, b)) return 0;
+                if (a is null) return -1;
+                if (b is null) return 1;
+
+                string sa = a.ToString();
+                string sb = b.ToString();
+
+                return string.Compare(
+                    sa, sb,
+                    StringComparison.Ordinal
+                );
+            });
+
+            // 构造新的 Il2CppReferenceArray
+            var result = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<T>(length);
+            for (int i = 0; i < length; i++)
+            {
+                result[i] = managed[i];
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Return -1 if item not found
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="arr"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public int IndexAtByToString(T item)
+        {
+            var itemString = item.ToString();
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (itemString.Equals(array[i].ToString()))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
         public string DumpElements(string separator = ", ")
         {
             if (array == null)
@@ -287,6 +301,22 @@ public static class ContainerExtensions
         {
             return Il2CppInterop.Runtime.DelegateSupport.ConvertDelegate<Il2CppSystem.Action<T>>(action);
         }
+    }
+
+    public static System.Collections.Generic.List<T> Flatten<T>(this Il2CppSystem.Collections.Generic.List<Il2CppSystem.Collections.Generic.IEnumerable<T>> source)
+    {
+        var result = new System.Collections.Generic.List<T>();
+
+        if (source == null) return result;
+
+        foreach (var list in source)
+        {
+            foreach (var item in list.ToList())
+            {
+                result.Add(item);
+            }
+        }
+        return result;
     }
 }
 
