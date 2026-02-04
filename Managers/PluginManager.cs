@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Common.UI;
 using GameData.Core.Collections;
 using GameData.CoreLanguage;
@@ -8,6 +9,7 @@ using GameData.Profile;
 using GameData.Profile.SchedulerNodeCollection;
 using HarmonyLib;
 using Il2CppInterop.Runtime;
+using NLua;
 using SgrYuki;
 using SgrYuki.Utils;
 using UnityEngine;
@@ -62,6 +64,11 @@ public partial class PluginManager : MonoBehaviour
             intervalSeconds: ChangePluginNameCommandInterval,
             execute: () => PluginName = PluginNames.GetRandomOne()
         );
+
+        using (var lua = new Lua())
+        {
+            lua.DoString("print('hello world')");
+        }
     }
 
     private void OnGUI()

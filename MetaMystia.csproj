@@ -16,7 +16,7 @@
     <!-- <GamePath>E:\Desktop\Touhou Mystia Izakaya</GamePath> -->
     <OutputPath>$(GamePath)\BepInEx\plugins</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
@@ -50,9 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="LogGenerator\LogGenerator.csproj"
-      OutputItemType="Analyzer"
-      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="LogGenerator\LogGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="LogGenerator\**" />
@@ -90,6 +88,19 @@
     <PackageReference Include="MemoryPack" Version="1.21.4">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="NLua" Version="1.7.8">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="KeraLua" Version="1.4.9" GeneratePathProperty="true">
+      <PrivateAssets>all</PrivateAssets>
+      <ExcludeAssets>native</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(PkgKeraLua)\runtimes\win-x64\native\lua54.dll">
+      <Link>costura-win-x64\lua54.dll</Link>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

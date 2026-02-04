@@ -4,7 +4,12 @@
   <Costura>
     <IncludeAssemblies>
       MemoryPack.Core
+      NLua
+      KeraLua
     </IncludeAssemblies>
+    <Unmanaged64Assemblies>
+      lua54
+    </Unmanaged64Assemblies>
     <CreateTemporaryAssemblies>false</CreateTemporaryAssemblies>
     <DisableCompression>false</DisableCompression>
     <IncludeDebugSymbols>true</IncludeDebugSymbols>
