@@ -126,7 +126,10 @@
                 <div class="lua-toolbar">
                     <button onclick="evalLua()" title="Ctrl+Enter">Run Script</button>
                     <label style="display: flex; align-items: center; cursor: pointer;">
-                        <input type="checkbox" id="lua-clear-input" checked style="width: auto; margin-right: 5px;"> Clear input after run
+                        <input type="checkbox" id="lua-clear-input" style="width: auto; margin-right: 5px;"> Clear input after run
+                    </label>
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="lua-auto-refresh" checked style="width: auto; margin-right: 5px;"> Auto refresh old results
                     </label>
                     <button onclick="document.getElementById('lua-output').innerHTML=''" style="margin-left: auto; background-color: #a1260d;">Clear Output</button>
                 </div>
@@ -201,6 +204,11 @@
                 }
             } catch(e) {
                 entryDiv.innerHTML += `<div class="error-text">Error: ${e.message}</div>`;
+            }
+
+            // Auto refresh: keep only the latest result if enabled
+            if (document.getElementById('lua-auto-refresh').checked) {
+                out.innerHTML = '';
             }
 
             // Prepend result (add to top)
