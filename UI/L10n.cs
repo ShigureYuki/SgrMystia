@@ -189,12 +189,8 @@ public static class L10n
         },
     };
 
-    static L10n()
-    {
-        PostInitializeTable();
-    }
 
-    private static void PostInitializeTable()
+    public static void PostInitializeTable()
     {
         Table[TextId.MystiaReadyForWork] = new()
         {

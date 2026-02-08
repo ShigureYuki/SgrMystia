@@ -372,7 +372,7 @@ public static partial class MpManager
         }
         else
         {
-            return $"Multiplayer: On (Not connected) as {(Role == ROLE.Host ? "Host" : "Client")}";
+            return $"Multiplayer: On (Not connected) as {RoleName}";
         }
     }
 
@@ -391,6 +391,11 @@ public static partial class MpManager
         Log.Message($"LocalScene transit from {LocalScene} -> {newScene}");
         SceneTransitAction.Send(newScene);
         LocalScene = newScene;
+        if (newScene == Common.UI.Scene.MainScene && IsConnected)
+        {
+            Log.Message($"Transit to {newScene}, disconnecting peer");
+            DisconnectPeer();
+        }
     }
 
     public static void DayOver(long clientId)

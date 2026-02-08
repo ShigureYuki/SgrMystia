@@ -16,7 +16,6 @@ public class Plugin : BasePlugin
     public static Plugin Instance;
     public static ConfigEntry<bool> ConfigDebug;
     public Action<Scene, LoadSceneMode> LoadAction;
-    public static bool FirstEnterMain = true;
 
     public static Type[] ToBePatched = [
         // SceneManager Patches
@@ -136,16 +135,7 @@ public class Plugin : BasePlugin
 
     public static void OnEnterMainScene()
     {
-        if (!FirstEnterMain)
-        {
-            return;
-        }
-
-        FirstEnterMain = false;
-        Instance.Log.LogInfo("First time entering Main Scene.");
-
         DLCManager.Initialize();
-
         MetricsReporter.OnEnterMainScene();
     }
 
