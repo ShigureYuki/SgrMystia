@@ -96,6 +96,7 @@ public class RequestConfig
 {
     public int tagId { get; set; }
     public string request { get; set; }
+    public bool enable { get; set; } = true;
 }
 
 public class WeightedTagConfig

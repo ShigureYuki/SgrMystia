@@ -188,7 +188,7 @@ public static partial class ResourceExManager
     private static void RegisterFoodRequests(CharacterConfig config)
     {
         DataBaseLanguage.SpecialGuestFoodRequest.TryAdd(config.id,
-            config.guest.foodRequests.ToDictionary(req => req.tagId, req => req.request).ToIl2CppDictionary());
+            config.guest.foodRequests.Where(req => req.enable).ToDictionary(req => req.tagId, req => req.request).ToIl2CppDictionary());
         Log.Info($"Registered Food Requests for Special Guest: {config.name} ({config.id})");
     }
 
@@ -204,8 +204,8 @@ public static partial class ResourceExManager
     private static void RegisterBevRequests(CharacterConfig config)
     {
         DataBaseLanguage.SpecialGuestBevRequest.TryAdd(config.id,
-            config.guest.bevRequests.ToDictionary(req => req.tagId, req => req.request).ToIl2CppDictionary());
-        Log.Info($"Registering Beverage Requests for Special Guest: {config.name} ({config.id})");
+            config.guest.bevRequests.Where(req => req.enable).ToDictionary(req => req.tagId, req => req.request).ToIl2CppDictionary());
+        Log.Info($"Registered Beverage Requests for Special Guest: {config.name} ({config.id})");
     }
 
     private static void RegisterAllSpecialGuestPairs()
