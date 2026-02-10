@@ -51,6 +51,15 @@
         .lua-timestamp { color: #6a9955; font-size: 0.85em; margin-right: 8px; }
         .lua-code-input { color: #d4d4d4; white-space: pre-wrap; font-family: Consolas, monospace; }
         .lua-result { color: #ce9178; white-space: pre-wrap; margin-top: 2px; }
+
+        .sprite-btn { background: #2d5a1e; color: #98c379; border: 1px solid #3e7a2e; padding: 1px 6px; font-size: 11px; cursor: pointer; margin-left: 6px; border-radius: 3px; }
+        .sprite-btn:hover { background: #3e7a2e; }
+        .sprite-preview-container { margin: 8px 0 8px 20px; padding: 10px; background: #2d2d30; border: 1px solid #3e3e42; border-radius: 4px; display: inline-block; position: relative; }
+        .sprite-preview-container img { max-width: 512px; max-height: 512px; image-rendering: pixelated; background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 16px 16px; }
+        .sprite-preview-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; color: #999; }
+        .sprite-preview-toolbar button { font-size: 11px; padding: 2px 8px; margin-top: 0; }
+        .sprite-preview-close { background: #a1260d !important; }
+        .sprite-preview-close:hover { background: #c41616 !important; }
     </style>
 </head>
 <body>
@@ -216,6 +225,85 @@
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
+        // --- Sprite Preview Logic ---
+        function isSpriteType(typeName) {
+            return typeName === 'Sprite' || typeName === 'UnityEngine.Sprite';
+        }
+
+        function createSpriteButton(expr) {
+            const btn = document.createElement('button');
+            btn.className = 'sprite-btn';
+            btn.textContent = '🖼 Preview';
+            btn.title = 'Preview Sprite as image';
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                previewSprite(expr, btn);
+            };
+            return btn;
+        }
+
+        async function previewSprite(expr, anchorElement) {
+            // Remove existing preview if clicking again
+            const existingPreview = anchorElement.parentElement.querySelector('.sprite-preview-container');
+            if (existingPreview) {
+                existingPreview.remove();
+                return;
+            }
+
+            const container = document.createElement('div');
+            container.className = 'sprite-preview-container';
+            container.innerHTML = '<div style="color: #4ec9b0;">Loading sprite...</div>';
+
+            // Insert after the current tree-item line
+            const parentNode = anchorElement.closest('.tree-item') || anchorElement.parentElement;
+            parentNode.parentElement.insertBefore(container, parentNode.nextSibling);
+
+            try {
+                const response = await fetch('/sprite-preview?token=' + token, {
+                    method: 'POST',
+                    body: expr
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    container.innerHTML = `<div class="error-text">Failed: ${escapeHtml(errorText)}</div>`;
+                    return;
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const img = new Image();
+                img.onload = function() {
+                    const toolbar = document.createElement('div');
+                    toolbar.className = 'sprite-preview-toolbar';
+                    toolbar.innerHTML = `<span>${img.naturalWidth} × ${img.naturalHeight}</span>`;
+
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.textContent = '⬇ Save';
+                    downloadBtn.onclick = function() {
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'sprite_preview.png';
+                        a.click();
+                    };
+                    toolbar.appendChild(downloadBtn);
+
+                    const closeBtn = document.createElement('button');
+                    closeBtn.className = 'sprite-preview-close';
+                    closeBtn.textContent = '✕ Close';
+                    closeBtn.onclick = function() { container.remove(); };
+                    toolbar.appendChild(closeBtn);
+
+                    container.innerHTML = '';
+                    container.appendChild(toolbar);
+                    container.appendChild(img);
+                };
+                img.src = url;
+            } catch (e) {
+                container.innerHTML = `<div class="error-text">Error: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+
         function getTimestamp() {
             const now = new Date();
             return now.toLocaleTimeString() + '.' + String(now.getMilliseconds()).padStart(3, '0');
@@ -320,6 +408,9 @@
                 addrSpan.textContent = `[${data.Address}]`;
                 content.appendChild(addrSpan);
             }
+            if (isSpriteType(data.Type)) {
+                content.appendChild(createSpriteButton(parentPath));
+            }
             if (data.Error) {
                 content.innerHTML = `<span class="error-text">${data.Error}</span>`;
             }
@@ -410,6 +501,9 @@
                     addrSpan.className = 'address';
                     addrSpan.textContent = `[${m.Address}]`;
                     content.appendChild(addrSpan);
+                }
+                if (isSpriteType(m.Type)) {
+                    content.appendChild(createSpriteButton(fullPath));
                 }
 
                 item.appendChild(toggle);

@@ -347,6 +347,64 @@ namespace MetaMystia.Debugger
                     response.ContentLength64 = buffer.Length;
                     response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
+                else if (request.Url.AbsolutePath == "/sprite-preview" && request.HttpMethod == "POST")
+                {
+                    using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
+                    {
+                        string expression = reader.ReadToEnd();
+
+                        byte[] pngData = null;
+                        string error = null;
+
+                        if (PluginManager.Instance != null)
+                        {
+                            var tcs = new TaskCompletionSource<(byte[], string)>();
+                            PluginManager.Instance.RunOnMainThread(() =>
+                            {
+                                try
+                                {
+                                    object obj = ReflectionEvaluator.Evaluate(expression);
+                                    if (obj is UnityEngine.Sprite sprite)
+                                    {
+                                        var data = SpritePreview.SpriteToPng(sprite);
+                                        tcs.SetResult((data, null));
+                                    }
+                                    else
+                                    {
+                                        tcs.SetResult((null, $"Expression result is not a Sprite (got {obj?.GetType().Name ?? "null"})"));
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    tcs.SetResult((null, ex.ToString()));
+                                }
+                            });
+
+                            var result = await tcs.Task;
+                            pngData = result.Item1;
+                            error = result.Item2;
+                        }
+                        else
+                        {
+                            error = "PluginManager not initialized";
+                        }
+
+                        if (pngData != null)
+                        {
+                            response.ContentType = "image/png";
+                            response.ContentLength64 = pngData.Length;
+                            response.OutputStream.Write(pngData, 0, pngData.Length);
+                        }
+                        else
+                        {
+                            byte[] buffer = Encoding.UTF8.GetBytes(error ?? "Unknown error");
+                            response.StatusCode = 400;
+                            response.ContentType = "text/plain";
+                            response.ContentLength64 = buffer.Length;
+                            response.OutputStream.Write(buffer, 0, buffer.Length);
+                        }
+                    }
+                }
                 else
                 {
                     string content = WebResources.HtmlContent.Replace("[[TOKEN]]", _token);
