@@ -46,7 +46,7 @@ public static partial class ResourceExManager
         newMerchant.merchandiseCollection = config.merchandise.Select(m => m.ToMerchandise()).ToIl2CppReferenceArray();
 
         _builtMerchants[config.key] = newMerchant;
-        DataBaseDay.allMerchants[config.key] = newMerchant;
+        // DataBaseDay.allMerchants[config.key] = newMerchant; // do NOT directly modify the original dictionary
         Log.Info($"Built merchant {config.key}.");
     }
 
