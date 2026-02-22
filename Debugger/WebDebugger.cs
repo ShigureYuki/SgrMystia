@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using BepInEx.Logging;
 using UnityEngine;
 
-namespace MetaMystia.Debugger
+namespace SgrMystia.Debugger
 {
     public class WebDebugger : IDisposable
     {

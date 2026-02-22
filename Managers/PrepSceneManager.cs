@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using GameData.Core.Collections;
-using MetaMystia.Network;
+using SgrMystia.Network;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AutoLog]
 public static partial class PrepSceneManager

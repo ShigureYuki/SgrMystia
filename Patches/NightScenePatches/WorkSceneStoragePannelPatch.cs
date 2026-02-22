@@ -1,9 +1,9 @@
 using GameData.Core.Collections;
 using HarmonyLib;
-using MetaMystia.Network;
+using SgrMystia.Network;
 using NightScene.UI.CookingUtility;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 
 [HarmonyPatch(typeof(NightScene.UI.CookingUtility.WorkSceneStoragePannel))]

@@ -1,8 +1,8 @@
 using DayScene.Input;
 using HarmonyLib;
-using MetaMystia.Network;
+using SgrMystia.Network;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [HarmonyPatch(typeof(DayScene.Input.DayScenePlayerInputGenerator))]
 [AutoLog]

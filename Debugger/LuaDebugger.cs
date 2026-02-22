@@ -1,7 +1,7 @@
 using System;
 using NLua;
 
-namespace MetaMystia.Debugger
+namespace SgrMystia.Debugger
 {
     /// <summary>
     /// Manages Lua VM instance for Web Debugger

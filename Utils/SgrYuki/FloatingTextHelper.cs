@@ -1,5 +1,5 @@
 using BepInEx.Unity.IL2CPP.Utils;
-using MetaMystia;
+using SgrMystia;
 using TMPro;
 using UnityEngine;
 

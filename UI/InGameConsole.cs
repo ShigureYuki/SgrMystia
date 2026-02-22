@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common.UI;
 using Il2CppInterop.Runtime;
-using MetaMystia.Network;
+using SgrMystia.Network;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AutoLog]
 public partial class InGameConsole

@@ -8,7 +8,7 @@ using SgrYuki;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BasePlugin
@@ -17,9 +17,6 @@ public class Plugin : BasePlugin
     public Action<Scene, LoadSceneMode> LoadAction;
 
     public static ConfigEntry<bool> ConfigDebug;
-    public static ConfigEntry<bool> ConfigSignatureCheck;
-    public static ConfigEntry<RequestEnableMode> ConfigFoodRequestMode;
-    public static ConfigEntry<RequestEnableMode> ConfigBevRequestMode;
 
     public static Type[] ToBePatched = [
         // SceneManager Patches
@@ -38,7 +35,6 @@ public class Plugin : BasePlugin
         typeof(CharacterControllerUnitPatch),
         typeof(CharacterInputPatch),
         typeof(DayScenePlayerInputPatch),
-        typeof(DaySceneMapPatch),
         // typeof(RunTimeSchedulerPatch),
 
         // PrepScene Patches
@@ -60,18 +56,7 @@ public class Plugin : BasePlugin
         typeof(MystiaQTEBuffRewardPatch),
         typeof(GameTimeManagerPatch),
         typeof(NightScene_SceneManager__c__DisplayClass62_0_Patch),
-
-        // ResourceEx Patches
         typeof(DataBaseCharacterPatch),
-        typeof(DataBaseDayPatch),
-        typeof(DataBaseCorePatch),
-        typeof(DataBaseLanguagePatch),
-        typeof(NightSceneLanguagePatch),
-        typeof(SpecialGuestDescriberPatch),
-        typeof(DaySceneMapProfilePatch),
-        typeof(DialogPannelPatch),
-        typeof(DataBaseSchedulerPatch),
-        typeof(RunTimeDayScenePatch)
     ];
 
     public static bool AllPatched => PatchedException == null;
@@ -85,17 +70,6 @@ public class Plugin : BasePlugin
     private void InitConfigs()
     {
         ConfigDebug = Config.Bind("General", "Debug", false, "Enable debug features and hotkeys\n启用调试功能和热键");
-
-        ConfigSignatureCheck = Config.Bind("General", "SignatureCheck", true,
-            "Enable RSA signature verification for resource pack ID ranges\n启用资源包 ID 段 RSA 签名校验");
-
-        ConfigFoodRequestMode = Config.Bind("General", "FoodRequestMode", RequestEnableMode.FollowPackage,
-            "Food request enable mode (FollowPackage by default)\n料理点单启用模式(默认跟随资源包)\n" +
-            "ForceDisable: 强制关闭 | FollowPackage: 跟随资源包 | ForceEnable: 强制启用");
-
-        ConfigBevRequestMode = Config.Bind("General", "BevRequestMode", RequestEnableMode.ForceDisable,
-            "Beverage request enable mode (ForceDisable by default)\n酒水点单启用模式(默认关闭)\n" +
-            "ForceDisable: 强制关闭 | FollowPackage: 跟随资源包 | ForceEnable: 强制启用");
     }
 
     public override void Load()
@@ -134,13 +108,12 @@ public class Plugin : BasePlugin
                 Log.LogInfo($"Applied {patch.Name}");
             }
 
-            NativeDllExtractor.Extract("MetaMystia.Patches.Native.Runtime.MinHook.x64.dll", MinHook.DLLFilename);
+            NativeDllExtractor.Extract("SgrMystia.Patches.Native.Runtime.MinHook.x64.dll", MinHook.DLLFilename);
             MinHook_SpawnNormalGuestGroup.InstallHook();
 
             // ShigureYuki.DebugClassPatcher.PatchAllInnerClass(ref harmony, typeof(ShigureYuki.DebugConsolePatch));
             Network.Action.RegisterAllFormatter();
 
-            ResourceExManager.Initialize();
         }
         catch (Exception ex)
         {
@@ -152,7 +125,7 @@ public class Plugin : BasePlugin
     public static void OnEnterMainScene()
     {
         DLCManager.Initialize();
-        MetricsReporter.OnEnterMainScene();
+        // MetricsReporter.OnEnterMainScene();
         Instance?.Log.LogInfo(MpManager.DebugText);
     }
 

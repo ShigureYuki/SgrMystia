@@ -8,9 +8,9 @@ namespace LogGenerator
     [Generator]
     public sealed class LogGenerator : IIncrementalGenerator
     {
-        private const string LogSource = "MetaMystia.Plugin.Instance.Log";
+        private const string LogSource = "SgrMystia.Plugin.Instance.Log";
         private const string LogSourceType = "BepInEx.Logging.ManualLogSource";
-        private const string TargetNamespace = "MetaMystia";
+        private const string TargetNamespace = "SgrMystia";
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -19,7 +19,7 @@ namespace LogGenerator
 
             var classProvider = context.SyntaxProvider
                 .ForAttributeWithMetadataName(
-                    "MetaMystia.AutoLogAttribute",
+                    "SgrMystia.AutoLogAttribute",
                     predicate: (node, _) =>
                         node is ClassDeclarationSyntax cls &&
                         cls.Modifiers.Any(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PartialKeyword),

@@ -1,11 +1,11 @@
 using Common.UI;
 using DayScene;
 using HarmonyLib;
-using MetaMystia.Network;
+using SgrMystia.Network;
 using SgrYuki;
 using SgrYuki.Utils;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 
 [HarmonyPatch(typeof(DayScene.SceneManager))]
@@ -18,7 +18,6 @@ public partial class DaySceneManagerPatch
     {
         MpManager.OnSceneTransit(Scene.DayScene);
         MpManager.Initialize();
-        ResourceExManager.OnDaySceneAwake();
         PrepSceneManager.ClearPrepTable();
 
         if (MpManager.IsConnected)
@@ -82,9 +81,6 @@ public partial class DaySceneManagerPatch
     public static bool SwapMap_Prefix(SceneManager __instance, string targetMapLabel, string targetMarkerName, int travelCount, ref Il2CppSystem.Action onSwapFinish)
     {
         Log.InfoCaller($"targetMapLabel {targetMapLabel}, targetMarkerName {targetMarkerName}");
-
-        var refreshAllDayNpcs = ResourceExManager.RefreshAllDayNpcs; // TODO: 以更优雅的方式实现 Day NPC 刷新
-        onSwapFinish += refreshAllDayNpcs;
 
         if (!MpManager.ShouldSkipAction && MystiaManager.IsDayOver) return false;
         var added = () =>

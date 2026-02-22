@@ -3,15 +3,15 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>14</LangVersion>
-    <AssemblyName>MetaMystia</AssemblyName>
-    <Product>MetaMystia</Product>
+    <AssemblyName>SgrMystia</AssemblyName>
+    <Product>SgrMystia</Product>
     <Version>0.17.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RestoreAdditionalProjectSources>
       https://api.nuget.org/v3/index.json;
       https://nuget.bepinex.dev/v3/index.json
     </RestoreAdditionalProjectSources>
-    <RootNamespace>MetaMystia</RootNamespace>
+    <RootNamespace>SgrMystia</RootNamespace>
     <GamePath>D:\SteamLibrary\steamapps\common\Touhou Mystia Izakaya</GamePath>
     <!-- <GamePath>E:\Desktop\Touhou Mystia Izakaya</GamePath> -->
     <OutputPath>$(GamePath)\BepInEx\plugins</OutputPath>

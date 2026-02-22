@@ -1,7 +1,7 @@
 using Common.UI;
 using HarmonyLib;
 using SgrYuki;
-namespace MetaMystia;
+namespace SgrMystia;
 
 [HarmonyPatch(typeof(Common.UI.ReceivedObjectDisplayerController))]
 [AutoLog]

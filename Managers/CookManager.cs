@@ -4,7 +4,7 @@ using GameData.Core.Collections;
 using Il2CppSystem.IO;
 using NightScene.CookingUtility;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AutoLog]
 public static partial class CookManager

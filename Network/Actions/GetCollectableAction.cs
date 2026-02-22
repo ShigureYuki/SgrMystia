@@ -1,7 +1,7 @@
 using DayScene.Interactables.Collections.ConditionComponents;
 using MemoryPack;
 using SgrYuki;
-namespace MetaMystia.Network;
+namespace SgrMystia.Network;
 
 [MemoryPackable]
 [AutoLog]

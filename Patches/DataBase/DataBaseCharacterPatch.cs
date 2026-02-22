@@ -6,37 +6,13 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 
 [HarmonyPatch(typeof(GameData.Core.Collections.CharacterUtility.DataBaseCharacter))]
 [AutoLog]
 public partial class DataBaseCharacterPatch
 {
-    [HarmonyPatch(nameof(DataBaseCharacter.Initialize))]
-    [HarmonyPostfix]
-    public static void Initialize_Postfix()
-    {
-        Log.LogInfo("DataBaseCharacter.Initialize Postfix called.");
-        ResourceExManager.OnDataBaseCharacterInitialized();
-    }
-
-    [HarmonyPatch(nameof(DataBaseCharacter.GetNPCLabel))]
-    [HarmonyPrefix]
-    public static bool GetNPCLabel_Prefix(ref string __result, SchedulerNode.Character identity)
-    {
-        // Log.LogWarning($"GetNPCLabel_Prefix called for identity: {identity} result: {__result}");
-
-        var config = ResourceExManager.GetCharacterConfig(identity.characterId, identity.characterIdentity.ToString());
-        if (config != null)
-        {
-            __result = config.label;
-            return false;
-        }
-
-        return true;
-    }
-
     [HarmonyPatch(nameof(DataBaseCharacter.RefNormalGuestVisual))]
     [HarmonyPrefix]
     public static bool RefNormalGuestVisual_Prefix(ref GuestProfilePair __result, ref int id)
@@ -52,26 +28,5 @@ public partial class DataBaseCharacterPatch
             return false;
         }
         return true;
-    }
-
-
-    // ResourceEX/Clothes
-    [HarmonyPatch(nameof(DataBaseCharacter.SetupPortrayalVisual))]
-    [HarmonyPrefix]
-    public static void SetupPortrayalVisual_Prefix(ref Image imageComponent)
-    {
-        var currentSkin = GameData.RunTime.Common.RunTimeAlbum.CurrentPlayerSkin;
-        if (ResourceExManager.IsResourceExCloth(currentSkin))
-        {
-            if (ResourceExManager.TryGetClothPortrait(currentSkin, out var sprite))
-            {
-                imageComponent.overrideSprite = sprite;
-                Log.Info($"Applied ResourceEx cloth portrait for skin ID {currentSkin}");
-            }
-            else
-            {
-                Log.Info($"ResourceEx cloth ID {currentSkin} has no portrait configured.");
-            }
-        }
     }
 }

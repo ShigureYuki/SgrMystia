@@ -1,7 +1,7 @@
 using GameData.Core.Collections;
 using HarmonyLib;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [HarmonyPatch(typeof(GameData.Core.Collections.Sellable))]
 [AutoLog]

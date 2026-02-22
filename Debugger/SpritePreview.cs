@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MetaMystia.Debugger
+namespace SgrMystia.Debugger
 {
     /// <summary>
     /// 将 UnityEngine.Sprite 转为 PNG 字节数组，供 WebDebugger 前端预览。

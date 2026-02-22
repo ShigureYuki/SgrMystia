@@ -1,10 +1,10 @@
 using System;
 using GameData.Core.Collections;
 using HarmonyLib;
-using MetaMystia.Network;
+using SgrMystia.Network;
 using NightScene.CookingUtility;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [HarmonyPatch(typeof(NightScene.CookingUtility.CookController))]
 [AutoLog]

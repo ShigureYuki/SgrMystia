@@ -3,7 +3,7 @@ using Common.DialogUtility;
 using Common.UI;
 using GameData.Profile;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AutoLog]
 public static partial class Dialog
@@ -215,19 +215,6 @@ public static partial class Dialog
         BuildAndShow(dialogList, onFinishCallback);
     }
 
-    public static void ShowResourceExPackage(string packageName, System.Action onFinishCallback = null)
-    {
-        var dialogList = ResourceExManager.GetDialogPackage(packageName);
-        if (dialogList != null)
-        {
-            BuildAndShow(dialogList, onFinishCallback);
-        }
-        else
-        {
-            Log.LogWarning($"Dialog package {packageName} not found in ResourceExManager.");
-        }
-    }
-
 };
 
 public class CustomDialog
@@ -250,7 +237,7 @@ public class CustomDialog
 public class CustomDialogList
 {
     public List<CustomDialog> dialogs;
-    public string packageName = "MetaMystia_CustomDialogPackage";
+    public string packageName = "SgrMystia_CustomDialogPackage";
 
     public CustomDialogList()
     {

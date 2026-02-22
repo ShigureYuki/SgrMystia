@@ -1,7 +1,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace MetaMystia.Debugger
+namespace SgrMystia.Debugger
 {
     public static class WebResources
     {
@@ -14,7 +14,7 @@ namespace MetaMystia.Debugger
             {
                 if (_loginHtmlContent == null)
                 {
-                    _loginHtmlContent = LoadEmbeddedResource("MetaMystia.Debugger.login.html");
+                    _loginHtmlContent = LoadEmbeddedResource("SgrMystia.Debugger.login.html");
                 }
                 return _loginHtmlContent;
             }
@@ -26,7 +26,7 @@ namespace MetaMystia.Debugger
             {
                 if (_htmlContent == null)
                 {
-                    _htmlContent = LoadEmbeddedResource("MetaMystia.Debugger.index.html");
+                    _htmlContent = LoadEmbeddedResource("SgrMystia.Debugger.index.html");
                 }
                 return _htmlContent;
             }

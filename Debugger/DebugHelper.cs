@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace MetaMystia.Debugger
+namespace SgrMystia.Debugger
 {
     public class DebugHelper
     {

@@ -1,9 +1,9 @@
 using GameData.Core.Collections;
 using GameData.RunTime.NightSceneUtility;
 using HarmonyLib;
-using MetaMystia.Network;
+using SgrMystia.Network;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [HarmonyPatch(typeof(GameData.RunTime.NightSceneUtility.IzakayaConfigure))]
 [AutoLog]

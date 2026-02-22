@@ -1,8 +1,8 @@
 using GameData.Profile;
 using HarmonyLib;
-using MetaMystia.Network;
+using SgrMystia.Network;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 
 [HarmonyPatch(typeof(GameData.Profile.MystiaQTEBuffReward))]

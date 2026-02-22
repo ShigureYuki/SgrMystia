@@ -1,6 +1,6 @@
 using MemoryPack;
 
-namespace MetaMystia.Network;
+namespace SgrMystia.Network;
 
 // public enum Scene
 // {

@@ -1,11 +1,11 @@
 using Common.CharacterUtility;
 using Common.UI;
 using HarmonyLib;
-using MetaMystia.Network;
+using SgrMystia.Network;
 using UnityEngine;
 
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [HarmonyPatch(typeof(Common.CharacterUtility.CharacterControllerInputGeneratorComponent))]
 [AutoLog]

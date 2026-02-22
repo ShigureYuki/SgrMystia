@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Common.UI;
 using HarmonyLib;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 
 [HarmonyPatch(typeof(Common.UI.UniversalGameManager))]
@@ -29,16 +29,6 @@ public partial class UniversalGameManagerPatch
             }
             dialogPackage.dialogContext = Dialog.ExampleDialog.dialogContext;
             Log.Info($"Replaced dialogPackage.dialogContext with ExampleDialog.dialogContext");
-        }
-        if (ResourceExManager.ExistsDialogPackage(dialogPackage.name) && overrideReplaceTextCallback == null)
-        {
-            UniversalGameManager.OpenDialogMenu(
-                dialogPackage,
-                onFinishCallback: onFinishCallback,
-                overrideReplaceTextCallback: ResourceExManager.GetOverrideReplaceTextCallback(dialogPackage),
-                previousPanelVisualMode: previousPanelVisualMode
-            );
-            return false;
         }
 
         // MetaMiku 注:

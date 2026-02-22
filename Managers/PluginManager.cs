@@ -11,7 +11,7 @@ using SgrYuki.Utils;
 
 using static SgrYuki.Utils.ContainerExtensions;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AutoLog]
 public partial class PluginManager : MonoBehaviour

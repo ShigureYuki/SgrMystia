@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Win32;
-using MetaMystia;
+using SgrMystia;
 
 namespace SgrYuki;
 
@@ -13,8 +13,8 @@ public static partial class MetricsReporter
 {
     private const string TrackingSiteId = "13";
     private const string TrackingServiceEndpoint = "https://track.izakaya.cc/api.php";
-    private const string MetaMystiaVersionApiUrl = "https://api.izakaya.cc/version/meta-mystia";
-    public const string UserAgent = "MetaMystia/1.0 (+https://github.com/MetaMikuAI/MetaMystia)";
+    private const string SgrMystiaVersionApiUrl = "https://api.izakaya.cc/version/meta-mystia";
+    public const string UserAgent = "SgrMystia/1.0 (+https://github.com/MetaMikuAI/SgrMystia)";
 
     private static string BuildTrackingUrl(string userId, Dictionary<string, string> parameters)
     {
@@ -143,7 +143,7 @@ public static partial class MetricsReporter
     {
         try
         {
-            using var response = await _metricsClient.GetAsync(MetaMystiaVersionApiUrl).ConfigureAwait(false);
+            using var response = await _metricsClient.GetAsync(SgrMystiaVersionApiUrl).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode) return null;
 
@@ -166,7 +166,7 @@ public static partial class MetricsReporter
     {
         if (useGithub)
         {
-            return GetLatestReleaseTagUsingGithubAsync("MetaMikuAI", "MetaMystia");
+            return GetLatestReleaseTagUsingGithubAsync("MetaMikuAI", "SgrMystia");
         }
         return GetLatestReleaseTagAsync();
     }

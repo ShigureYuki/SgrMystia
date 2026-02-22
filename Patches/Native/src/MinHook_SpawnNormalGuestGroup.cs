@@ -2,11 +2,11 @@ using System;
 using System.Runtime.InteropServices;
 using DEYU.Utils;
 using GameData.Core.Collections.CharacterUtility;
-using MetaMystia.Network;
+using SgrMystia.Network;
 using NightScene.GuestManagementUtility;
 using SgrYuki.Utils;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AutoLog]
 public static partial class MinHook_SpawnNormalGuestGroup

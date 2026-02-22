@@ -4,7 +4,7 @@ using Il2CppInterop.Runtime;
 using UnityEngine;
 
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AutoLog]
 public static partial class Utils

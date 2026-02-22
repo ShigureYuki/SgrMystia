@@ -5,7 +5,7 @@ using GameData.Core.Collections;
 using NightScene.GuestManagementUtility;
 using static NightScene.GuestManagementUtility.GuestsManager;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AutoLog]
 public partial class GuestFSM

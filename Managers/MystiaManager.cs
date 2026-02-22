@@ -1,7 +1,7 @@
 using Common.CharacterUtility;
 using UnityEngine;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AutoLog]
 public static partial class MystiaManager

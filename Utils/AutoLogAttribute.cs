@@ -1,6 +1,6 @@
 using System;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AttributeUsage(AttributeTargets.Class)]
 public sealed class AutoLogAttribute : Attribute { }

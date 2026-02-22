@@ -5,12 +5,12 @@ using GameData.Core.Collections.CharacterUtility;
 using GameData.Core.Collections.NightSceneUtility;
 using HarmonyLib;
 using Il2CppSystem.IO;
-using MetaMystia.Network;
+using SgrMystia.Network;
 using NightScene.GuestManagementUtility;
 using SgrYuki;
 using SgrYuki.Utils;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [HarmonyPatch]
 [AutoLog]

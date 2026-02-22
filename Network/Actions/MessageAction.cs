@@ -1,7 +1,7 @@
 using MemoryPack;
 using SgrYuki;
 
-namespace MetaMystia.Network;
+namespace SgrMystia.Network;
 
 [MemoryPackable]
 public partial class MessageAction : Action

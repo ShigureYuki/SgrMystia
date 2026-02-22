@@ -1,10 +1,10 @@
 
 using System;
 using HarmonyLib;
-using MetaMystia.Network;
+using SgrMystia.Network;
 using NightScene.EventUtility;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [HarmonyPatch(typeof(EventManager))]
 [AutoLog]

@@ -4,7 +4,7 @@ using System.Linq;
 using Common.UI;
 using SgrYuki;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AutoLog]
 public static partial class Notify

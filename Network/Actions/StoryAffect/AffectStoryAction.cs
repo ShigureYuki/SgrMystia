@@ -1,4 +1,4 @@
-namespace MetaMystia.Network;
+namespace SgrMystia.Network;
 
 public abstract partial class ReceiveAffectStoryAction : Action
 {

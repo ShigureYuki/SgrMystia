@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MemoryPack;
 
-namespace MetaMystia.Network;
+namespace SgrMystia.Network;
 
 [MemoryPackable]
 public partial class GuestInviteAction : SendAffectStoryAction

@@ -2,7 +2,7 @@ using System.Linq;
 
 namespace SgrYuki.Utils;
 
-[MetaMystia.AutoLog]
+[SgrMystia.AutoLog]
 public static partial class Panel
 {
     public static Il2CppSystem.Collections.Generic.Stack<Il2CppSystem.Collections.Generic.Stack<DEYU.AdpUISystem.PanelCollection.UIPanelImpl>> PanelStack => DEYU.AdpUISystem.Managers.AdpUIPanelManager.Instance?.m_PanelStack;
@@ -159,6 +159,6 @@ public static partial class Panel
         // GameData.RunTime.Common.RunTimeAlbum.ChangePlayerSkin(1);   // changed skin, but not album. Parameter: skin id
         // GameData.Core.Collections.CharacterUtility.DataBaseCharacter.LoadActivePlayerSkinAsync(GameData.RunTime.Common.RunTimeStorage.GetAllClothes()[1]);  // changed album, not skin
         // GameData.Core.Collections.DaySceneUtility.DataBaseDay.allNPCs["Kosuzu"].GetVisual();
-        // MetaMystia.MystiaManager.Instance.GetCharacterUnit(false).UpdateCharacterSprite(GameData.Core.Collections.DaySceneUtility.DataBaseDay.allNPCs["Kosuzu"].GetVisual());
+        // SgrMystia.MystiaManager.Instance.GetCharacterUnit(false).UpdateCharacterSprite(GameData.Core.Collections.DaySceneUtility.DataBaseDay.allNPCs["Kosuzu"].GetVisual());
     }
 }

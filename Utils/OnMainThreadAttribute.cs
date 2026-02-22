@@ -1,6 +1,6 @@
 using System;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class OnMainThreadAttribute : Attribute { }

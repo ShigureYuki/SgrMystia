@@ -1,9 +1,9 @@
 using HarmonyLib;
-using MetaMystia.Network;
+using SgrMystia.Network;
 using PrepNightScene.UI;
 using SgrYuki.Utils;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 
 [HarmonyPatch(typeof(PrepNightScene.UI.IzakayaConfigPannel))]

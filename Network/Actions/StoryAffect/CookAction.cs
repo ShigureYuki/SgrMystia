@@ -1,7 +1,7 @@
 using GameData.Core.Collections;
 using MemoryPack;
 
-namespace MetaMystia.Network;
+namespace SgrMystia.Network;
 
 [MemoryPackable]
 [AutoLog]

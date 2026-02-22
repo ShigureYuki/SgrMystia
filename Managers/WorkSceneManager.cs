@@ -18,7 +18,7 @@ using SgrYuki;
 using SgrYuki.Utils;
 using UnityEngine;
 using UnityEngine.InputSystem;
-namespace MetaMystia;
+namespace SgrMystia;
 
 [AutoLog]
 public static partial class WorkSceneManager

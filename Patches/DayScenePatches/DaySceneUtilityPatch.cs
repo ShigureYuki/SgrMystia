@@ -1,8 +1,8 @@
 
 using GameData.RunTime.DaySceneUtility.Collection;
 using HarmonyLib;
-using MetaMystia.Network;
-namespace MetaMystia;
+using SgrMystia.Network;
+namespace SgrMystia;
 
 [HarmonyPatch]
 [AutoLog]

@@ -2,7 +2,7 @@ using Common.UI;
 using HarmonyLib;
 using PrepNightScene;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 
 [HarmonyPatch(typeof(PrepNightScene.SceneManager))]

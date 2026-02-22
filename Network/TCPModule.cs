@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MemoryPack;
 
-namespace MetaMystia.Network;
+namespace SgrMystia.Network;
 
 // ---------------- NetPacket ----------------
 [MemoryPackable]

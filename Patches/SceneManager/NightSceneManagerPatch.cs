@@ -3,7 +3,7 @@ using HarmonyLib;
 using NightScene;
 using SgrYuki;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 
 [HarmonyPatch(typeof(NightScene.SceneManager))]

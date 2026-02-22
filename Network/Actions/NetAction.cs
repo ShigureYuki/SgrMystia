@@ -4,7 +4,7 @@ using BepInEx.Logging;
 using MemoryPack;
 using SgrYuki;
 
-namespace MetaMystia.Network;
+namespace SgrMystia.Network;
 
 public enum ActionType : ushort
 {

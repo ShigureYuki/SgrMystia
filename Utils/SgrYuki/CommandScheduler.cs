@@ -9,7 +9,7 @@ namespace SgrYuki;
 
 using KeyCommandQueue = ConcurrentDictionary<string, ConcurrentQueue<CommandScheduler.Command>>;
 
-[MetaMystia.AutoLog]
+[SgrMystia.AutoLog]
 public static partial class CommandScheduler
 {
     public sealed class Command
@@ -352,7 +352,7 @@ public static partial class CommandScheduler
             {
                 canExecute = cmd.CanExecute();
             }
-            catch (MetaMystia.WorkSceneManager.GuestInvalidatedException e)
+            catch (SgrMystia.WorkSceneManager.GuestInvalidatedException e)
             {
                 Log.Warning($"ignore action {cmd.ExecuteInfo} for {e.Message}");
                 continue;
@@ -430,7 +430,7 @@ public static partial class CommandScheduler
             {
                 canExecute = cmd.CanExecute();
             }
-            catch (MetaMystia.WorkSceneManager.GuestInvalidatedException e)
+            catch (SgrMystia.WorkSceneManager.GuestInvalidatedException e)
             {
                 Log.Warning($"ignore action {cmd.ExecuteInfo} for {e.Message}");
                 DequeueCommand(commandQ);

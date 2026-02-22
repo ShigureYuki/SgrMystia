@@ -8,7 +8,7 @@ using GameData.Core.Collections.CharacterUtility;
 using SgrYuki.Utils;
 using UnityEngine;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 /// <summary>
 /// 这是一个导出工具类，提供将游戏内资源导出为外部文件的功能，方便美术创作者进行符合原游戏 Sprite 规格的二次创作。

@@ -2,7 +2,7 @@ using Common.UI;
 using HarmonyLib;
 using StaffScene;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 [HarmonyPatch(typeof(StaffScene.SceneManager))]
 [HarmonyPatch]

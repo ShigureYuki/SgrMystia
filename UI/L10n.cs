@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MetaMystia;
+namespace SgrMystia;
 
 public enum Language
 {

@@ -5,7 +5,7 @@ using GameData.Core.Collections;
 using Il2CppSystem.IO;
 using MemoryPack;
 
-namespace MetaMystia.Network;
+namespace SgrMystia.Network;
 
 
 // optimize & TODO: 实现整个 GameData.Core.Collections.Sellable 即使之包含 Beverage 而不仅仅是 Food
